@@ -49,6 +49,12 @@ reset:
     
     jsr clear_bitmap_screen
     
+    ; FIXME: implement this!
+    jsr clear_sprite_data
+    
+    
+    ; TODO: Enable 1 sprite and position it according to time elapsed
+    
     jsr init_timer
     
     ; Note: this is inside timing.s

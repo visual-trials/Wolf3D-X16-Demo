@@ -252,3 +252,14 @@ fill_bitmap_col_once2:
 
     
     rts
+    
+    
+clear_sprite_data:
+    
+
+    ; Sprite data is from $1FC00 - $1FFFF	
+    
+    
+    ; FIXME: clear the sprite data
+    
+    rts
