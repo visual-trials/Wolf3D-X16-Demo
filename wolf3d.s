@@ -51,6 +51,7 @@ reset:
     
     jsr init_timer
     
+    ; jmp vsync_measurement
     
 loop2:
     jsr start_timer
@@ -58,49 +59,7 @@ loop2:
     ;jsr copy_petscii_charset
     jsr stop_timer
     
-    jsr print_testing
-    lda TIME_ELAPSED_MS
-    sta BYTE_TO_PRINT
-    jsr print_byte_as_decimal
-    
-    lda #'.'
-    sta VERA_DATA0
-    lda TEXT_COLOR
-    sta VERA_DATA0
-    inc CURSOR_X
-    
-    lda TIME_ELAPSED_SUB_MS
-    tax
-    lda sub_ms_nibble_as_decimal, x
-    sta BYTE_TO_PRINT
-    jsr print_byte_as_decimal
-    
-    ; TODO: we should create a generic linefeed-routine
-;    lda INDENTATION
-;    sta CURSOR_X
-
-; FIXME: we should print ' ms   ' instead!
-    ; TODO: If overwriting an already printed line, we clean it up this way...
-    lda #' '
-    sta VERA_DATA0
-    lda TEXT_COLOR
-    sta VERA_DATA0
-    inc CURSOR_X
-    
-    jsr move_cursor_to_next_line
-    
-    ; FIXME: check if Y is equal to MAX lines!?!
-    lda CURSOR_Y
-    cmp #TILE_MAP_HEIGHT/2       ; FIXME: we should change the TILE_MAP_HEIGHT to 25/32?
-    ; bne cursor_y_ok
-    beq loop ; We currently stop it we reach the end
-
-    ; FIXME: Resetting to line 0 for now, should we scroll instead?
-;    lda #0
-;    sta CURSOR_Y
-    
-cursor_y_ok:
-
+    jsr print_time_elapsed
     jmp loop2
     
 loop:
@@ -127,7 +86,7 @@ wait_for_vsync:
     
     jsr stop_timer
     jsr start_timer
-    stp
+    jsr print_time_elapsed
     
     
     lda #%00000111 ; ACK any existing IRQs in VERA
@@ -142,17 +101,58 @@ wait_for_vsync:
     
     
 ; FIXME: put this somewhere else!    
-print_testing:    
+print_time_elapsed:
     
     lda #COLOR_NORMAL
     sta TEXT_COLOR
     
-    lda #<testing_message
+    lda #<time_elapsed_message
     sta TEXT_TO_PRINT
-    lda #>testing_message
+    lda #>time_elapsed_message
     sta TEXT_TO_PRINT + 1
     
     jsr print_text_zero
+
+    lda TIME_ELAPSED_MS
+    sta BYTE_TO_PRINT
+    jsr print_byte_as_decimal
+    
+    lda #'.'
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    inc CURSOR_X
+    
+    lda TIME_ELAPSED_SUB_MS
+    tax
+    lda sub_ms_nibble_as_decimal, x
+    sta BYTE_TO_PRINT
+    jsr print_byte_as_decimal
+    
+    ; TODO: we should create a generic linefeed-routine
+;    lda INDENTATION
+;    sta CURSOR_X
+
+    lda #<time_elapsed_ms_message
+    sta TEXT_TO_PRINT
+    lda #>time_elapsed_ms_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    jsr move_cursor_to_next_line
+    
+    ; FIXME: check if Y is equal to MAX lines!?!
+    lda CURSOR_Y
+    cmp #TILE_MAP_HEIGHT/2       ; FIXME: we should change the TILE_MAP_HEIGHT to 25/32?
+    ; bne cursor_y_ok
+    beq loop ; We currently stop it we reach the end
+
+    ; FIXME: Resetting to line 0 for now, should we scroll instead?
+;    lda #0
+;    sta CURSOR_Y
+    
+cursor_y_ok:
     
     rts
 
@@ -164,8 +164,10 @@ print_testing:
     .include utils/setup_vera_for_bitmap_and_tilemap.s
   
   
-testing_message: 
-    .asciiz "Testing blit performance..."
+time_elapsed_message: 
+    .asciiz "Time elapsed... "
+time_elapsed_ms_message: 
+    .asciiz " ms  "
   
     ; ======== PETSCII CHARSET =======
 
