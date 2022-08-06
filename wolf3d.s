@@ -39,27 +39,13 @@ reset:
     txs
     
     jsr setup_vera_for_bitmap_and_tile_map
-    
     jsr copy_petscii_charset
-    
     jsr clear_tilemap_screen
-
-    ; We enable VERA as soon as possible (and set it up), to give a sign of life (rom only)
-    .include "utils/rom_only_setup_vera_for_tile_map.s"  
-
-    ; Setup initial (rom only) screen and title
-    .include "utils/rom_only_setup_screen.s"
-
-    ; Test Zero Page and Stack RAM once
-    .include "tests/rom_only_test_zp_and_stack_ram_once.s"
+    jsr init_cursor
     
-
-    ; Init cursor for printing to screen
-    lda #(MARGIN+INDENT_SIZE)
-    sta INDENTATION
-    sta CURSOR_X
-    lda #5          ; We already printed a title, a header and one line when testing Zero page and stack memory
-    sta CURSOR_Y
+    
+    jsr print_testing
+    
 
     
 loop:
@@ -67,11 +53,31 @@ loop:
     jmp loop
 
     
+; FIXME: put this somewhere else!    
+print_testing:    
+    
+    lda #COLOR_NORMAL
+    sta TEXT_COLOR
+    
+    lda #<testing_message
+    sta TEXT_TO_PRINT
+    lda #>testing_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    rts
+
+    
     ; === Included files ===
     
     .include utils/x16.s
     .include utils/utils.s
     .include utils/setup_vera_for_bitmap_and_tilemap.s
+  
+  
+testing_message: 
+    .asciiz "Testing blit performance..."
   
     ; ======== PETSCII CHARSET =======
 

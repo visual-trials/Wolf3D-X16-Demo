@@ -40,7 +40,9 @@ vera_ready:
 
     ; -- Show first sign of live by enabling VGA as soon as possible
   
-    lda #%00010001           ; Enable Layer 0, Enable VGA
+    ; lda #%00010001           ; Enable Layer 0, Enable VGA
+    ; lda #%00100001           ; Enable Layer 1, Enable VGA
+    lda #%00110001           ; Enable Layer 0 and 1, Enable VGA
     sta VERA_DC_VIDEO
 
     lda #0                   ; Set Horizontal and vertical scoll to 0
@@ -186,5 +188,17 @@ vera_clear_fill_tile_map_row:
     bne vera_clear_fill_tile_map_row
     dey
     bne vera_clear_fill_tile_map
+
+    rts
+    
+init_cursor:
+
+    ; Init cursor for printing to screen
+    ; lda #(MARGIN+INDENT_SIZE)
+    lda #(MARGIN)   ; no indenting at the start
+    sta INDENTATION
+    sta CURSOR_X
+    lda #0
+    sta CURSOR_Y
 
     rts
