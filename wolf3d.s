@@ -51,13 +51,15 @@ reset:
     
     jsr init_timer
     
-    ; jmp vsync_measurement
+    jmp vsync_measurement
     
 loop2:
     jsr start_timer
     jsr clear_bitmap_screen
     ;jsr copy_petscii_charset
     jsr stop_timer
+    
+    ; FIXME: intead of printing, put a sprite at a corresponding x-pixel position on the screen. This sprit may be a 'dot' inside a 'tube'. Add vertical bars for showing 16ms/33ms etc.
     
     jsr print_time_elapsed
     jmp loop2
