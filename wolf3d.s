@@ -28,6 +28,10 @@ INDENTATION               = $0B
 BYTE_TO_PRINT             = $0C
 DECIMAL_STRING            = $0D ; 0E ; 0F
 
+TIMING_COUNTER            = $10 ; 11
+TIME_ELAPSED_MS           = $12
+
+
     .org $C000
 
 reset:
@@ -45,9 +49,58 @@ reset:
     
     jsr clear_bitmap_screen
     
-    jsr print_testing
+    jsr init_timer
     
+    
+loop2:
+    jsr start_timer
+    jsr clear_bitmap_screen
+    jsr stop_timer
+    
+    
+    jsr print_testing
+    lda TIME_ELAPSED_MS
+    sta BYTE_TO_PRINT
+    jsr print_byte_as_decimal
+;    stp
+    lda INDENTATION
+    sta CURSOR_X
 
+    jmp loop2
+    
+    
+    
+    
+    
+vsync_measurement:    
+    lda #%00000111 ; ACK any existing IRQs in VERA
+    sta VERA_ISR
+    
+    lda #%00000001  ; enable only v-sync irq
+    sta VERA_IEN
+    
+    jsr start_timer
+    
+wait_for_vsync:
+
+    lda VERA_ISR
+    and #%00000001
+    beq wait_for_vsync
+    
+    jsr stop_timer
+    jsr start_timer
+    stp
+    
+    
+    lda #%00000111 ; ACK any existing IRQs in VERA
+    sta VERA_ISR
+    
+    lda TIMING_COUNTER
+    lda TIMING_COUNTER+1
+    
+    jmp wait_for_vsync
+    
+    
     
 loop:
     ; TODO: wait for (keyboard) input

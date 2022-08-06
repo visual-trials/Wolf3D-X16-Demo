@@ -132,8 +132,8 @@ print_ones:
     inc CURSOR_X
     
     rts
-
-
+    
+    
 ; modulus 10 a byte
 ; Input
 ;   a : byte to do modulus once
@@ -175,5 +175,87 @@ mod10:
     lda TMP2
     sec
     sbc TMP1 ; a - ((a / 10) * 10) = a % 10
+    
+    rts
+
+    
+init_timer:
+    ; We reset the FIFO and configure it
+    lda #%10000000  ; FIFO Reset, 8-bit, Mono, no volume
+    sta VERA_AUDIO_CTRL
+    
+    ; We set the PCM sample rate to 0 (no sampling)
+    lda #$00
+    sta VERA_AUDIO_RATE
+    
+    ; We fill the PCM buffer with 4KB (= 16 * 256 bytes) of data
+
+    lda #$00  ; It really doesn't matter where we fill it with
+    ldy #16
+fill_pcm_audio_block_with_ff:
+    ldx #0
+fill_pcm_audio_byte_with_ff:
+    sta VERA_AUDIO_DATA
+    inx
+    bne fill_pcm_audio_byte_with_ff
+    dey
+    bne fill_pcm_audio_block_with_ff
+    
+    ; NOTE: we are assuming the buffer is full now
+    
+    rts
+    
+start_timer:
+    
+    ; NOTE: The buffer is asumed to be full and playback not running. 
+    
+    ; We will now start "playback" by setting a sampling rate. 
+    
+    ; -- Start playback
+    ; Formula: frequency = 48828.125/(128/VERA_AUDIO_RATE)
+    ; lda #26   ;  9918.2 Hz (fairly close to 10000Hz) 
+    ; lda #27   ; 10299.7 Hz (fairly close to 10000Hz) 
+    lda #42   ; 16021.7 Hz (fairly close to 16000Hz) -> divide by 16 and you get the milliseconds
+    sta VERA_AUDIO_RATE
+    
+    rts
+    
+    
+stop_timer:
+    ; -- Stop playback
+    lda #$00
+    sta VERA_AUDIO_RATE
+    
+    ; We fill the PCM buffer again, but now we keep checking if its full: that we know how many bytes it sampled/played
+    lda #0
+    sta TIMING_COUNTER
+    sta TIMING_COUNTER+1
+    
+    lda #0 ; It really doesn't matter where we fill it with
+fill_pcm_audio_byte:
+    sta VERA_AUDIO_DATA
+    inc TIMING_COUNTER
+    bne no_increment_counter_pcm
+    inc TIMING_COUNTER+1    
+no_increment_counter_pcm:
+    lda VERA_AUDIO_CTRL
+    bpl fill_pcm_audio_byte ; If bit 7 is not set the audio FIFO buffer is not full. So we repeat
+    
+    lda TIMING_COUNTER
+    lsr
+    lsr
+    lsr
+    lsr
+    sta TIME_ELAPSED_MS
+    
+    ; We assume we ran at 16000Hz, so we divide by 16 and the remaining byte is the number of milliseconds elapsed
+    lda TIMING_COUNTER+1
+    and #$0F
+    asl
+    asl
+    asl
+    asl
+    ora TIME_ELAPSED_MS
+    sta TIME_ELAPSED_MS
     
     rts
