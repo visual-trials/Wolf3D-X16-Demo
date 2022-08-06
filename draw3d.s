@@ -1,5 +1,5 @@
 
-BACKGROUND_COLOR_3D_VIEW = $01
+BACKGROUND_COLOR_3D_VIEW = $02
 
 clear_3d_view_fast:
 

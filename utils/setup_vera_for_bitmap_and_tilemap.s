@@ -197,11 +197,11 @@ vera_clear_fill_tile_map_row:
 init_cursor:
 
     ; Init cursor for printing to screen
-    ; lda #(MARGIN+INDENT_SIZE)
-    lda #(MARGIN)   ; no indenting at the start
+    ; lda #(LEFT_MARGIN+INDENT_SIZE)
+    lda #(LEFT_MARGIN)   ; no indenting at the start
     sta INDENTATION
     sta CURSOR_X
-    lda #0
+    lda #(TOP_MARGIN)
     sta CURSOR_Y
 
     rts

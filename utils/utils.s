@@ -1,6 +1,7 @@
 
 ; Print margins
-MARGIN          = 0
+TOP_MARGIN      = 20
+LEFT_MARGIN     = 2
 INDENT_SIZE     = 2
 
 ; Colors

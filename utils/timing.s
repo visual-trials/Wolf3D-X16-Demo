@@ -209,11 +209,12 @@ print_time_elapsed:
     
     ; FIXME: check if Y is equal to MAX lines!?!
     lda CURSOR_Y
-    cmp #TILE_MAP_HEIGHT/2       ; FIXME: we should change the TILE_MAP_HEIGHT to 25/32?
+    ;cmp #TILE_MAP_HEIGHT/2       ; FIXME: we should change the TILE_MAP_HEIGHT to 25/32?
+    cmp #29                       ; FIXME: HACK!
     bne cursor_y_ok
 
     ; FIXME: Resetting to line 0 for now, should we scroll instead?
-    lda #0
+    lda #TOP_MARGIN
     sta CURSOR_Y
     
 cursor_y_ok:

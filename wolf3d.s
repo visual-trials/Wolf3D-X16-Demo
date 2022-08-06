@@ -51,7 +51,7 @@ reset:
     jsr clear_sprite_data
     
     jsr init_timer
-    jsr init_elapsed_time_sprite
+    ; jsr init_elapsed_time_sprite
     
     jsr clear_3d_view_fast
     
@@ -93,10 +93,9 @@ wait_for_vsync:
     jsr stop_timer
     jsr start_timer
     
-    ; FIXME: intead of printing, put a sprite at a corresponding x-pixel position on the screen. This sprit may be a 'dot' inside a 'tube'. Add vertical bars for showing 16ms/33ms etc.
-    ; jsr print_time_elapsed
-    
-    jsr position_elapsed_time_sprite
+    jsr print_time_elapsed
+    ; jsr position_elapsed_time_sprite
+    ; TODO: maybe draw a horizontal bar instead?
     
     
     lda #%00000111 ; ACK any existing IRQs in VERA
