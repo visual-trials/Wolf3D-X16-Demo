@@ -12,7 +12,17 @@ move_cursor_to_next_line:
     lda INDENTATION
     sta CURSOR_X
     inc CURSOR_Y
+    
+    ; FIXME: check if Y is equal to MAX lines!?!
+    lda CURSOR_Y
+    cmp #TILE_MAP_HEIGHT
+    bne cursor_y_ok
 
+    ; FIXME: Resetting to line 0 for now, should we scroll instead?
+    lda #0
+    sta CURSOR_Y
+    
+cursor_y_ok:
     pla
     rts
 

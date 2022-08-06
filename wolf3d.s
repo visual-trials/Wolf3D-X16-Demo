@@ -75,9 +75,18 @@ loop2:
     jsr print_byte_as_decimal
     
     ; TODO: we should create a generic linefeed-routine
-    lda INDENTATION
-    sta CURSOR_X
+;    lda INDENTATION
+;    sta CURSOR_X
 
+    ; TODO: If overwriting an already printed line, we clean it up this way...
+    lda #' '
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    inc CURSOR_X
+    
+    jsr move_cursor_to_next_line
+    
     jmp loop2
     
     
