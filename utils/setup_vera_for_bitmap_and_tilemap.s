@@ -4,6 +4,7 @@ BITMAP_WIDTH = 320
 BITMAP_HEIGHT = 240
 TILE_MAP_WIDTH = 128
 TILE_MAP_HEIGHT = 64
+BACKGROUND_COLOR = $00
 
 setup_vera_for_bitmap_and_tile_map:
 
@@ -201,4 +202,53 @@ init_cursor:
     lda #0
     sta CURSOR_Y
 
+    rts
+    
+    
+
+clear_bitmap_screen:
+    ldx #0
+fill_bitmap_once:
+
+    lda #%11100000           ; Setting bit 16 of vram address to the highest bit (=0), setting auto-increment value to 320px (=14=%1110)
+    sta VERA_ADDR_BANK
+    lda #$00
+    sta VERA_ADDR_HIGH
+    stx VERA_ADDR_LOW       ; We use x as the column number, so we set it as as the start byte of a column
+    
+    ; We use A as color
+    lda #BACKGROUND_COLOR
+    
+    ldy #BITMAP_HEIGHT
+fill_bitmap_col_once:
+    sta VERA_DATA0           ; store pixel
+    dey
+    bne fill_bitmap_col_once
+    inx
+    bne fill_bitmap_once
+
+    ; Right part of the screen
+
+    ldx #0
+fill_bitmap_once2:
+
+    lda #%11100000           ; Setting bit 16 of vram address to the highest bit (=0), setting auto-increment value to 320px (=14=%1110)
+    sta VERA_ADDR_BANK
+    lda #$01                ; The right side part of the screen has a start byte starting at address 256 and up
+    sta VERA_ADDR_HIGH
+    stx VERA_ADDR_LOW       ; We use x as the column number, so we set it as as the start byte of a column
+    
+    ; We use A as color
+    lda #BACKGROUND_COLOR
+    
+    ldy #BITMAP_HEIGHT
+fill_bitmap_col_once2:
+    sta VERA_DATA0           ; store pixel
+    dey
+    bne fill_bitmap_col_once2
+    inx
+    cpx #64                  ; The right part of the screen is 320 - 256 = 64 pixels
+    bne fill_bitmap_once2
+
+    
     rts

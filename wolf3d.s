@@ -43,6 +43,7 @@ reset:
     jsr clear_tilemap_screen
     jsr init_cursor
     
+    jsr clear_bitmap_screen
     
     jsr print_testing
     
