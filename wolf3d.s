@@ -48,17 +48,12 @@ reset:
     jsr init_cursor
     
     jsr clear_bitmap_screen
-    
-    ; FIXME: implement this!
     jsr clear_sprite_data
     
-    
-    ; TODO: Enable 1 sprite and position it according to time elapsed
-    
     jsr init_timer
+    jsr init_elapsed_time_sprite
     
-    ; Note: this is inside timing.s
-    jmp vsync_measurement
+    ; jmp vsync_measurement
     
 loop2:
     jsr start_timer
@@ -67,14 +62,51 @@ loop2:
     jsr stop_timer
     
     ; FIXME: intead of printing, put a sprite at a corresponding x-pixel position on the screen. This sprit may be a 'dot' inside a 'tube'. Add vertical bars for showing 16ms/33ms etc.
+    ; jsr print_time_elapsed
     
-    jsr print_time_elapsed
+    jsr position_elapsed_time_sprite
     
     jmp loop2
     
 loop:
     ; TODO: wait for (keyboard) input
     jmp loop
+
+    
+vsync_measurement:    
+    lda #%00000111 ; ACK any existing IRQs in VERA
+    sta VERA_ISR
+    
+    lda #%00000001  ; enable only v-sync irq
+    sta VERA_IEN
+    
+    jsr start_timer
+    
+wait_for_vsync:
+
+    lda VERA_ISR
+    and #%00000001
+    beq wait_for_vsync
+    
+    jsr stop_timer
+    jsr start_timer
+    
+    ; FIXME: intead of printing, put a sprite at a corresponding x-pixel position on the screen. This sprit may be a 'dot' inside a 'tube'. Add vertical bars for showing 16ms/33ms etc.
+    ; jsr print_time_elapsed
+    
+    jsr position_elapsed_time_sprite
+    
+    
+    lda #%00000111 ; ACK any existing IRQs in VERA
+    sta VERA_ISR
+    
+    lda TIMING_COUNTER
+    lda TIMING_COUNTER+1
+    
+    jmp wait_for_vsync
+    
+    ; no jsr needed here
+    
 
     
     ; === Included files ===

@@ -43,7 +43,9 @@ vera_ready:
   
     ; lda #%00010001           ; Enable Layer 0, Enable VGA
     ; lda #%00100001           ; Enable Layer 1, Enable VGA
-    lda #%00110001           ; Enable Layer 0 and 1, Enable VGA
+    ; lda #%00110001           ; Enable Layer 0 and 1, Enable VGA
+    lda #%01110001           ; Enable Layer 0 and 1 and sprites, Enable VGA
+    ; lda #%01000001           ; Enable sprites, Enable VGA
     sta VERA_DC_VIDEO
 
     lda #0                   ; Set Horizontal and vertical scoll to 0
@@ -167,7 +169,7 @@ clear_tilemap_screen:
     
     ; This will clear the screen without using RAM.
 
-    ; -- Fill tilemap into VRAM at $1B000-$1EBFF
+    ; -- Fill tilemap into VRAM at $1B000-$1EBFF (FIXME: should this not be $1B000 - $1EFFF?, since (TILE_MAP_HEIGHT / (256 / TILE_MAP_WIDTH)) = 32?) -> $20 * 2 * 256
 
 vera_clear_start:
     lda #%00010001           ; Setting bit 16 of vram address to the highest bit in the tilebase (=1), setting auto-increment value to 1
@@ -253,13 +255,26 @@ fill_bitmap_col_once2:
     
     rts
     
-    
 clear_sprite_data:
     
-
     ; Sprite data is from $1FC00 - $1FFFF	
     
+    lda #%00010001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 1px
+    sta VERA_ADDR_BANK
+    lda #$FC
+    sta VERA_ADDR_HIGH
+    sta VERA_ADDR_LOW
     
-    ; FIXME: clear the sprite data
+    lda #0 ; clear with zero
+    
+    ldy #4
+clear_sprite_data_256:
+    ldx #0
+clear_sprite_data_1:
+    sta VERA_DATA0
+    inx
+    bne clear_sprite_data_1
+    dey
+    bne clear_sprite_data_256
     
     rts

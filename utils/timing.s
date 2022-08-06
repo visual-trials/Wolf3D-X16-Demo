@@ -1,4 +1,7 @@
 
+; We put this sprite data in $1F800 (right after the tile data (petscii characters)
+ELAPSED_TIME_SPRITE_VRAM = $1F800
+
     
 init_timer:
     ; We reset the FIFO and configure it
@@ -89,6 +92,79 @@ no_increment_counter_pcm:
     
     rts
 
+init_elapsed_time_sprite:
+
+    ; Copy sprite data
+    ; -- Copy sprite data to VRAM at $1F800-$1F83F (64 bytes)
+    
+    lda #%00010001           ; Setting bit 16 of vram address to the highest bit in the tilebase (=1), setting auto-increment value to 1
+    sta VERA_ADDR_BANK
+    
+    lda #$F8
+    sta VERA_ADDR_HIGH
+    lda #$00
+    sta VERA_ADDR_LOW
+    
+    ldy #0
+copy_elapsed_sprite_data:
+    lda elapsed_sprite_data, y
+    sta VERA_DATA0
+    iny
+    cpy #64
+    bne copy_elapsed_sprite_data
+
+    ; Sprite settings
+
+    lda #%00010001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 1px
+    sta VERA_ADDR_BANK
+    lda #$FC
+    sta VERA_ADDR_HIGH
+    lda #$00
+    sta VERA_ADDR_LOW        ; Sprite 0
+    
+    ; $1   F    8    0    0
+    ; %1 1111 1000 0000 0000
+
+    lda #<(ELAPSED_TIME_SPRITE_VRAM >> 5)                 ; Address (12:5) of sprite data
+    sta VERA_DATA0
+    lda #(%10000000 | ELAPSED_TIME_SPRITE_VRAM >> (5+8))  ; Mode 1 (8bpp) and address (16:13) of sprite data
+    sta VERA_DATA0
+    
+    ; FIXME: what to set as initial X value?
+    lda #0
+    sta VERA_DATA0                                        ; X (7:0)
+    lda #0
+    sta VERA_DATA0                                        ; X (9:8)
+    
+    ; FIXME: what to set as initial Y value?
+    lda #220
+    sta VERA_DATA0                                        ; Y (7:0)
+    lda #0
+    sta VERA_DATA0                                        ; Y (9:8)
+    
+    lda #%00001100
+    sta VERA_DATA0                                        ; Collision mask, Z-depth ("Sprite in front of layer 1"), V-flip, H-flip
+    
+    lda #%00000000
+    sta VERA_DATA0                                        ; Sprite height, Sprite width, Palette offset
+    
+    rts
+
+position_elapsed_time_sprite:
+
+    lda #%00010001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 1px
+    sta VERA_ADDR_BANK
+    lda #$FC
+    sta VERA_ADDR_HIGH
+    lda #$02
+    sta VERA_ADDR_LOW        ; Sprite 0, offset 2
+    
+    lda TIME_ELAPSED_MS
+    sta VERA_DATA0                                        ; X (7:0)
+    lda #0
+    sta VERA_DATA0                                        ; X (9:8)
+    
+    rts
     
 print_time_elapsed:
     
@@ -144,36 +220,6 @@ cursor_y_ok:
     
     rts
 
-vsync_measurement:    
-    lda #%00000111 ; ACK any existing IRQs in VERA
-    sta VERA_ISR
-    
-    lda #%00000001  ; enable only v-sync irq
-    sta VERA_IEN
-    
-    jsr start_timer
-    
-wait_for_vsync:
-
-    lda VERA_ISR
-    and #%00000001
-    beq wait_for_vsync
-    
-    jsr stop_timer
-    jsr start_timer
-    jsr print_time_elapsed
-    
-    
-    lda #%00000111 ; ACK any existing IRQs in VERA
-    sta VERA_ISR
-    
-    lda TIMING_COUNTER
-    lda TIMING_COUNTER+1
-    
-    jmp wait_for_vsync
-    
-    ; no jsr needed here
-    
 time_elapsed_message: 
     .asciiz "Time elapsed... "
 time_elapsed_ms_message: 
@@ -200,3 +246,14 @@ sub_ms_nibble_as_decimal:
     .byte 81 ; 13/16 = 0.8125
     .byte 88 ; 14/16 = 0.875
     .byte 94 ; 15/16 = 0.9375
+
+elapsed_sprite_data:
+    .byte $07,$07,$00,$00,$00,$00,$00,$00
+    .byte $07,$07,$00,$00,$00,$00,$00,$00
+    .byte $07,$07,$00,$00,$00,$00,$00,$00
+    .byte $07,$07,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+    .byte $00,$00,$00,$00,$00,$00,$00,$00
+
