@@ -53,18 +53,20 @@ reset:
     jsr init_timer
     jsr init_elapsed_time_sprite
     
+    jsr clear_3d_view_fast
+    
     ; jmp vsync_measurement
     
 loop2:
     jsr start_timer
-    jsr clear_bitmap_screen
+    jsr clear_3d_view_fast
+    ;jsr clear_bitmap_screen
     ;jsr copy_petscii_charset
     jsr stop_timer
     
-    ; FIXME: intead of printing, put a sprite at a corresponding x-pixel position on the screen. This sprit may be a 'dot' inside a 'tube'. Add vertical bars for showing 16ms/33ms etc.
-    ; jsr print_time_elapsed
-    
-    jsr position_elapsed_time_sprite
+    jsr print_time_elapsed
+    ; jsr position_elapsed_time_sprite
+    ; TODO: maybe draw a horizontal bar instead?
     
     jmp loop2
     
@@ -115,6 +117,7 @@ wait_for_vsync:
     .include utils/utils.s
     .include utils/timing.s
     .include utils/setup_vera_for_bitmap_and_tilemap.s
+    .include draw3d.s
   
   
     ; ======== PETSCII CHARSET =======
