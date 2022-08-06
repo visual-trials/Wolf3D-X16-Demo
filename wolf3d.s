@@ -30,7 +30,7 @@ DECIMAL_STRING            = $0D ; 0E ; 0F
 
 TIMING_COUNTER            = $10 ; 11
 TIME_ELAPSED_MS           = $12
-
+TIME_ELAPSED_SUB_MS       = $13 ; one nibble of sub-milliseconds
 
     .org $C000
 
@@ -57,12 +57,24 @@ loop2:
     jsr clear_bitmap_screen
     jsr stop_timer
     
-    
     jsr print_testing
     lda TIME_ELAPSED_MS
     sta BYTE_TO_PRINT
     jsr print_byte_as_decimal
-;    stp
+    
+    lda #'.'
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    inc CURSOR_X
+    
+    lda TIME_ELAPSED_SUB_MS
+    tax
+    lda sub_ms_nibble_as_decimal, x
+    sta BYTE_TO_PRINT
+    jsr print_byte_as_decimal
+    
+    ; TODO: we should create a generic linefeed-routine
     lda INDENTATION
     sta CURSOR_X
 

@@ -242,6 +242,10 @@ no_increment_counter_pcm:
     bpl fill_pcm_audio_byte ; If bit 7 is not set the audio FIFO buffer is not full. So we repeat
     
     lda TIMING_COUNTER
+    and #$0F
+    sta TIME_ELAPSED_SUB_MS
+    
+    lda TIMING_COUNTER
     lsr
     lsr
     lsr
@@ -259,3 +263,24 @@ no_increment_counter_pcm:
     sta TIME_ELAPSED_MS
     
     rts
+
+sub_ms_nibble_as_decimal:
+    .byte 00 ; 0/16 = 0.0
+    .byte 10 ; 1/16 = 0.0625  --> FIXME: this will show up as .6!! (we have no leading zeros) -> so made this 10 for now
+    .byte 13 ; 2/16 = 0.125
+    .byte 19 ; 3/16 = 0.1865
+
+    .byte 25 ; 4/16 = 0.25
+    .byte 31 ; 5/16 = 0.3125
+    .byte 38 ; 6/16 = 0.375
+    .byte 44 ; 7/16 = 0.4375
+
+    .byte 50 ; 8/16 = 0.5
+    .byte 56 ; 9/16 = 0.5625
+    .byte 63 ; 10/16 = 0.625
+    .byte 69 ; 11/16 = 0.6875
+
+    .byte 75 ; 12/16 = 0.75
+    .byte 81 ; 13/16 = 0.8125
+    .byte 88 ; 14/16 = 0.875
+    .byte 94 ; 15/16 = 0.9375
