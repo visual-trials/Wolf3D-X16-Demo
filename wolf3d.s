@@ -55,6 +55,7 @@ reset:
 loop2:
     jsr start_timer
     jsr clear_bitmap_screen
+    ;jsr copy_petscii_charset
     jsr stop_timer
     
     jsr print_testing
@@ -78,6 +79,7 @@ loop2:
 ;    lda INDENTATION
 ;    sta CURSOR_X
 
+; FIXME: we should print ' ms   ' instead!
     ; TODO: If overwriting an already printed line, we clean it up this way...
     lda #' '
     sta VERA_DATA0
@@ -87,12 +89,27 @@ loop2:
     
     jsr move_cursor_to_next_line
     
+    ; FIXME: check if Y is equal to MAX lines!?!
+    lda CURSOR_Y
+    cmp #TILE_MAP_HEIGHT/2       ; FIXME: we should change the TILE_MAP_HEIGHT to 25/32?
+    ; bne cursor_y_ok
+    beq loop ; We currently stop it we reach the end
+
+    ; FIXME: Resetting to line 0 for now, should we scroll instead?
+;    lda #0
+;    sta CURSOR_Y
+    
+cursor_y_ok:
+
     jmp loop2
     
+loop:
+    ; TODO: wait for (keyboard) input
+    jmp loop
+
+
     
-    
-    
-    
+; FIXME: where to put this?
 vsync_measurement:    
     lda #%00000111 ; ACK any existing IRQs in VERA
     sta VERA_ISR
@@ -123,10 +140,6 @@ wait_for_vsync:
     
     
     
-loop:
-    ; TODO: wait for (keyboard) input
-    jmp loop
-
     
 ; FIXME: put this somewhere else!    
 print_testing:    

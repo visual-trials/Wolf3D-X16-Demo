@@ -13,16 +13,6 @@ move_cursor_to_next_line:
     sta CURSOR_X
     inc CURSOR_Y
     
-    ; FIXME: check if Y is equal to MAX lines!?!
-    lda CURSOR_Y
-    cmp #TILE_MAP_HEIGHT
-    bne cursor_y_ok
-
-    ; FIXME: Resetting to line 0 for now, should we scroll instead?
-    lda #0
-    sta CURSOR_Y
-    
-cursor_y_ok:
     pla
     rts
 
@@ -227,6 +217,10 @@ start_timer:
     ; lda #27   ; 10299.7 Hz (fairly close to 10000Hz) 
     lda #42   ; 16021.7 Hz (fairly close to 16000Hz) -> divide by 16 and you get the milliseconds
     sta VERA_AUDIO_RATE
+
+timer_is_not_yet_running:
+    lda VERA_AUDIO_CTRL
+    bmi timer_is_not_yet_running ; If bit 7 is set the audio FIFO buffer is still full. So we wait
     
     rts
     
