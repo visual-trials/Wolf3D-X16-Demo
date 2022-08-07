@@ -163,7 +163,7 @@ position_elapsed_time_sprite:
     rts
     
 print_time_elapsed:
-    
+
     lda #COLOR_NORMAL
     sta TEXT_COLOR
     
@@ -218,7 +218,7 @@ cursor_y_ok:
     rts
 
 time_elapsed_message: 
-    .asciiz "Time elapsed... "
+    .asciiz "Frame time... "
 time_elapsed_ms_message: 
     .asciiz " ms  "
   

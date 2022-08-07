@@ -34,6 +34,7 @@ TIME_ELAPSED_SUB_MS       = $13 ; one nibble of sub-milliseconds
 
 LOAD_ADDRESS              = $14 ; 15
 VRAM_ADDRESS              = $16 ; 17 ; only two bytes, because bit 16 is assumed to be 1
+NR_OF_PALETTE_BYTES       = $18
 
 ; === VRAM addresses ===
 
@@ -64,7 +65,8 @@ reset:
     jsr init_timer
     ; jsr init_elapsed_time_sprite
     
-    
+
+    ; Texture pixels
     lda #$00
     sta LOAD_ADDRESS
     lda #$E6
@@ -77,12 +79,21 @@ reset:
     
     jsr copy_texture_to_vram
     
-;    jsr clear_3d_view_fast
-    jsr draw_3d_view_fast
+    ; Texture palette
+    lda #$01             ; palette starts at 4096 + 1 bytes from texture data
+    sta LOAD_ADDRESS
+    lda #$F6             ; palette starts at 4096 + 1 bytes from texture data
+    sta LOAD_ADDRESS+1
     
-;tmp_loop:
-;    jmp tmp_loop
-
+    lda $F600            ; this is the byte containing the number of palette bytes
+    sta NR_OF_PALETTE_BYTES
+    
+    jsr copy_palette_to_vram
+    
+    ; Drawing 3D View
+    
+    jsr clear_3d_view_fast
+    jsr draw_3d_view_fast
     
     ; jmp vsync_measurement
     
@@ -94,9 +105,19 @@ loop2:
     ;jsr copy_petscii_charset
     jsr stop_timer
     
+; FIXME:
+    lda #9
+    sta CURSOR_X
+    lda #24
+    sta CURSOR_Y
+    
+    
     jsr print_time_elapsed
     ; jsr position_elapsed_time_sprite
     ; TODO: maybe draw a horizontal bar instead?
+
+tmp_loop:
+    jmp tmp_loop
     
     jmp loop2
     

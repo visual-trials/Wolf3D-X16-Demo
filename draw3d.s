@@ -1,7 +1,7 @@
 
-BACKGROUND_COLOR_3D_VIEW = $02
-CEILING_COLOR            = $03
-FLOOR_COLOR              = $04
+BACKGROUND_COLOR_3D_VIEW = 2
+CEILING_COLOR            = 19
+FLOOR_COLOR              = 22
 
 copy_texture_to_vram:
 
@@ -21,6 +21,8 @@ next_block_to_copy_to_vram:
     ldy #0
 next_byte_to_copy_to_vram:
     lda (LOAD_ADDRESS), y
+    clc
+    adc #128                  ; FIXME: we now add 128 to the color value, since we have our custom palette there, but this only works if we have ONE texture!
     sta VERA_DATA0
     iny
     bne next_byte_to_copy_to_vram
@@ -30,6 +32,54 @@ next_byte_to_copy_to_vram:
     cpx #16              ; 16 * 256 = 4096 bytes
     bne next_block_to_copy_to_vram
    
+    rts
+
+; FIXME: this only works for ONE texture palette!
+copy_palette_to_vram:
+    ldy #0
+
+    ; TODO: this assumes ADDRSEL is 0!
+    
+    lda #%00010001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 1
+    sta VERA_ADDR_BANK
+    lda #>(VERA_PALETTE+128*2)   ; FIXME: we now add 128 to the palette index, since we place our custom palette there, but this only works if we have ONE texture!
+    sta VERA_ADDR_HIGH
+    lda #<(VERA_PALETTE+128*2)   ; FIXME: we now add 128 to the palette index, since we place our custom palette there, but this only works if we have ONE texture!
+    sta VERA_ADDR_LOW
+    
+next_palette_color_to_copy:
+
+    lda (LOAD_ADDRESS), y     ; blue
+    iny
+
+    lsr
+    lsr
+    lsr
+    lsr
+    
+    sta TMP1
+    
+    lda (LOAD_ADDRESS), y     ; green
+    iny
+    
+    and #$F0
+    ora TMP1
+
+    sta VERA_DATA0
+
+    lda (LOAD_ADDRESS), y     ; red
+    iny
+
+    lsr
+    lsr
+    lsr
+    lsr
+    
+    sta VERA_DATA0
+
+    cpy NR_OF_PALETTE_BYTES
+    bne next_palette_color_to_copy
+
     rts
 
     
