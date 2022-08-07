@@ -32,6 +32,17 @@ TIMING_COUNTER            = $10 ; 11
 TIME_ELAPSED_MS           = $12
 TIME_ELAPSED_SUB_MS       = $13 ; one nibble of sub-milliseconds
 
+LOAD_ADDRESS              = $14 ; 15
+VRAM_ADDRESS              = $16 ; 17 ; only two bytes, because bit 16 is assumed to be 1
+
+; === VRAM addresses ===
+
+TEXTURE_DATA             = $13000
+TILE_MAP                 = $1B000   ; TODO: constant is not used
+TILE_DATA                = $1F000   ; TODO: constant is not used
+ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right after the tile data (petscii characters)
+
+
     .org $C000
 
 reset:
@@ -53,13 +64,32 @@ reset:
     jsr init_timer
     ; jsr init_elapsed_time_sprite
     
-    jsr clear_3d_view_fast
+    
+    lda #$00
+    sta LOAD_ADDRESS
+    lda #$E6
+    sta LOAD_ADDRESS+1
+    
+    lda #<TEXTURE_DATA
+    sta VRAM_ADDRESS
+    lda #>TEXTURE_DATA
+    sta VRAM_ADDRESS+1
+    
+    jsr copy_texture_to_vram
+    
+;    jsr clear_3d_view_fast
+    jsr draw_3d_view_fast
+    
+;tmp_loop:
+;    jmp tmp_loop
+
     
     ; jmp vsync_measurement
     
 loop2:
     jsr start_timer
-    jsr clear_3d_view_fast
+    jsr draw_3d_view_fast
+    ;jsr clear_3d_view_fast
     ;jsr clear_bitmap_screen
     ;jsr copy_petscii_charset
     jsr stop_timer
@@ -118,6 +148,12 @@ wait_for_vsync:
     .include utils/setup_vera_for_bitmap_and_tilemap.s
     .include draw3d.s
   
+    ; === Texture files ===
+    
+    ; FIXME: this uses an old file (with 2 extra bytes in front and with specific palette bytes). 
+    ; Starting at E5FE because we want it to begin at E600, but we ignore the 2 extra bytes.
+    .org $E5FE
+    .binary "assets/BLUESTONE1_OLD.BIN"
   
     ; ======== PETSCII CHARSET =======
 

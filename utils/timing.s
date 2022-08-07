@@ -1,7 +1,3 @@
-
-; We put this sprite data in $1F800 (right after the tile data (petscii characters)
-ELAPSED_TIME_SPRITE_VRAM = $1F800
-
     
 init_timer:
     ; We reset the FIFO and configure it
