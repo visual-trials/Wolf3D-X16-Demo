@@ -46,8 +46,8 @@ ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right a
 
 ; === RAM addresses ===
 
-CLEAR_COLUMN_CODE        = $8000
-DRAW_COLUMN_CODE         = $8400    ; FIXME: this should be put into banked ram!
+CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
+DRAW_COLUMN_CODE         = $8000    ; FIXME: this should be put into banked ram!
 
 
     .org $C000
