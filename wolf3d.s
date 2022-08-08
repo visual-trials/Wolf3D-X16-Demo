@@ -58,8 +58,7 @@ ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right a
 
 ; === RAM addresses ===
 
-CLEAR_COLUMN_CODE        = $7B00    ; 152 * 3 bytes + 1 byte = 457 bytes
-DRAW_COLUMN_CODE_128     = $8D00    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes
+CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
 DRAW_COLUMN_CODE         = $8000    ; FIXME: this should be put into banked ram!
 
 
@@ -115,7 +114,6 @@ reset:
     
     jsr generate_clear_column_code
     jsr generate_draw_column_code
-    jsr generate_draw_column_code_128  ; FIXME: remove this!
     
     jsr clear_3d_view_fast
     jsr draw_3d_view_fast

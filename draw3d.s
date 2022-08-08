@@ -112,7 +112,6 @@ draw_next_column_left:
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
 
     ; FIXME: determine which code has to be called (switch to the correct ram bank)
-;    jsr DRAW_COLUMN_CODE_128
     jsr DRAW_COLUMN_CODE
     
     inx
@@ -144,7 +143,6 @@ draw_next_column_right:
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
     
     ; FIXME: determine which code has to be called (switch to the correct ram bank)
-;    jsr DRAW_COLUMN_CODE_128
     jsr DRAW_COLUMN_CODE
     
     inx
@@ -492,119 +490,6 @@ done_drawing_bottom:
     rts
     
     
-    
-    
-    
-; FIXME: remove this!    
-generate_draw_column_code_128:
-
-    ; FIXME: there should be many variants of this code: one for each possible height of a column!
-
-    lda #<DRAW_COLUMN_CODE_128
-    sta CODE_ADDRESS
-    lda #>DRAW_COLUMN_CODE_128
-    sta CODE_ADDRESS+1
-    
-    ldy #0                 ; generated code byte counter
-    
-    
-    ; -- lda #CEILING_COLOR
-    lda #$A9               ; lda #...
-    jsr add_code_byte
-    
-    lda #CEILING_COLOR     ; #CEILING_COLOR
-    jsr add_code_byte
-
-    ldx #0                 ; counts nr of ceiling instructions
-
-next_ceiling_instruction_128:
-
-    ; -- sta VERA_DATA0 ($9F23)
-    lda #$8D               ; sta ....
-    jsr add_code_byte
-
-    lda #$23               ; $23
-    jsr add_code_byte
-    
-    lda #$9F               ; $9F
-    jsr add_code_byte
-    
-    inx
-    cpx #12                ; 12 ceiling pixels written to VERA
-    bne next_ceiling_instruction_128
-
-    
-    ldx #0                 ; counts nr of texture double-write instructions
-
-next_instruction_set_128:
-
-    ; -- lda VERA_DATA1 ($9F24)
-    lda #$AD               ; lda ....
-    jsr add_code_byte
-    
-    lda #$24               ; VERA_DATA1
-    jsr add_code_byte
-    
-    lda #$9F         
-    jsr add_code_byte
-            
-    ; -- sta VERA_DATA0 ($9F23)
-    lda #$8D               ; sta ....
-    jsr add_code_byte
-
-    lda #$23               ; $23
-    jsr add_code_byte
-    
-    lda #$9F               ; $9F
-    jsr add_code_byte
-
-    ; -- sta VERA_DATA0 ($9F23)
-    lda #$8D               ; sta ....
-    jsr add_code_byte
-
-    lda #$23               ; $23
-    jsr add_code_byte
-    
-    lda #$9F               ; $9F
-    jsr add_code_byte
-    
-    inx
-    cpx #64                ; 64 * 2 = 128 pixels written to VERA
-    bne next_instruction_set_128
-    
-    
-    ; -- lda #FLOOR_COLOR
-    lda #$A9               ; lda #...
-    jsr add_code_byte
-    
-    lda #FLOOR_COLOR       ; #FLOOR_COLOR
-    jsr add_code_byte
-
-    ldx #0                 ; counts nr of floor instructions
-
-next_floor_instruction_128:
-
-    ; -- sta VERA_DATA0 ($9F23)
-    lda #$8D               ; sta ....
-    jsr add_code_byte
-
-    lda #$23               ; $23
-    jsr add_code_byte
-    
-    lda #$9F               ; $9F
-    jsr add_code_byte
-    
-    inx
-    cpx #12                ; 12 floor pixels written to VERA
-    bne next_floor_instruction_128
-
-    ; -- rts --
-    lda #$60
-    jsr add_code_byte
-
-    rts
-
-
 
 
 generate_clear_column_code:
