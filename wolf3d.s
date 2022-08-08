@@ -34,7 +34,8 @@ TIME_ELAPSED_SUB_MS       = $13 ; one nibble of sub-milliseconds
 
 LOAD_ADDRESS              = $14 ; 15
 VRAM_ADDRESS              = $16 ; 17 ; only two bytes, because bit 16 is assumed to be 1
-NR_OF_PALETTE_BYTES       = $18
+CODE_ADDRESS              = $18 ; 18 ; TODO: this can probably share the address of LOAD_ADDRESS
+NR_OF_PALETTE_BYTES       = $1A
 
 ; === VRAM addresses ===
 
@@ -42,6 +43,10 @@ TEXTURE_DATA             = $13000
 TILE_MAP                 = $1B000   ; TODO: constant is not used
 TILE_DATA                = $1F000   ; TODO: constant is not used
 ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right after the tile data (petscii characters)
+
+; === RAM addresses ===
+
+DRAW_COLUMN_CODE         = $8000    ; FIXME: this should be put into banked ram!
 
 
     .org $C000

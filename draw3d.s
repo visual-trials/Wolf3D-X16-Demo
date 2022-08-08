@@ -88,8 +88,6 @@ draw_3d_view_fast:
 
     ; Left part of the screen (256-8 = 248 columns)
 
-;    ldy #BACKGROUND_COLOR_3D_VIEW
-    
     ldx #8
     
 draw_next_column_left:
@@ -161,8 +159,6 @@ clear_3d_view_fast:
 
     ; Left part of the screen (256-8 = 248 columns)
 
-    ldy #BACKGROUND_COLOR_3D_VIEW
-    
     ldx #8
     
 clear_next_column_left:
@@ -172,6 +168,7 @@ clear_next_column_left:
     sta VERA_ADDR_HIGH
     stx VERA_ADDR_LOW       ; We use x as the column number, so we set it as as the start byte of a column
     
+    lda #BACKGROUND_COLOR_3D_VIEW
     jsr clear_152_column_fast
     
     inx
@@ -188,6 +185,7 @@ clear_next_column_right:
     sta VERA_ADDR_HIGH
     stx VERA_ADDR_LOW       ; We use x as the column number, so we set it as as the start byte of a column
     
+    lda #BACKGROUND_COLOR_3D_VIEW
     jsr clear_152_column_fast
     
     inx
@@ -200,419 +198,509 @@ clear_next_column_right:
 ; NOTE: this example will draw a texture-column at a height of 128 pixels (so twice the size of the texture)
 draw_152_column_fast:
     ; 0-11
-    ldy #CEILING_COLOR
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda #CEILING_COLOR
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
     
     ; 12-15
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
     
     ; 16-31
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 32-47
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 48-63
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 64-79
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 80-95
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 96-111
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 112-127
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 128-139
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
-    ldy VERA_DATA1
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
+    lda VERA_DATA1
+    sta VERA_DATA0
+    sta VERA_DATA0
     
     ; 140-151
-    ldy #FLOOR_COLOR
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    lda #FLOOR_COLOR
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
     
     rts
     
 ; FIXME: generate this code on startup!    
 clear_152_column_fast:
     ; 0-15
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
     
     ; 16-31
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 32-47
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 48-63
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 64-79
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 80-95
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 96-111
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 112-127
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 128-143
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
 
     ; 144-151
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
-    sty VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
+    sta VERA_DATA0
     
+    rts
+    
+    
+    ; Below assumes a "virtual screen" of 512 pixels high, with the actual screen starting at pixel 512/2 - 152/2 = 180 pixels from the top of the "virtual screen"
+    
+    ; We iterate through 512 possible wall heights
+    
+        ; We calcultate our texture_increment: 64 / wall_height (16 bits)
+        ; We set our texture_cursor to 0 (16 bit)
+        ; We set our previous_texture_cursor to 255 (as a marker to indicate we havent loaded from the texture at all)
+    
+        ; Lets say: wall_height = 128
+        ; We determine your start position on the "virtual screen": virtual_screen_pixel_position = 512/2 - wall_height/2 = 192
+        ; Since 192 > 180 the wall starts in the actual screen. 
+        
+            ; We need some ceiling pixels to move to that place first. So we iterate to add those.
+            ; We also need to remember how many floor pixels need to be added later on.
+        
+        ; Lets say: wall_height = 152
+        ; We determine your start position on the "virtual screen": virtual_screen_pixel_position = 512/2 - wall_height/2 = 180
+        ; Since 180 == 180 the wall starts right at the top of the actual screen. No ceiling needed.
+        
+        ; Lets say: wall_height = 300
+        ; We determine your start position on the "virtual screen": virtual_screen_pixel_position = 512/2 - wall_height/2 = 106
+        ; Since 106 < 180 the wall starts above the actual screen. As long as that is the case we will not write pixels to the screen.
+        
+        
+        ; We iterate our "virtual cursor" from virtual_start_position to 512-virtual_start_position:
+        
+            ; We determine our texture_cursor (only top 8 bits): has it changed? If so, we need to add a "lda VERA_DATA1" command. We update previous_texture_cursor in that case.
+            
+            ; If we are still outside the screen we dont write a pixel. Otherwise we add a "sta VERA_DATA0" command.
+            
+            ; We increment our texture_cursor with texture_increment (16 bits add)
+            
+            ; We increment our virtual_cursor with 1
+            ; If we reach the end of the actual screen (> 332) or we reached the end of our texture, we stop
+            
+        ; We add floor pixels if needed.
+    
+; FIXME
+; FIXME
+; FIXME
+    .if 0
+    
+generate_draw_column_code:
+
+    ; FIXME: there should be many variants of this code: one for each possible height of a column!
+
+    lda #<DRAW_COLUMN_CODE
+    sta ZP_PTR_4
+    lda #>DRAW_COLUMN_CODE
+    sta ZP_PTR_4+1
+    
+    ldy #0                 ; generated code byte counter
+    
+    ldx #0                 ; counts nr of "sta $9F23" instructions
+
+nextInstruction:
+
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr addCodeByte
+
+    lda #$23               ; $23
+    jsr addCodeByte
+    
+    lda #$9F               ; $9F
+    jsr addCodeByte
+
+    inx
+    cpx #240    
+    bne nextInstruction
+    
+    ; -- rts --
+    lda #$60
+    jsr addCodeByte
+
+    rts
+    
+    .endif
+
+    
+add_code_byte:
+    sta (CODE_ADDRESS),y   ; store code byte at address (located at CODE_ADDRESS) + y
+    iny                    ; increase y
+    cpy #0                 ; if y == 0
+    bne done_adding_code_byte
+    inc CODE_ADDRESS+1     ; increment high-byte of CODE_ADDRESS
+done_adding_code_byte:
     rts
