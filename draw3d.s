@@ -272,6 +272,11 @@ generate_draw_code_for_next_wall_height:
     
     ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2
     
+    ; TODO: should we round this down in a certain way? (if odd number, should we put the pixel at the top or the bottom?
+    
+; FIXME: create two variables: TOP_HALF_WALL_HEIGHT and BOTTOM_HALF_WALL_HEIGHT and iterate through the virtual_cursor using these.
+    
+    
     lda CURRENT_WALL_HEIGHT
     lsr                        ; wall_height/2
     sta TMP1
@@ -313,11 +318,67 @@ add_next_ceiling_code:
     dex
     bne add_next_ceiling_code
 
-
-    
 no_more_ceiling_needed:
 
+next_virtual_pixel:
 
+    lda TEXTURE_CURSOR+1
+    cmp PREVIOUS_TEXTURE_CURSOR
+    beq correct_texture_pixel_loaded
+    
+    ; We need to add a load of the texture
+    
+    ; -- lda VERA_DATA1 ($9F24)
+    lda #$AD               ; lda ....
+    jsr add_code_byte
+    
+    lda #$24               ; VERA_DATA1
+    jsr add_code_byte
+    
+    lda #$9F         
+    jsr add_code_byte
+    
+    lda TEXTURE_CURSOR+1
+    sta PREVIOUS_TEXTURE_CURSOR
+
+correct_texture_pixel_loaded:
+
+    lda VIRTUAL_SCREEN_CURSOR
+    cmp #180
+    bcc done_reading_and_writing_for_virtual_pixel  ; if VIRTUAL_SCREEN_CURSOR < 180, then we are (still) outside the real screen. We should not write to the screen (omit the "sta VERA_DATA0")
+    
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr add_code_byte
+
+    lda #$23               ; $23
+    jsr add_code_byte
+    
+    lda #$9F               ; $9F
+    jsr add_code_byte
+    
+done_reading_and_writing_for_virtual_pixel:
+
+    ; Increment the texture cursor
+    clc
+	lda TEXTURE_CURSOR
+	adc TEXTURE_INCREMENT
+	sta TEXTURE_CURSOR
+	lda TEXTURE_CURSOR+1
+	adc TEXTURE_INCREMENT+1
+	sta TEXTURE_CURSOR+1
+    
+    ; Increment the virtual cursor
+    inc VIRTUAL_SCREEN_CURSOR
+    
+    lda VIRTUAL_SCREEN_CURSOR
+    bne next_virtual_pixel       ; Repeat until we reach 256 for our virtual pixel.
+
+
+; FIXME: also do virtual pixels 256-511!!    
+; FIXME: also do virtual pixels 256-511!!    
+; FIXME: also do virtual pixels 256-511!!    
+    
 
     
     ; -- rts --
@@ -332,6 +393,10 @@ no_more_ceiling_needed:
     rts
     
     
+    
+    
+    
+; FIXME: remove this!    
 generate_draw_column_code_128:
 
     ; FIXME: there should be many variants of this code: one for each possible height of a column!
@@ -439,7 +504,10 @@ next_floor_instruction_128:
     jsr add_code_byte
 
     rts
-    
+
+
+
+
 generate_clear_column_code:
 
     lda #<CLEAR_COLUMN_CODE
