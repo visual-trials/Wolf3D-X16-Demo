@@ -242,13 +242,19 @@ generate_draw_column_code:
     ; NOTE: it is probably a good idea to first iterate over the wall heights 0-255 and then over the wall heights 256-511. Since we can then use a byte for CURRENT_WALL_HEIGHT
     
     ; FIXME: we should iterate over all possible wall heights
-    lda #128
+;    lda #128
+    lda #96
+;    lda #64
     sta CURRENT_WALL_HEIGHT
     
     ; FIXME: actually do the divide: 64 / wall_height
-    lda #$80
+;    lda #$80
+    lda #170
+;    lda #$0
     sta TEXTURE_INCREMENT
+;    lda #0
     lda #0
+;    lda #1
     sta TEXTURE_INCREMENT+1
     
     lda #0
@@ -426,6 +432,7 @@ done_reading_and_writing_for_virtual_pixel_bottom:
 	sta TEXTURE_CURSOR+1
     
     ; Increment the virtual cursor
+    
     inc VIRTUAL_SCREEN_CURSOR
     
     lda VIRTUAL_SCREEN_CURSOR
