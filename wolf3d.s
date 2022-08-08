@@ -38,16 +38,16 @@ CODE_ADDRESS              = $18 ; 18 ; TODO: this can probably share the address
 NR_OF_PALETTE_BYTES       = $1A
 
 ; Used for draw column code generation (can be re-used after code has been generated)
-TEXTURE_INCREMENT         = $20 ; 21
-TEXTURE_CURSOR            = $22 ; 23
-PREVIOUS_TEXTURE_CURSOR   = $24
-CURRENT_WALL_HEIGHT       = $25 ; 26
-VIRTUAL_SCREEN_CURSOR     = $27
-TOP_HALF_WALL_HEIGHT      = $28
-BOTTOM_HALF_WALL_HEIGHT   = $29
-DIVIDEND                  = $2A ; 2B  ; the thing you want to divide (e.g. 100 /) . This will also the result after the division
-DIVISOR                   = $2C ; 2D  ; the thing you divide by (e.g. / 10)
-REMAINDER                 = $2E ; 2F
+TEXTURE_INCREMENT         = $20 ; 21 ; 22
+TEXTURE_CURSOR            = $23 ; 24 ; 25
+PREVIOUS_TEXTURE_CURSOR   = $26
+CURRENT_WALL_HEIGHT       = $27 ; 28
+VIRTUAL_SCREEN_CURSOR     = $29
+TOP_HALF_WALL_HEIGHT      = $2A
+BOTTOM_HALF_WALL_HEIGHT   = $2B
+DIVIDEND                  = $2C ; 2D ; 2E  ; the thing you want to divide (e.g. 100 /) . This will also the result after the division
+DIVISOR                   = $2F ; 30 ; 31  ; the thing you divide by (e.g. / 10)
+REMAINDER                 = $32 ; 33 ; 34
 
 ; === VRAM addresses ===
 

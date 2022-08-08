@@ -114,6 +114,9 @@ draw_next_column_left:
     ; FIXME: determine which code has to be called (switch to the correct ram bank)
     clc
     adc #64
+    ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
+    and #$FE ; make even
+    
     ; lda #128
     sta RAM_BANK
     ; FIXME: remove this nop!
@@ -152,6 +155,9 @@ draw_next_column_right:
     ; FIXME: determine which code has to be called (switch to the correct ram bank)
     clc
     adc #64
+    ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
+    and #$FE ; make even
+    
     ; lda #128
     sta RAM_BANK
     ; FIXME: remove this nop!
@@ -254,6 +260,9 @@ generate_draw_column_code:
     ; NOTE: it is probably a good idea to first iterate over the wall heights 0-255 and then over the wall heights 256-511. Since we can then use a byte for CURRENT_WALL_HEIGHT
     
     
+; FIXME: should we only store code for *EVEN* wall heights?
+; FIXME: should we only store code for *EVEN* wall heights?
+; FIXME: should we only store code for *EVEN* wall heights?
     
     ; FIXME: we should iterate over all possible wall heights
     lda #0
@@ -278,17 +287,23 @@ generate_draw_code_for_next_wall_height:
     
     ; We do the divide: texture_increment = 64.0 / wall_height
     lda #64
+    sta DIVIDEND+2
+    lda #0
     sta DIVIDEND+1
     lda #0
     sta DIVIDEND
     
+    lda #0
+    sta DIVISOR+2
     lda CURRENT_WALL_HEIGHT+1
     sta DIVISOR+1
     lda CURRENT_WALL_HEIGHT
     sta DIVISOR
     
-    jsr divide    
+    jsr divide_24bits
     
+    lda DIVIDEND+2
+    sta TEXTURE_INCREMENT+2
     lda DIVIDEND+1
     sta TEXTURE_INCREMENT+1
     lda DIVIDEND
@@ -299,6 +314,8 @@ generate_draw_code_for_next_wall_height:
     sta TEXTURE_CURSOR
     lda #0
     sta TEXTURE_CURSOR+1
+    lda #0
+    sta TEXTURE_CURSOR+2
     lda #255
     sta PREVIOUS_TEXTURE_CURSOR
     
@@ -356,7 +373,7 @@ no_more_ceiling_needed:
 
 next_virtual_pixel_top:
 
-    lda TEXTURE_CURSOR+1
+    lda TEXTURE_CURSOR+2
     cmp PREVIOUS_TEXTURE_CURSOR
     beq correct_texture_pixel_loaded_top
     
@@ -372,7 +389,7 @@ next_virtual_pixel_top:
     lda #$9F         
     jsr add_code_byte
     
-    lda TEXTURE_CURSOR+1
+    lda TEXTURE_CURSOR+2
     sta PREVIOUS_TEXTURE_CURSOR
 
 correct_texture_pixel_loaded_top:
@@ -401,6 +418,9 @@ done_reading_and_writing_for_virtual_pixel_top:
 	lda TEXTURE_CURSOR+1
 	adc TEXTURE_INCREMENT+1
 	sta TEXTURE_CURSOR+1
+	lda TEXTURE_CURSOR+2
+	adc TEXTURE_INCREMENT+2
+	sta TEXTURE_CURSOR+2
     
     ; Increment the virtual cursor
     inc VIRTUAL_SCREEN_CURSOR
@@ -413,7 +433,7 @@ done_reading_and_writing_for_virtual_pixel_top:
 
 next_virtual_pixel_bottom:
 
-    lda TEXTURE_CURSOR+1
+    lda TEXTURE_CURSOR+2
     cmp PREVIOUS_TEXTURE_CURSOR
     beq correct_texture_pixel_loaded_bottom
     
@@ -429,7 +449,7 @@ next_virtual_pixel_bottom:
     lda #$9F         
     jsr add_code_byte
     
-    lda TEXTURE_CURSOR+1
+    lda TEXTURE_CURSOR+2
     sta PREVIOUS_TEXTURE_CURSOR
 
 correct_texture_pixel_loaded_bottom:
@@ -454,6 +474,9 @@ done_reading_and_writing_for_virtual_pixel_bottom:
 	lda TEXTURE_CURSOR+1
 	adc TEXTURE_INCREMENT+1
 	sta TEXTURE_CURSOR+1
+	lda TEXTURE_CURSOR+2
+	adc TEXTURE_INCREMENT+2
+	sta TEXTURE_CURSOR+2
     
     ; Increment the virtual cursor
     
@@ -561,30 +584,39 @@ done_adding_code_byte:
     
 ; TODO: put this in a more common place:
 
-; https://codebase64.org/doku.php?id=base:16bit_division_16-bit_result
-divide:
+; https://codebase64.org/doku.php?id=base:24bit_division_24-bit_result
+
+divide_24bits:
     phx
     phy
 
 	lda #0	        ; preset REMAINDER to 0
 	sta REMAINDER
 	sta REMAINDER+1
-	ldx #16	        ; repeat for each bit: ...
+	sta REMAINDER+2
+	ldx #24	        ; repeat for each bit: ...
 
 divloop:
 	asl DIVIDEND	; DIVIDEND lb & hb*2, msb -> Carry
 	rol DIVIDEND+1	
+	rol DIVIDEND+2
 	rol REMAINDER	; REMAINDER lb & hb * 2 + msb from carry
 	rol REMAINDER+1
+	rol REMAINDER+2
 	lda REMAINDER
 	sec
 	sbc DIVISOR	    ; substract DIVISOR to see if it fits in
 	tay	            ; lb result -> Y, for we may need it later
 	lda REMAINDER+1
 	sbc DIVISOR+1
+    sta TMP1
+	lda REMAINDER+2
+	sbc DIVISOR+2
 	bcc divskip     ; if carry=0 then DIVISOR didnt fit in yet
 
-	sta REMAINDER+1 ; else save substraction result as new REMAINDER,
+	sta REMAINDER+2 ; else save substraction result as new REMAINDER,
+    lda TMP1
+	sta REMAINDER+1
 	sty REMAINDER	
 	inc DIVIDEND    ; and INCrement result cause DIVISOR fit in 1 times
 
