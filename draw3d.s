@@ -156,7 +156,6 @@ draw_next_column_right:
     rts
 
 
-
 clear_3d_view_fast:
 
     ; Left part of the screen (256-8 = 248 columns)
@@ -171,7 +170,7 @@ clear_next_column_left:
     stx VERA_ADDR_LOW       ; We use x as the column number, so we set it as as the start byte of a column
     
     lda #BACKGROUND_COLOR_3D_VIEW
-    jsr clear_152_column_fast
+    jsr CLEAR_COLUMN_CODE
     
     inx
     bne clear_next_column_left
@@ -188,7 +187,7 @@ clear_next_column_right:
     stx VERA_ADDR_LOW       ; We use x as the column number, so we set it as as the start byte of a column
     
     lda #BACKGROUND_COLOR_3D_VIEW
-    jsr clear_152_column_fast
+    jsr CLEAR_COLUMN_CODE
     
     inx
     cpx #56
@@ -196,182 +195,8 @@ clear_next_column_right:
     
     rts
 
-; FIXME: generate this code on startup!    
-clear_152_column_fast:
-    ; 0-15
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    
-    ; 16-31
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
 
-    ; 32-47
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 48-63
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 64-79
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 80-95
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 96-111
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 112-127
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 128-143
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 144-151
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    
-    rts
-    
+generate_draw_column_code:
     
     ; Below assumes a "virtual screen" of 512 pixels high, with the actual screen starting at pixel 512/2 - 152/2 = 180 pixels from the top of the "virtual screen"
     
@@ -409,6 +234,12 @@ clear_152_column_fast:
             ; If we reach the end of the actual screen (> 332) or we reached the end of our texture, we stop
             
         ; We add floor pixels if needed.
+        
+        
+    ; FIXME: implement the above!
+        
+        
+    rts
     
     
 generate_draw_column_code_128:
@@ -519,6 +350,39 @@ next_floor_instruction_128:
 
     rts
     
+generate_clear_column_code:
+
+    lda #<CLEAR_COLUMN_CODE
+    sta CODE_ADDRESS
+    lda #>CLEAR_COLUMN_CODE
+    sta CODE_ADDRESS+1
+    
+    ldy #0                 ; generated code byte counter
+    
+    ldx #0                 ; counts nr of clear instructions
+
+next_clear_instruction:
+
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr add_code_byte
+
+    lda #$23               ; $23
+    jsr add_code_byte
+    
+    lda #$9F               ; $9F
+    jsr add_code_byte
+    
+    inx
+    cpx #152               ; 152 clear pixels written to VERA
+    bne next_clear_instruction
+
+    ; -- rts --
+    lda #$60
+    jsr add_code_byte
+
+    rts
+
     
 add_code_byte:
     sta (CODE_ADDRESS),y   ; store code byte at address (located at CODE_ADDRESS) + y

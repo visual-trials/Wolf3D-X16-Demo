@@ -46,7 +46,8 @@ ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right a
 
 ; === RAM addresses ===
 
-DRAW_COLUMN_CODE         = $8000    ; FIXME: this should be put into banked ram!
+CLEAR_COLUMN_CODE        = $8000
+DRAW_COLUMN_CODE         = $8400    ; FIXME: this should be put into banked ram!
 
 
     .org $C000
@@ -69,6 +70,7 @@ reset:
     
     jsr init_timer
     ; jsr init_elapsed_time_sprite
+    
     
 
     ; Texture pixels
@@ -96,9 +98,10 @@ reset:
     jsr copy_palette_to_vram
     
     
-    jsr generate_draw_column_code_128
-    
     ; Drawing 3D View
+    
+    jsr generate_clear_column_code
+    jsr generate_draw_column_code_128
     
     jsr clear_3d_view_fast
     jsr draw_3d_view_fast
