@@ -112,6 +112,7 @@ draw_next_column_left:
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
 
     ; FIXME: determine which code has to be called (switch to the correct ram bank)
+;    jsr DRAW_COLUMN_CODE_128
     jsr DRAW_COLUMN_CODE
     
     inx
@@ -143,6 +144,7 @@ draw_next_column_right:
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
     
     ; FIXME: determine which code has to be called (switch to the correct ram bank)
+;    jsr DRAW_COLUMN_CODE_128
     jsr DRAW_COLUMN_CODE
     
     inx
@@ -207,18 +209,19 @@ generate_draw_column_code:
         ; We set our previous_texture_cursor to 255 (as a marker to indicate we havent loaded from the texture at all)
     
         ; Lets say: wall_height = 128
-        ; We determine your start position on the "virtual screen": virtual_screen_pixel_position = 512/2 - wall_height/2 = 192
+        ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2 = 192
         ; Since 192 > 180 the wall starts in the actual screen. 
         
             ; We need some ceiling pixels to move to that place first. So we iterate to add those.
+            ; Set virtual_screen_cursor to the top of the actual screen (= 180)
             ; We also need to remember how many floor pixels need to be added later on.
         
         ; Lets say: wall_height = 152
-        ; We determine your start position on the "virtual screen": virtual_screen_pixel_position = 512/2 - wall_height/2 = 180
+        ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2 = 180
         ; Since 180 == 180 the wall starts right at the top of the actual screen. No ceiling needed.
         
         ; Lets say: wall_height = 300
-        ; We determine your start position on the "virtual screen": virtual_screen_pixel_position = 512/2 - wall_height/2 = 106
+        ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2 = 106
         ; Since 106 < 180 the wall starts above the actual screen. As long as that is the case we will not write pixels to the screen.
         
         
@@ -236,8 +239,95 @@ generate_draw_column_code:
         ; We add floor pixels if needed.
         
         
-    ; FIXME: implement the above!
-        
+    ; NOTE: it is probably a good idea to first iterate over the wall heights 0-255 and then over the wall heights 256-511. Since we can then use a byte for CURRENT_WALL_HEIGHT
+    
+    ; FIXME: we should iterate over all possible wall heights
+    lda #128
+    sta CURRENT_WALL_HEIGHT
+    
+    ; FIXME: actually do the divide: 64 / wall_height
+    lda #$80
+    sta TEXTURE_INCREMENT
+    lda #0
+    sta TEXTURE_INCREMENT+1
+    
+    lda #0
+    sta TEXTURE_CURSOR
+    lda #0
+    sta TEXTURE_CURSOR+1
+    
+    lda #255
+    sta PREVIOUS_TEXTURE_CURSOR
+    
+generate_draw_code_for_next_wall_height:
+
+    ; FIXME: there should be many variants of this code: one for each possible height of a column!
+
+    lda #<DRAW_COLUMN_CODE
+    sta CODE_ADDRESS
+    lda #>DRAW_COLUMN_CODE
+    sta CODE_ADDRESS+1
+    
+    ldy #0                 ; generated code byte counter
+    
+    ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2
+    
+    lda CURRENT_WALL_HEIGHT
+    lsr                        ; wall_height/2
+    sta TMP1
+    
+    lda #0                     ; 512/2 = 0
+    sec
+    sbc TMP1                   ; 512/2 - wall_height/2
+    
+    sta VIRTUAL_SCREEN_CURSOR
+    cmp #180
+    bcc no_more_ceiling_needed  ; if VIRTUAL_SCREEN_CURSOR < 180, then we start outside the real screen (so no need to add ceiling pixels)
+    beq no_more_ceiling_needed  ; if VIRTUAL_SCREEN_CURSOR = 180, then we start at the top of the real screen (so no need to add ceiling pixels)
+
+    ; -- lda #CEILING_COLOR
+    lda #$A9               ; lda #...
+    jsr add_code_byte
+    
+    lda #CEILING_COLOR     ; #CEILING_COLOR
+    jsr add_code_byte
+
+    ; We need to know how many ceiling pixel we need to add
+    lda VIRTUAL_SCREEN_CURSOR
+    sec
+    sbc #180
+    tax
+    
+add_next_ceiling_code:
+
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr add_code_byte
+
+    lda #$23               ; $23
+    jsr add_code_byte
+    
+    lda #$9F               ; $9F
+    jsr add_code_byte
+
+    dex
+    bne add_next_ceiling_code
+
+
+    
+no_more_ceiling_needed:
+
+
+
+    
+    ; -- rts --
+    lda #$60
+    jsr add_code_byte
+    
+    ; FIXME; enable iterating over wall heights
+    ; lda CURRENT_WALL_HEIGHT
+    ; bne generate_draw_code_for_next_wall_height
+    
         
     rts
     
@@ -246,9 +336,9 @@ generate_draw_column_code_128:
 
     ; FIXME: there should be many variants of this code: one for each possible height of a column!
 
-    lda #<DRAW_COLUMN_CODE
+    lda #<DRAW_COLUMN_CODE_128
     sta CODE_ADDRESS
-    lda #>DRAW_COLUMN_CODE
+    lda #>DRAW_COLUMN_CODE_128
     sta CODE_ADDRESS+1
     
     ldy #0                 ; generated code byte counter

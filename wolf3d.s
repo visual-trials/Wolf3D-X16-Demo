@@ -37,6 +37,14 @@ VRAM_ADDRESS              = $16 ; 17 ; only two bytes, because bit 16 is assumed
 CODE_ADDRESS              = $18 ; 18 ; TODO: this can probably share the address of LOAD_ADDRESS
 NR_OF_PALETTE_BYTES       = $1A
 
+; Used for draw column code generation (can be re-used after code has been generated)
+TEXTURE_INCREMENT         = $20 ; 21
+TEXTURE_CURSOR            = $22 ; 23
+PREVIOUS_TEXTURE_CURSOR   = $24
+CURRENT_WALL_HEIGHT       = $25
+VIRTUAL_SCREEN_CURSOR     = $26
+
+
 ; === VRAM addresses ===
 
 TEXTURE_DATA             = $13000
@@ -46,7 +54,8 @@ ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right a
 
 ; === RAM addresses ===
 
-CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
+CLEAR_COLUMN_CODE        = $7B00    ; 152 * 3 bytes + 1 byte = 457 bytes
+DRAW_COLUMN_CODE_128     = $8D00    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes
 DRAW_COLUMN_CODE         = $8000    ; FIXME: this should be put into banked ram!
 
 
@@ -101,7 +110,8 @@ reset:
     ; Drawing 3D View
     
     jsr generate_clear_column_code
-    jsr generate_draw_column_code_128
+    jsr generate_draw_column_code
+    jsr generate_draw_column_code_128  ; FIXME: remove this!
     
     jsr clear_3d_view_fast
     jsr draw_3d_view_fast
