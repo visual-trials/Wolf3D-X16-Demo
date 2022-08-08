@@ -110,8 +110,9 @@ draw_next_column_left:
     lsr
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
-    
-    jsr draw_152_column_fast
+
+    ; FIXME: determine which code has to be called (switch to the correct ram bank)
+    jsr DRAW_COLUMN_CODE
     
     inx
     bne draw_next_column_left
@@ -141,7 +142,8 @@ draw_next_column_right:
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
     
-    jsr draw_152_column_fast
+    ; FIXME: determine which code has to be called (switch to the correct ram bank)
+    jsr DRAW_COLUMN_CODE
     
     inx
     cpx #56
@@ -194,251 +196,6 @@ clear_next_column_right:
     
     rts
 
-; FIXME: generate this code on startup!    
-; NOTE: this example will draw a texture-column at a height of 128 pixels (so twice the size of the texture)
-draw_152_column_fast:
-    ; 0-11
-    lda #CEILING_COLOR
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    
-    ; 12-15
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    
-    ; 16-31
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 32-47
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 48-63
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 64-79
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 80-95
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 96-111
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 112-127
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-
-    ; 128-139
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    lda VERA_DATA1
-    sta VERA_DATA0
-    sta VERA_DATA0
-    
-    ; 140-151
-    lda #FLOOR_COLOR
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    sta VERA_DATA0
-    
-    rts
-    
 ; FIXME: generate this code on startup!    
 clear_152_column_fast:
     ; 0-15
@@ -653,48 +410,115 @@ clear_152_column_fast:
             
         ; We add floor pixels if needed.
     
-; FIXME
-; FIXME
-; FIXME
-    .if 0
     
-generate_draw_column_code:
+generate_draw_column_code_128:
 
     ; FIXME: there should be many variants of this code: one for each possible height of a column!
 
     lda #<DRAW_COLUMN_CODE
-    sta ZP_PTR_4
+    sta CODE_ADDRESS
     lda #>DRAW_COLUMN_CODE
-    sta ZP_PTR_4+1
+    sta CODE_ADDRESS+1
     
     ldy #0                 ; generated code byte counter
     
-    ldx #0                 ; counts nr of "sta $9F23" instructions
+    
+    ; -- lda #CEILING_COLOR
+    lda #$A9               ; lda #...
+    jsr add_code_byte
+    
+    lda #CEILING_COLOR     ; #CEILING_COLOR
+    jsr add_code_byte
 
-nextInstruction:
+    ldx #0                 ; counts nr of ceiling instructions
+
+next_ceiling_instruction_128:
 
     ; -- sta VERA_DATA0 ($9F23)
     lda #$8D               ; sta ....
-    jsr addCodeByte
+    jsr add_code_byte
 
     lda #$23               ; $23
-    jsr addCodeByte
+    jsr add_code_byte
     
     lda #$9F               ; $9F
-    jsr addCodeByte
-
-    inx
-    cpx #240    
-    bne nextInstruction
+    jsr add_code_byte
     
+    inx
+    cpx #12                ; 12 ceiling pixels written to VERA
+    bne next_ceiling_instruction_128
+
+    
+    ldx #0                 ; counts nr of texture double-write instructions
+
+next_instruction_set_128:
+
+    ; -- lda VERA_DATA1 ($9F24)
+    lda #$AD               ; lda ....
+    jsr add_code_byte
+    
+    lda #$24               ; VERA_DATA1
+    jsr add_code_byte
+    
+    lda #$9F         
+    jsr add_code_byte
+            
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr add_code_byte
+
+    lda #$23               ; $23
+    jsr add_code_byte
+    
+    lda #$9F               ; $9F
+    jsr add_code_byte
+
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr add_code_byte
+
+    lda #$23               ; $23
+    jsr add_code_byte
+    
+    lda #$9F               ; $9F
+    jsr add_code_byte
+    
+    inx
+    cpx #64                ; 64 * 2 = 128 pixels written to VERA
+    bne next_instruction_set_128
+    
+    
+    ; -- lda #FLOOR_COLOR
+    lda #$A9               ; lda #...
+    jsr add_code_byte
+    
+    lda #FLOOR_COLOR       ; #FLOOR_COLOR
+    jsr add_code_byte
+
+    ldx #0                 ; counts nr of floor instructions
+
+next_floor_instruction_128:
+
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr add_code_byte
+
+    lda #$23               ; $23
+    jsr add_code_byte
+    
+    lda #$9F               ; $9F
+    jsr add_code_byte
+    
+    inx
+    cpx #12                ; 12 floor pixels written to VERA
+    bne next_floor_instruction_128
+
     ; -- rts --
     lda #$60
-    jsr addCodeByte
+    jsr add_code_byte
 
     rts
     
-    .endif
-
     
 add_code_byte:
     sta (CODE_ADDRESS),y   ; store code byte at address (located at CODE_ADDRESS) + y

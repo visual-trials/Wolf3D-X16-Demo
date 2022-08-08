@@ -95,6 +95,9 @@ reset:
     
     jsr copy_palette_to_vram
     
+    
+    jsr generate_draw_column_code_128
+    
     ; Drawing 3D View
     
     jsr clear_3d_view_fast
