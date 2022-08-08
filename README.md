@@ -14,9 +14,11 @@ VASM manual: http://sun.hasenbraten.de/vasm/release/vasm_6.html
 
 In order to run the hardware tester using the emulator you can set the rom-file like this:
 
-  `x16emu.exe -rom "wolf3d.rom" -debug`
+  `x16emu.exe -rom "wolf3d.rom" -ram 2048 -debug`
 
 ## To run using X16 hardware
 
 The generated .rom file can be flashed to your ROM (SST39SF040) using your favorite flash programmer. It uses the full 512 KB in size.
+
+-> Note that you need 2048kB of Banked RAM for this demo to run!
 

@@ -41,10 +41,10 @@ NR_OF_PALETTE_BYTES       = $1A
 TEXTURE_INCREMENT         = $20 ; 21
 TEXTURE_CURSOR            = $22 ; 23
 PREVIOUS_TEXTURE_CURSOR   = $24
-CURRENT_WALL_HEIGHT       = $25
-VIRTUAL_SCREEN_CURSOR     = $26
-TOP_HALF_WALL_HEIGHT      = $27
-BOTTOM_HALF_WALL_HEIGHT   = $28
+CURRENT_WALL_HEIGHT       = $25 ; 26
+VIRTUAL_SCREEN_CURSOR     = $27
+TOP_HALF_WALL_HEIGHT      = $28
+BOTTOM_HALF_WALL_HEIGHT   = $29
 DIVIDEND                  = $2A ; 2B  ; the thing you want to divide (e.g. 100 /) . This will also the result after the division
 DIVISOR                   = $2C ; 2D  ; the thing you divide by (e.g. / 10)
 REMAINDER                 = $2E ; 2F
@@ -59,7 +59,7 @@ ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right a
 ; === RAM addresses ===
 
 CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
-DRAW_COLUMN_CODE         = $8000    ; FIXME: this should be put into banked ram!
+DRAW_COLUMN_CODE         = $A000    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes for each wall height (512 wall heights_
 
 
     .org $C000

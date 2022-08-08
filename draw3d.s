@@ -112,6 +112,13 @@ draw_next_column_left:
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
 
     ; FIXME: determine which code has to be called (switch to the correct ram bank)
+    clc
+    adc #64
+    ; lda #128
+    sta RAM_BANK
+    ; FIXME: remove this nop!
+    nop
+
     jsr DRAW_COLUMN_CODE
     
     inx
@@ -143,6 +150,13 @@ draw_next_column_right:
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
     
     ; FIXME: determine which code has to be called (switch to the correct ram bank)
+    clc
+    adc #64
+    ; lda #128
+    sta RAM_BANK
+    ; FIXME: remove this nop!
+    nop
+
     jsr DRAW_COLUMN_CODE
     
     inx
@@ -239,11 +253,28 @@ generate_draw_column_code:
         
     ; NOTE: it is probably a good idea to first iterate over the wall heights 0-255 and then over the wall heights 256-511. Since we can then use a byte for CURRENT_WALL_HEIGHT
     
+    
+    
     ; FIXME: we should iterate over all possible wall heights
     lda #0
     sta CURRENT_WALL_HEIGHT+1
-    lda #128
+    lda #8                      ; TODO: we currenly start at wall height of 8. What is the minimal wall height?
     sta CURRENT_WALL_HEIGHT
+
+generate_draw_code_for_next_wall_height:
+
+    ldy #0                 ; generated code byte counter
+    
+    lda #<DRAW_COLUMN_CODE
+    sta CODE_ADDRESS
+    lda #>DRAW_COLUMN_CODE
+    sta CODE_ADDRESS+1
+    
+    ; FIXME: we currently allow only 256 wall height and store them inefficiently
+    lda CURRENT_WALL_HEIGHT
+    sta RAM_BANK
+    ; FIXME: remove this nop!
+    nop
     
     ; We do the divide: texture_increment = 64.0 / wall_height
     lda #64
@@ -270,17 +301,6 @@ generate_draw_column_code:
     sta TEXTURE_CURSOR+1
     lda #255
     sta PREVIOUS_TEXTURE_CURSOR
-    
-generate_draw_code_for_next_wall_height:
-
-    ; FIXME: there should be many variants of this code: one for each possible height of a column!
-
-    lda #<DRAW_COLUMN_CODE
-    sta CODE_ADDRESS
-    lda #>DRAW_COLUMN_CODE
-    sta CODE_ADDRESS+1
-    
-    ldy #0                 ; generated code byte counter
     
     ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2
     
@@ -482,12 +502,15 @@ done_drawing_bottom:
     lda #$60
     jsr add_code_byte
     
-    ; FIXME; enable iterating over wall heights
-    ; lda CURRENT_WALL_HEIGHT
-    ; bne generate_draw_code_for_next_wall_height
-    
+    ; FIXME; enable iterating over wall heights (not just 256)
+    inc CURRENT_WALL_HEIGHT
+    lda CURRENT_WALL_HEIGHT
+    bne generate_draw_code_for_next_wall_height_jmp
         
     rts
+    
+generate_draw_code_for_next_wall_height_jmp:
+    jmp generate_draw_code_for_next_wall_height
     
     
 
