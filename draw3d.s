@@ -272,18 +272,18 @@ generate_draw_code_for_next_wall_height:
     
     ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2
     
-    ; TODO: should we round this down in a certain way? (if odd number, should we put the pixel at the top or the bottom?
-    
-; FIXME: create two variables: TOP_HALF_WALL_HEIGHT and BOTTOM_HALF_WALL_HEIGHT and iterate through the virtual_cursor using these.
-    
-    
+    ; TODO: if wall height is an odd number, should we put the extra pixel at the top or at the bottom?
     lda CURRENT_WALL_HEIGHT
     lsr                        ; wall_height/2
-    sta TMP1
-    
+    sta TOP_HALF_WALL_HEIGHT
+    bcc bottom_wall_height_is_determined ; if there is no carry, the wall height was an even number, so the bottom half is the same as the top
+    inc                                  ; if there is a carry, the wall height was an add number, so add one to the bottom half
+bottom_wall_height_is_determined:
+    sta BOTTOM_HALF_WALL_HEIGHT
+
     lda #0                     ; 512/2 = 0
     sec
-    sbc TMP1                   ; 512/2 - wall_height/2
+    sbc TOP_HALF_WALL_HEIGHT   ; 512/2 - top_half_wall_height
     
     sta VIRTUAL_SCREEN_CURSOR
     cmp #180
@@ -320,11 +320,11 @@ add_next_ceiling_code:
 
 no_more_ceiling_needed:
 
-next_virtual_pixel:
+next_virtual_pixel_top:
 
     lda TEXTURE_CURSOR+1
     cmp PREVIOUS_TEXTURE_CURSOR
-    beq correct_texture_pixel_loaded
+    beq correct_texture_pixel_loaded_top
     
     ; We need to add a load of the texture
     
@@ -341,11 +341,11 @@ next_virtual_pixel:
     lda TEXTURE_CURSOR+1
     sta PREVIOUS_TEXTURE_CURSOR
 
-correct_texture_pixel_loaded:
+correct_texture_pixel_loaded_top:
 
     lda VIRTUAL_SCREEN_CURSOR
     cmp #180
-    bcc done_reading_and_writing_for_virtual_pixel  ; if VIRTUAL_SCREEN_CURSOR < 180, then we are (still) outside the real screen. We should not write to the screen (omit the "sta VERA_DATA0")
+    bcc done_reading_and_writing_for_virtual_pixel_top  ; if VIRTUAL_SCREEN_CURSOR < 180, then we are (still) outside the real screen. We should not write to the screen (omit the "sta VERA_DATA0")
     
     ; -- sta VERA_DATA0 ($9F23)
     lda #$8D               ; sta ....
@@ -357,7 +357,7 @@ correct_texture_pixel_loaded:
     lda #$9F               ; $9F
     jsr add_code_byte
     
-done_reading_and_writing_for_virtual_pixel:
+done_reading_and_writing_for_virtual_pixel_top:
 
     ; Increment the texture cursor
     clc
@@ -372,14 +372,100 @@ done_reading_and_writing_for_virtual_pixel:
     inc VIRTUAL_SCREEN_CURSOR
     
     lda VIRTUAL_SCREEN_CURSOR
-    bne next_virtual_pixel       ; Repeat until we reach 256 for our virtual pixel.
+    bne next_virtual_pixel_top       ; Repeat until we reach 256 for our virtual pixel.
 
 
-; FIXME: also do virtual pixels 256-511!!    
-; FIXME: also do virtual pixels 256-511!!    
-; FIXME: also do virtual pixels 256-511!!    
+    ; == Now we do the same for the BOTTOM part of the virtual screen ==
+
+next_virtual_pixel_bottom:
+
+    lda TEXTURE_CURSOR+1
+    cmp PREVIOUS_TEXTURE_CURSOR
+    beq correct_texture_pixel_loaded_bottom
     
+    ; We need to add a load of the texture
+    
+    ; -- lda VERA_DATA1 ($9F24)
+    lda #$AD               ; lda ....
+    jsr add_code_byte
+    
+    lda #$24               ; VERA_DATA1
+    jsr add_code_byte
+    
+    lda #$9F         
+    jsr add_code_byte
+    
+    lda TEXTURE_CURSOR+1
+    sta PREVIOUS_TEXTURE_CURSOR
 
+correct_texture_pixel_loaded_bottom:
+
+;    lda VIRTUAL_SCREEN_CURSOR
+;    cmp #180
+;    bcc done_reading_and_writing_for_virtual_pixel_bottom  ; if VIRTUAL_SCREEN_CURSOR < 180, then we are (still) outside the real screen. We should not write to the screen (omit the "sta VERA_DATA0")
+    
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr add_code_byte
+
+    lda #$23               ; $23
+    jsr add_code_byte
+    
+    lda #$9F               ; $9F
+    jsr add_code_byte
+    
+done_reading_and_writing_for_virtual_pixel_bottom:
+
+    ; Increment the texture cursor
+    clc
+	lda TEXTURE_CURSOR
+	adc TEXTURE_INCREMENT
+	sta TEXTURE_CURSOR
+	lda TEXTURE_CURSOR+1
+	adc TEXTURE_INCREMENT+1
+	sta TEXTURE_CURSOR+1
+    
+    ; Increment the virtual cursor
+    inc VIRTUAL_SCREEN_CURSOR
+    
+    lda VIRTUAL_SCREEN_CURSOR
+    cmp #(332-256)                      ; We reached the end of the real screen, so we are done
+    beq done_drawing_bottom
+    cmp BOTTOM_HALF_WALL_HEIGHT         ; We reached the end of our wall height, so we should fill the remaining part with floor pixels
+    beq fill_bottom_with_floor_pixels
+    
+    bra next_virtual_pixel_bottom
+    
+fill_bottom_with_floor_pixels:
+    
+    ; -- lda #FLOOR_COLOR
+    lda #$A9               ; lda #...
+    jsr add_code_byte
+    
+    lda #FLOOR_COLOR       ; #FLOOR_COLOR
+    jsr add_code_byte
+    
+add_next_floor_code:    
+    
+    ; -- sta VERA_DATA0 ($9F23)
+    lda #$8D               ; sta ....
+    jsr add_code_byte
+
+    lda #$23               ; $23
+    jsr add_code_byte
+    
+    lda #$9F               ; $9F
+    jsr add_code_byte
+    
+    ; Increment the virtual cursor
+    inc VIRTUAL_SCREEN_CURSOR
+
+    lda VIRTUAL_SCREEN_CURSOR
+    cmp #(332-256)                      ; We reached the end of the real screen, so we are done
+    bne add_next_floor_code
+    
+done_drawing_bottom:
+    
     
     ; -- rts --
     lda #$60
