@@ -242,26 +242,34 @@ generate_draw_column_code:
     ; NOTE: it is probably a good idea to first iterate over the wall heights 0-255 and then over the wall heights 256-511. Since we can then use a byte for CURRENT_WALL_HEIGHT
     
     ; FIXME: we should iterate over all possible wall heights
-;    lda #128
-    lda #96
-;    lda #64
+    lda #0
+    sta CURRENT_WALL_HEIGHT+1
+    lda #128
     sta CURRENT_WALL_HEIGHT
     
-    ; FIXME: actually do the divide: 64 / wall_height
-;    lda #$80
-    lda #170
-;    lda #$0
-    sta TEXTURE_INCREMENT
-;    lda #0
+    ; We do the divide: texture_increment = 64.0 / wall_height
+    lda #64
+    sta DIVIDEND+1
     lda #0
-;    lda #1
-    sta TEXTURE_INCREMENT+1
+    sta DIVIDEND
     
+    lda CURRENT_WALL_HEIGHT+1
+    sta DIVISOR+1
+    lda CURRENT_WALL_HEIGHT
+    sta DIVISOR
+    
+    jsr divide    
+    
+    lda DIVIDEND+1
+    sta TEXTURE_INCREMENT+1
+    lda DIVIDEND
+    sta TEXTURE_INCREMENT
+    
+    ; We reset the current and previous texture cursor
     lda #0
     sta TEXTURE_CURSOR
     lda #0
     sta TEXTURE_CURSOR+1
-    
     lda #255
     sta PREVIOUS_TEXTURE_CURSOR
     
@@ -279,8 +287,10 @@ generate_draw_code_for_next_wall_height:
     ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2
     
     ; TODO: if wall height is an odd number, should we put the extra pixel at the top or at the bottom?
+    lda CURRENT_WALL_HEIGHT+1
+    lsr 
     lda CURRENT_WALL_HEIGHT
-    lsr                        ; wall_height/2
+    ror                        ; wall_height/2
     sta TOP_HALF_WALL_HEIGHT
     bcc bottom_wall_height_is_determined ; if there is no carry, the wall height was an even number, so the bottom half is the same as the top
     inc                                  ; if there is a carry, the wall height was an add number, so add one to the bottom half
@@ -406,10 +416,6 @@ next_virtual_pixel_bottom:
 
 correct_texture_pixel_loaded_bottom:
 
-;    lda VIRTUAL_SCREEN_CURSOR
-;    cmp #180
-;    bcc done_reading_and_writing_for_virtual_pixel_bottom  ; if VIRTUAL_SCREEN_CURSOR < 180, then we are (still) outside the real screen. We should not write to the screen (omit the "sta VERA_DATA0")
-    
     ; -- sta VERA_DATA0 ($9F23)
     lda #$8D               ; sta ....
     jsr add_code_byte
@@ -643,3 +649,43 @@ add_code_byte:
     inc CODE_ADDRESS+1     ; increment high-byte of CODE_ADDRESS
 done_adding_code_byte:
     rts
+
+    
+; TODO: put this in a more common place:
+
+; https://codebase64.org/doku.php?id=base:16bit_division_16-bit_result
+divide:
+    phx
+    phy
+
+	lda #0	        ; preset REMAINDER to 0
+	sta REMAINDER
+	sta REMAINDER+1
+	ldx #16	        ; repeat for each bit: ...
+
+divloop:
+	asl DIVIDEND	; DIVIDEND lb & hb*2, msb -> Carry
+	rol DIVIDEND+1	
+	rol REMAINDER	; REMAINDER lb & hb * 2 + msb from carry
+	rol REMAINDER+1
+	lda REMAINDER
+	sec
+	sbc DIVISOR	    ; substract DIVISOR to see if it fits in
+	tay	            ; lb result -> Y, for we may need it later
+	lda REMAINDER+1
+	sbc DIVISOR+1
+	bcc divskip     ; if carry=0 then DIVISOR didnt fit in yet
+
+	sta REMAINDER+1 ; else save substraction result as new REMAINDER,
+	sty REMAINDER	
+	inc DIVIDEND    ; and INCrement result cause DIVISOR fit in 1 times
+
+divskip:
+	dex
+	bne divloop	
+    
+    ply
+    plx
+	rts
+
+    

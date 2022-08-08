@@ -45,7 +45,9 @@ CURRENT_WALL_HEIGHT       = $25
 VIRTUAL_SCREEN_CURSOR     = $26
 TOP_HALF_WALL_HEIGHT      = $27
 BOTTOM_HALF_WALL_HEIGHT   = $28
-
+DIVIDEND                  = $2A ; 2B  ; the thing you want to divide (e.g. 100 /) . This will also the result after the division
+DIVISOR                   = $2C ; 2D  ; the thing you divide by (e.g. / 10)
+REMAINDER                 = $2E ; 2F
 
 ; === VRAM addresses ===
 
