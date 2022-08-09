@@ -49,6 +49,10 @@ DIVIDEND                  = $2C ; 2D ; 2E  ; the thing you want to divide (e.g. 
 DIVISOR                   = $2F ; 30 ; 31  ; the thing you divide by (e.g. / 10)
 REMAINDER                 = $32 ; 33 ; 34
 
+WALL_HEIGHT_DECREMENT     = $35 ; 35 ; 37
+COLUMN_WALL_HEIGHT        = $38 ; 39 ; 3A
+RAY_INDEX                 = $3B ; 3C
+
 ; === VRAM addresses ===
 
 TEXTURE_DATA             = $13000
@@ -58,6 +62,8 @@ ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right a
 
 ; === RAM addresses ===
 
+TANGENS_LOW              = $7A00    ; 456 bytes (fraction)
+TANGENS_HIGH             = $7C00    ; 456 bytes (whole number)
 CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
 DRAW_COLUMN_CODE         = $A000    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes for each wall height (512 wall heights_
 
@@ -112,6 +118,7 @@ reset:
     
     ; Drawing 3D View
     
+    jsr init_tangens
     jsr generate_clear_column_code
     jsr generate_draw_column_code
     
