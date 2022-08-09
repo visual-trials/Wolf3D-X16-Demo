@@ -4,10 +4,32 @@ CEILING_COLOR            = 19
 FLOOR_COLOR              = 22
 
     
-; FIXME: this is just a placeholder for now, we are drawing a texture 128 pixels high
 draw_3d_view_fast:
 
+
+    jsr draw_wall_fast
+
+
+    rts
+
+
+draw_wall_fast:
+
     ; We first determine how much the wall height will decrease per drawn column
+    
+    ; SCREEN_START_RAY   ; the ray index of the very first column on the screen (left side)
+    ; or PLAYER_DIRECTION: the ray index of the middle column of the screen (where the player is facing)
+    
+    ; FROM_RAY_INDEX     ; the ray index of the left side of the wall we want to draw
+    ; TO_RAY_INDEX       ; the ray index of the right side of the wall we want to draw
+    
+    ; FROM_WALL_HEIGHT   ; the height of the left side of the wall 
+    ; TO_WALL_HEIGHT     ; the height of the right side of the wall
+    
+    ; NORMAL_DISTANCE_TO_WALL  ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
+    
+    ; WALL_DIRECTION?    ; is the wall vertical or horizontal?
+    ; TEXTURE_INDEX_PER_WALL_SEGMENT?
     
     ; FIXME: we now have hardcoded how wide the wall is going to be (in nr of rays: 304)
     
@@ -52,6 +74,7 @@ draw_3d_view_fast:
     lda #0
     sta RAY_INDEX+1
     
+    ; FIXME: we now always start at the left side of the screen, but when we draw a wall it could begin somewhere in the middle of the screen!
     ldx #8   ; screen column index
     
 draw_next_column_left:
