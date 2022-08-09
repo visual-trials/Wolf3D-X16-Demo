@@ -102,12 +102,12 @@ draw_next_column_left:
     lda RAY_INDEX+1
     bne is_high_ray_index_left
 is_low_ray_index_left:
-    ldx RAY_INDEX
-    lda TANGENS_LOW,x             ; When the ray index >= 256, we retrieve from 256 positions further
+    ldy RAY_INDEX
+    lda TANGENS_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
     bra got_tangens_left
 is_high_ray_index_left:
-    ldx RAY_INDEX
-    lda TANGENS_LOW+256,x         ; When the ray index >= 256, we retrieve from 256 positions further
+    ldy RAY_INDEX
+    lda TANGENS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
 got_tangens_left:
     
     ; FIXME: We do a * 2.0 (normal distance from wall), then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). So effectively divide by 2 here
@@ -170,12 +170,12 @@ draw_next_column_right:
     lda RAY_INDEX+1
     bne is_high_ray_index_right   
 is_low_ray_index_right:
-    ldx RAY_INDEX
-    lda TANGENS_LOW,x             ; When the ray index >= 256, we retrieve from 256 positions further
+    ldy RAY_INDEX
+    lda TANGENS_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
     bra got_tangens_right
 is_high_ray_index_right:
-    ldx RAY_INDEX
-    lda TANGENS_LOW+256,x         ; When the ray index >= 256, we retrieve from 256 positions further
+    ldy RAY_INDEX
+    lda TANGENS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
 got_tangens_right:
     ; FIXME: We do a * 2.0 (normal distance from wall), then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). So effectively divide by 2 here
     lsr
