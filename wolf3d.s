@@ -53,6 +53,13 @@ WALL_HEIGHT_DECREMENT     = $35 ; 35 ; 37
 COLUMN_WALL_HEIGHT        = $38 ; 39 ; 3A
 RAY_INDEX                 = $3B ; 3C
 
+NORMAL_DISTANCE_TO_WALL   = $40 ; 41  ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
+FROM_RAY_INDEX            = $42 ; 43  ; the ray index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
+TO_RAY_INDEX              = $44 ; 45  ; the ray index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
+SCREEN_START_RAY          = $46 ; 47  ; the ray index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
+FROM_WALL_HEIGHT          = $48 ; 49  ; the height of the left side of the wall 
+TO_WALL_HEIGHT            = $4A ; 4B  ; the height of the right side of the wall
+
 ; === VRAM addresses ===
 
 TEXTURE_DATA             = $13000
