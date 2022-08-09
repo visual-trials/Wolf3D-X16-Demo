@@ -197,6 +197,7 @@ wait_for_vsync:
     .include utils/utils.s
     .include utils/timing.s
     .include utils/setup_vera_for_bitmap_and_tilemap.s
+    .include init3d.s
     .include draw3d.s
   
     ; === Texture files ===
