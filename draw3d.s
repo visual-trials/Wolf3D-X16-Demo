@@ -15,29 +15,26 @@ draw_3d_view_fast:
     
     ; FIXME: from ray index is now hardcoded to 0
     
-; FIXME: $700 = 1924-32
     lda #0
     sta FROM_RAY_INDEX
-;    lda #0
-    lda #7
+    lda #0
     sta FROM_RAY_INDEX+1
     
-    ; FIXME: from ray index is now hardcoded to 304 (=256+48)
-;    lda #48
-    lda #48-32
+    ; FIXME: to ray index is now hardcoded to 304 (=256+48)
+;    lda #(304-256)
+    lda #228   ; 45 degrees
     sta TO_RAY_INDEX
-    lda #1
+;    lda #1
+    lda #0
     sta TO_RAY_INDEX+1
     
     ; Given the direction the player is facing we can also determine what would be the screen start ray index (left most angle in the viewing area of the player, relative to the normal line)
     ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
     
     ; FIXME: screen start ray index is now hardcoded to 0
-; FIXME: $700 = 1924-32
     lda #0
     sta SCREEN_START_RAY
-;    lda #0
-    lda #7
+    lda #0
     sta SCREEN_START_RAY+1
     
     ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part (using cosine)
@@ -50,7 +47,8 @@ draw_3d_view_fast:
     sta FROM_WALL_HEIGHT+1
     
     ; FIXME: to wall height is now hardcoded to 64
-    lda #64
+;    lda #64
+    lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
     sta TO_WALL_HEIGHT
     lda #0
     sta TO_WALL_HEIGHT+1
@@ -62,6 +60,44 @@ draw_3d_view_fast:
     
     
     jsr draw_wall_fast
+    
+
+    ; - 90 degrees = 1824-452 = 1372 = $55C
+    lda #$5C
+    sta SCREEN_START_RAY
+    lda #$5
+    sta SCREEN_START_RAY+1
+
+    ; 1824-228 = 1595 = $63C
+    lda #$3C   ; -45 degrees
+    sta FROM_RAY_INDEX
+    lda #$6
+    sta FROM_RAY_INDEX+1
+
+    lda #0
+    sta TO_RAY_INDEX
+    lda #0
+    sta TO_RAY_INDEX+1
+
+
+    lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
+    sta FROM_WALL_HEIGHT
+    lda #0
+    sta FROM_WALL_HEIGHT+1
+    
+    lda #128
+    sta TO_WALL_HEIGHT
+    lda #0
+    sta TO_WALL_HEIGHT+1
+
+    lda #1
+    sta WALL_HEIGHT_INCREASES
+
+    jsr draw_wall_fast
+
+
+    
+
 
 
     rts
