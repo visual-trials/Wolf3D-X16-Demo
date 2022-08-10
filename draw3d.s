@@ -72,9 +72,10 @@ draw_3d_view_fast:
     lda #$6
     sta FROM_RAY_INDEX+1
 
-    lda #0
+    ; - 30 degrees = 1824 - 152 = 1672 = $688
+    lda #$88
     sta TO_RAY_INDEX
-    lda #0
+    lda #$6
     sta TO_RAY_INDEX+1
 
 
@@ -82,9 +83,9 @@ draw_3d_view_fast:
     sta FROM_WALL_HEIGHT
     lda #0
     sta FROM_WALL_HEIGHT+1
-    
-;    lda #128
-    lda #200
+
+    ; FIXME: this value (180) is GUESSED!
+    lda #180
     sta TO_WALL_HEIGHT
     lda #0
     sta TO_WALL_HEIGHT+1
