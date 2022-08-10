@@ -166,9 +166,12 @@ wall_width_determined:
 	adc #0
 	sta START_SCREEN_X+1
 
-    ; If the high byte of START_SCREEN_X is not 0, we start on the right part of the screen
-    bne draw_right_part_of_screen
+    ; If the *high* byte of START_SCREEN_X is 0, we draw the left part of the screen (first), otherwise we start on the right part of the screen
+    beq draw_left_part_of_screen
+    
+    jmp draw_right_part_of_screen
 
+draw_left_part_of_screen:
     ; x = START_SCREEN_X (low byte)
 
     ldx START_SCREEN_X
@@ -229,14 +232,41 @@ got_tangens_left:
 	lda COLUMN_WALL_HEIGHT+2
 	sbc WALL_HEIGHT_DECREMENT+2
 	sta COLUMN_WALL_HEIGHT+2
-    
-; FIXME: Only if RAY_INDEX = 1824 we should reset it to 0!
-; FIXME: also stop drawing is RAY_INDEX = TO_RAY_INDEX!
+
+    ; Incrmenting RAY_INDEX
     inc RAY_INDEX
-    bne ray_index_updated_left
+    bne ray_index_is_incremented_left
     inc RAY_INDEX+1
-ray_index_updated_left:
     
+ray_index_is_incremented_left:
+
+    ; If RAY_INDEX = 1824 (=$720) we reset it to 0 (we "loop" around)
+    lda RAY_INDEX
+    cmp #$20
+    bne ray_index_is_updated_left
+    lda RAY_INDEX+1
+    cmp #$7
+    bne ray_index_is_updated_left
+    
+    ; Resetting RAY_INDEX to 0
+    lda #0
+    sta RAY_INDEX
+    sta RAY_INDEX+1
+    
+ray_index_is_updated_left:
+
+    ; We should stop drawing the wall if we reached the end of the wall, meaning RAY_INDEX == TO_RAY_INDEX (after incrementing it)
+    lda RAY_INDEX
+    cmp TO_RAY_INDEX
+    bne continue_drawing_left   ; not equal, so keep on going drawing the wall
+    lda RAY_INDEX+1
+    cmp TO_RAY_INDEX+1
+    bne continue_drawing_left   ; not equal, so keep on going drawing the wall
+
+    ; both bytes are equal, we should stop drawing
+    jmp done_drawing_wall
+    
+continue_drawing_left:
     inx
     bne draw_next_column_left
     
@@ -305,18 +335,44 @@ got_tangens_right:
 	sbc WALL_HEIGHT_DECREMENT+2
 	sta COLUMN_WALL_HEIGHT+2
     
-; FIXME: Only if RAY_INDEX = 1824 we should reset it to 0!
-; FIXME: also stop drawing is RAY_INDEX = TO_RAY_INDEX!
+    ; Incrmenting RAY_INDEX
     inc RAY_INDEX
-    bne ray_index_updated_right
+    bne ray_index_is_incremented_right
     inc RAY_INDEX+1
-ray_index_updated_right:
+    
+ray_index_is_incremented_right:
 
+    ; If RAY_INDEX = 1824 (=$720) we reset it to 0 (we "loop" around)
+    lda RAY_INDEX
+    cmp #$20
+    bne ray_index_is_updated_right
+    lda RAY_INDEX+1
+    cmp #$7
+    bne ray_index_is_updated_right
+    
+    ; Resetting RAY_INDEX to 0
+    lda #0
+    sta RAY_INDEX
+    sta RAY_INDEX+1
+    
+ray_index_is_updated_right:
+
+    ; We should stop drawing the wall if we reached the end of the wall, meaning RAY_INDEX == TO_RAY_INDEX (after incrementing it)
+    lda RAY_INDEX
+    cmp TO_RAY_INDEX
+    bne continue_drawing_right   ; not equal, so keep on going drawing the wall
+    lda RAY_INDEX+1
+    cmp TO_RAY_INDEX+1
+    beq done_drawing_wall       ; both bytes are equal, we should stop drawing
+    
+continue_drawing_right:
     inx
     cpx #56
     bne draw_next_column_right
     
+done_drawing_wall:
     
+    ; NOTE: be *careful* here: this code is DUPLICATED above!
     ; We set back to ADDRSEL=0
     lda #%00000000           ; DCSEL=0, ADDRSEL=0
     sta VERA_CTRL
