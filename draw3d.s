@@ -59,14 +59,16 @@ draw_3d_view_fast:
 
 draw_wall_fast:
 
-    ; NORMAL_DISTANCE_TO_WALL  ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
-    ; FROM_RAY_INDEX           ; the ray index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
-    ; TO_RAY_INDEX             ; the ray index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
+    ; NORMAL_DISTANCE_TO_WALL      ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
+    ; FROM_RAY_INDEX               ; the ray index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
+    ; TO_RAY_INDEX                 ; the ray index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
     
-    ; SCREEN_START_RAY   ; the ray index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
+    ; SCREEN_START_RAY             ; the ray index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
     
-    ; FROM_WALL_HEIGHT   ; the height of the left side of the wall 
-    ; TO_WALL_HEIGHT     ; the height of the right side of the wall
+    ; FROM_WALL_HEIGHT             ; the height of the left side of the wall 
+    ; TO_WALL_HEIGHT               ; the height of the right side of the wall
+    
+    ; START_SCREEN_X (calculated)  ; the x-position of the wall starting on screen
     
     ; TODO: TEXTURE_INDEX_PER_WALL_SEGMENT?
     
@@ -96,7 +98,7 @@ draw_wall_fast:
     ; so after subsctracting FROM_RAY_INDEX from TO_RAY_INDEX we add 4*456=1824 ($720) to the result. We can check if this is needed if the result was negative.
     ; Note that the number below is * 256, because we get more precision with the divide_24bits that way.
     
-    ; FIXME: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_24bits)
+    ; SPEED: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_24bits)
     lda #0
     sta DIVISOR
     
@@ -145,11 +147,31 @@ wall_width_determined:
     lda FROM_RAY_INDEX+1
     sta RAY_INDEX+1
     
-; FIXME: we now always start at the left side of the screen, but when we draw a wall it could begin somewhere in the middle of the screen!
-; x = FROM_RAY_INDEX - SCREEN_START_RAY + 8
-; Skip left lart (first 248 columns) if (FROM_RAY_INDEX - SCREEN_START_RAY + 8) >= 256/248?
-; FIXME: its probably better to let the SCREEN_START_RAY also include the 8 pixels at the beginning: so it would be 8 if we started at the beginning). Maybe?
-    ldx #8   ; screen column index
+    ; SPEED: its probably better to let the SCREEN_START_RAY also include the 8 pixels at the beginning: so it would be 8 if we started at the beginning). Maybe?
+
+    ; START_SCREEN_X = (FROM_RAY_INDEX - SCREEN_START_RAY) + 8 ; the x-position of the wall starting on screen
+    sec
+	lda FROM_RAY_INDEX
+	sbc SCREEN_START_RAY
+	sta START_SCREEN_X
+	lda FROM_RAY_INDEX+1
+	sbc SCREEN_START_RAY+1
+	sta START_SCREEN_X+1
+    
+    clc
+	lda START_SCREEN_X
+	adc #8
+	sta START_SCREEN_X
+	lda START_SCREEN_X+1
+	adc #0
+	sta START_SCREEN_X+1
+
+    ; If the high byte of START_SCREEN_X is not 0, we start on the right part of the screen
+    bne draw_right_part_of_screen
+
+    ; x = START_SCREEN_X (low byte)
+
+    ldx START_SCREEN_X
     
 draw_next_column_left:
     lda #%00000000           ; DCSEL=0, ADDRSEL=0
@@ -217,12 +239,15 @@ ray_index_updated_left:
     
     inx
     bne draw_next_column_left
+    
+    ; Since we just drew the left part of the screen, x is now 0, which is correct for drawing the right part of the screen. So we skip the x-initialization (which is done if we *started* on the right part of the screen)
+    bra draw_next_column_right
 
     ; Right part of the screen (56 columns)
+draw_right_part_of_screen:
 
-; FIXME: x = FROM_RAY_INDEX - SCREEN_START_RAY + 8 - 256? -> OR we are continuing from the 'left' and x stays 0!
-;    ONLY set this is we atually START drawing in the right part!
-    ldx #0
+    ; x = FROM_RAY_INDEX (low byte) Note: this is only done when *starting* on the right part of the screen!
+    ldx START_SCREEN_X
 
 draw_next_column_right:
     lda #%00000000           ; DCSEL=0, ADDRSEL=0

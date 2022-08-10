@@ -59,6 +59,7 @@ TO_RAY_INDEX              = $44 ; 45  ; the ray index of the right side of the w
 SCREEN_START_RAY          = $46 ; 47  ; the ray index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
 FROM_WALL_HEIGHT          = $48 ; 49  ; the height of the left side of the wall 
 TO_WALL_HEIGHT            = $4A ; 4B  ; the height of the right side of the wall
+START_SCREEN_X            = $4C ; 4D  ; the x-position of the wall starting on screen
 
 ; === VRAM addresses ===
 
