@@ -37,7 +37,8 @@ draw_3d_view_fast:
     lda #0
     sta SCREEN_START_RAY+1
     
-    ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part (using cosine)
+    ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part:
+    ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
     ; Given these two distances, we can also determine the left and right wall heights.
     
     ; FIXME: from wall height is now hardcoded to 128
