@@ -46,8 +46,6 @@ draw_3d_view_fast:
     lda #0
     sta FROM_WALL_HEIGHT+1
     
-    ; FIXME: to wall height is now hardcoded to 64
-;    lda #64
     lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
     sta TO_WALL_HEIGHT
     lda #0
@@ -62,13 +60,13 @@ draw_3d_view_fast:
     jsr draw_wall_fast
     
 
-    ; - 90 degrees = 1824-452 = 1372 = $55C
-    lda #$5C
+    ; - 90 degrees = 1824-456 = 1368 = $558
+    lda #$58
     sta SCREEN_START_RAY
     lda #$5
     sta SCREEN_START_RAY+1
 
-    ; 1824-228 = 1595 = $63C
+    ; 1824-228 = 1596 = $63C
     lda #$3C   ; -45 degrees
     sta FROM_RAY_INDEX
     lda #$6
@@ -85,7 +83,8 @@ draw_3d_view_fast:
     lda #0
     sta FROM_WALL_HEIGHT+1
     
-    lda #128
+;    lda #128
+    lda #200
     sta TO_WALL_HEIGHT
     lda #0
     sta TO_WALL_HEIGHT+1
@@ -95,8 +94,6 @@ draw_3d_view_fast:
 
     jsr draw_wall_fast
 
-
-    
 
 
 
