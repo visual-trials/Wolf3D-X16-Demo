@@ -87,7 +87,7 @@ next_palette_color_to_copy:
     
 generate_draw_column_code:
     
-    ; Below assumes a "virtual screen" of 512 pixels high, with the actual screen starting at pixel 512/2 - 152/2 = 180 pixels from the top of the "virtual screen"
+    ; Below assumes a "virtual screen" of 512 pixels high, with the actual screen (which is 152 pixels high) starting at pixel 512/2 - 152/2 = 180 pixels from the top of this "virtual screen"
     
     ; We iterate through 512 possible wall heights
     
@@ -242,12 +242,16 @@ no_more_ceiling_needed:
 
 next_virtual_pixel_top:
 
+    sec
     lda TEXTURE_CURSOR+2
-    cmp PREVIOUS_TEXTURE_CURSOR
-    beq correct_texture_pixel_loaded_top
+    sbc PREVIOUS_TEXTURE_CURSOR           ; we calcultate the nr of texels we are 'off'
+    beq correct_texture_pixel_loaded_top  ; if we are equal we dont have to load a new texel
+
+    ; We need to add one or several loads of the texture
+    phx
+    tax
     
-    ; We need to add a load of the texture
-    
+load_next_texture_top:
     ; -- lda VERA_DATA1 ($9F24)
     lda #$AD               ; lda ....
     jsr add_code_byte
@@ -258,9 +262,14 @@ next_virtual_pixel_top:
     lda #$9F         
     jsr add_code_byte
     
+    dex
+    bne load_next_texture_top
+
+    plx
+
     lda TEXTURE_CURSOR+2
     sta PREVIOUS_TEXTURE_CURSOR
-
+    
 correct_texture_pixel_loaded_top:
 
     lda VIRTUAL_SCREEN_CURSOR
@@ -297,17 +306,20 @@ done_reading_and_writing_for_virtual_pixel_top:
     lda VIRTUAL_SCREEN_CURSOR
     bne next_virtual_pixel_top       ; Repeat until we reach 256 for our virtual pixel.
 
-
     ; == Now we do the same for the BOTTOM part of the virtual screen ==
 
 next_virtual_pixel_bottom:
 
+    sec
     lda TEXTURE_CURSOR+2
-    cmp PREVIOUS_TEXTURE_CURSOR
-    beq correct_texture_pixel_loaded_bottom
+    sbc PREVIOUS_TEXTURE_CURSOR              ; we calcultate the nr of texels we are 'off'
+    beq correct_texture_pixel_loaded_bottom  ; if we are equal we dont have to load a new texel
     
-    ; We need to add a load of the texture
+    ; We need to add one or several loads of the texture
+    phx
+    tax
     
+load_next_texture_bottom:
     ; -- lda VERA_DATA1 ($9F24)
     lda #$AD               ; lda ....
     jsr add_code_byte
@@ -318,9 +330,14 @@ next_virtual_pixel_bottom:
     lda #$9F         
     jsr add_code_byte
     
+    dex
+    bne load_next_texture_bottom
+    
+    plx
+
     lda TEXTURE_CURSOR+2
     sta PREVIOUS_TEXTURE_CURSOR
-
+    
 correct_texture_pixel_loaded_bottom:
 
     ; -- sta VERA_DATA0 ($9F23)
