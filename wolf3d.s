@@ -49,7 +49,7 @@ DIVIDEND                  = $2C ; 2D ; 2E  ; the thing you want to divide (e.g. 
 DIVISOR                   = $2F ; 30 ; 31  ; the thing you divide by (e.g. / 10)
 REMAINDER                 = $32 ; 33 ; 34
 
-WALL_HEIGHT_DECREMENT     = $35 ; 35 ; 37
+WALL_HEIGHT_INCREMENT     = $35 ; 35 ; 37
 COLUMN_WALL_HEIGHT        = $38 ; 39 ; 3A
 RAY_INDEX                 = $3B ; 3C
 RAY_INDEX_NEGATED         = $3D ; 3E
@@ -60,7 +60,8 @@ TO_RAY_INDEX              = $44 ; 45  ; the ray index of the right side of the w
 SCREEN_START_RAY          = $46 ; 47  ; the ray index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
 FROM_WALL_HEIGHT          = $48 ; 49  ; the height of the left side of the wall 
 TO_WALL_HEIGHT            = $4A ; 4B  ; the height of the right side of the wall
-START_SCREEN_X            = $4C ; 4D  ; the x-position of the wall starting on screen
+WALL_HEIGHT_INCREASES     = $4C       ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
+START_SCREEN_X            = $4D ; 4E  ; the x-position of the wall starting on screen
 
 ; === VRAM addresses ===
 

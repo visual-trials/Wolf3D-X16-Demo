@@ -55,7 +55,11 @@ draw_3d_view_fast:
     lda #0
     sta TO_WALL_HEIGHT+1
     
-    ; We still have to determine whether the wall decreases (in height) from left to right, or the other way around and maybe do a different draw-wall-call accordingly
+    ; We also have to determine whether the wall decreases (in height) from left to right, or the other way around and maybe do a different draw-wall-call accordingly
+    
+    lda #0
+    sta WALL_HEIGHT_INCREASES
+    
     
     jsr draw_wall_fast
 
@@ -73,6 +77,7 @@ draw_wall_fast:
     
     ; FROM_WALL_HEIGHT             ; the height of the left side of the wall 
     ; TO_WALL_HEIGHT               ; the height of the right side of the wall
+    ; WALL_HEIGHT_INCREASES        ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
     
     ; START_SCREEN_X (calculated)  ; the x-position of the wall starting on screen
     
@@ -80,9 +85,9 @@ draw_wall_fast:
     
     ; We first determine how much the wall height will decrease per drawn column
 
-; FIXME: should we use a negative number when decrementing the wall height instead?
-    ; We do the divide: WALL_HEIGHT_DECREMENT = ((FROM_WALL_HEIGHT-TO_WALL_HEIGHT) * 256 * 256) / ((TO_RAY_INDEX-FROM_RAY_INDEX) * 256);
+    ; We do the divide: WALL_HEIGHT_INCREMENT = ((TO_WALL_HEIGHT-FROM_WALL_HEIGHT) * 256 * 256) / ((TO_RAY_INDEX-FROM_RAY_INDEX) * 256);
     ; Note that the difference in wall height should be stored in DIVIDEND (to be used by the divider)
+    ; Note: we will have a negative number when the wall height is decrementing
     
     ; We are asuming there is no fraction in the wall height
     lda #0
@@ -90,6 +95,61 @@ draw_wall_fast:
     lda #0
     sta DIVIDEND
 
+    lda WALL_HEIGHT_INCREASES
+    beq wall_height_decreases
+    
+wall_height_increases:
+
+    sec
+	lda TO_WALL_HEIGHT
+	sbc FROM_WALL_HEIGHT
+	sta DIVIDEND+2
+; FIXME: the wall height difference can be > 256!! (so this wont fit, unless we use only 256 possible wall heights?)
+	; lda TO_WALL_HEIGHT+1
+	; sbc FROM_WALL_HEIGHT+1
+	; FIXME: sta DIVIDEND+3 ??
+    
+    ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_RAY_INDEX and TO_RAY_INDEX. We substract the two.
+    ; If FROM_RAY_INDEX > TO_RAY_INDEX (possible if FROM_RAY_INDEX starts before index 0, for example 1792) we need to make sure this calculation still works
+    ; so after subsctracting FROM_RAY_INDEX from TO_RAY_INDEX we add 4*456=1824 ($720) to the result. We can check if this is needed if the result was negative.
+    ; Note that the number below is * 256, because we get more precision with the divide_24bits that way.
+    
+    ; SPEED: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_24bits)
+    lda #0
+    sta DIVISOR
+    
+    sec
+	lda TO_RAY_INDEX
+	sbc FROM_RAY_INDEX
+	sta DIVISOR+1
+	lda TO_RAY_INDEX+1
+	sbc FROM_RAY_INDEX+1
+	sta DIVISOR+2
+    bpl wall_width_determined_increasing_height
+    
+    ; We have a negative result, so we add 1824 (= $720) to the result
+    clc
+	lda DIVISOR+1
+	adc #$20
+	sta DIVISOR+1
+	lda DIVISOR+2
+	adc #$7
+	sta DIVISOR+2   
+wall_width_determined_increasing_height:
+
+    jsr divide_24bits
+    
+    ; FIXME: is this mapping of +2, +1 correct? Should we shift something here?
+    lda DIVIDEND+2
+    sta WALL_HEIGHT_INCREMENT+2
+    lda DIVIDEND+1
+    sta WALL_HEIGHT_INCREMENT+1
+    lda DIVIDEND
+    sta WALL_HEIGHT_INCREMENT
+
+    jmp wall_height_increment_determined
+    
+wall_height_decreases:
     sec
 	lda FROM_WALL_HEIGHT
 	sbc TO_WALL_HEIGHT
@@ -115,7 +175,7 @@ draw_wall_fast:
 	lda TO_RAY_INDEX+1
 	sbc FROM_RAY_INDEX+1
 	sta DIVISOR+2
-    bpl wall_width_determined
+    bpl wall_width_determined_decreasing_height
     
     ; We have a negative result, so we add 1824 (= $720) to the result
     clc
@@ -125,17 +185,32 @@ draw_wall_fast:
 	lda DIVISOR+2
 	adc #$7
 	sta DIVISOR+2   
-wall_width_determined:
+wall_width_determined_decreasing_height:
 
     jsr divide_24bits
     
     ; FIXME: is this mapping of +2, +1 correct? Should we shift something here?
     lda DIVIDEND+2
-    sta WALL_HEIGHT_DECREMENT+2
+    sta WALL_HEIGHT_INCREMENT+2
     lda DIVIDEND+1
-    sta WALL_HEIGHT_DECREMENT+1
+    sta WALL_HEIGHT_INCREMENT+1
     lda DIVIDEND
-    sta WALL_HEIGHT_DECREMENT
+    sta WALL_HEIGHT_INCREMENT
+    
+    ; We negate the WALL_HEIGHT_INCREMENT
+    sec
+    lda #0
+    sbc WALL_HEIGHT_INCREMENT
+    sta WALL_HEIGHT_INCREMENT
+    lda #0
+    sbc WALL_HEIGHT_INCREMENT+1
+    sta WALL_HEIGHT_INCREMENT+1
+    lda #0
+    sbc WALL_HEIGHT_INCREMENT+2
+    sta WALL_HEIGHT_INCREMENT+1
+    
+
+wall_height_increment_determined:
     
     ; We store the from wall height into the column wall height (FROM_WALL_HEIGHT * 256)
     lda FROM_WALL_HEIGHT+1
@@ -262,15 +337,15 @@ got_tangens_left:
 
     jsr DRAW_COLUMN_CODE
 
-    sec
+    clc
 	lda COLUMN_WALL_HEIGHT
-	sbc WALL_HEIGHT_DECREMENT
+	adc WALL_HEIGHT_INCREMENT
 	sta COLUMN_WALL_HEIGHT
 	lda COLUMN_WALL_HEIGHT+1
-	sbc WALL_HEIGHT_DECREMENT+1
+	adc WALL_HEIGHT_INCREMENT+1
 	sta COLUMN_WALL_HEIGHT+1
 	lda COLUMN_WALL_HEIGHT+2
-	sbc WALL_HEIGHT_DECREMENT+2
+	adc WALL_HEIGHT_INCREMENT+2
 	sta COLUMN_WALL_HEIGHT+2
 
     ; Incrmenting RAY_INDEX
@@ -400,15 +475,15 @@ got_tangens_right:
     
     jsr DRAW_COLUMN_CODE
     
-    sec
+    clc
 	lda COLUMN_WALL_HEIGHT
-	sbc WALL_HEIGHT_DECREMENT
+	adc WALL_HEIGHT_INCREMENT
 	sta COLUMN_WALL_HEIGHT
 	lda COLUMN_WALL_HEIGHT+1
-	sbc WALL_HEIGHT_DECREMENT+1
+	adc WALL_HEIGHT_INCREMENT+1
 	sta COLUMN_WALL_HEIGHT+1
 	lda COLUMN_WALL_HEIGHT+2
-	sbc WALL_HEIGHT_DECREMENT+2
+	adc WALL_HEIGHT_INCREMENT+2
 	sta COLUMN_WALL_HEIGHT+2
     
     ; Incrmenting RAY_INDEX
