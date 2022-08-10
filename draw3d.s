@@ -14,13 +14,17 @@ draw_3d_view_fast:
     sta NORMAL_DISTANCE_TO_WALL+1
     
     ; FIXME: from ray index is now hardcoded to 0
+    
+; FIXME: $700 = 1924-32
     lda #0
     sta FROM_RAY_INDEX
-    lda #0
+;    lda #0
+    lda #7
     sta FROM_RAY_INDEX+1
     
     ; FIXME: from ray index is now hardcoded to 304 (=256+48)
-    lda #48
+;    lda #48
+    lda #48-32
     sta TO_RAY_INDEX
     lda #1
     sta TO_RAY_INDEX+1
@@ -29,9 +33,11 @@ draw_3d_view_fast:
     ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
     
     ; FIXME: screen start ray index is now hardcoded to 0
+; FIXME: $700 = 1924-32
     lda #0
     sta SCREEN_START_RAY
-    lda #0
+;    lda #0
+    lda #7
     sta SCREEN_START_RAY+1
     
     ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part (using cosine)
@@ -194,16 +200,50 @@ draw_next_column_left:
     sta VERA_ADDR_HIGH
     
     ; FIXME: also get TANGENS_HIGH!
-; FIXME: allow RAY_INDEX to be > 456 (up until 1824) and allow negative/flipped results?
     lda RAY_INDEX+1
-    bne is_high_ray_index_left
-is_low_ray_index_left:
+    cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
+    bcs is_negative_left
+    
+    lda RAY_INDEX+1
+    bne is_high_positive_ray_index_left
+is_low_positive_ray_index_left:
     ldy RAY_INDEX
     lda TANGENS_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
     bra got_tangens_left
-is_high_ray_index_left:
+is_high_positive_ray_index_left:
     ldy RAY_INDEX
     lda TANGENS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    bra got_tangens_left
+
+is_negative_left:
+    ; SPEED: we do this EACH time, this can be sped up!!
+
+    ; We substract RAY_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangens
+    sec 
+	lda #$20
+	sbc RAY_INDEX
+	sta RAY_INDEX_NEGATED
+	lda #$7
+	sbc RAY_INDEX+1
+	sta RAY_INDEX_NEGATED+1
+    
+    bne is_high_negative_ray_index_left
+is_low_negative_ray_index_left:
+    ldy RAY_INDEX_NEGATED
+    lda TANGENS_LOW,y             ; When the negated ray index >= 256, we retrieve from 256 positions further
+    bra got_negative_tangens_left
+is_high_negative_ray_index_left:
+    ldy RAY_INDEX_NEGATED
+    lda TANGENS_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
+
+got_negative_tangens_left:
+    ; We negate the tangens result
+    ; SPEED: can this be done faster?
+    sec
+    sta TMP1
+    lda #0
+    sbc TMP1
+    
 got_tangens_left:
     
     ; FIXME: We do a * 2.0 (normal distance from wall), then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). So effectively divide by 2 here
@@ -268,10 +308,11 @@ ray_index_is_updated_left:
     
 continue_drawing_left:
     inx
-    bne draw_next_column_left
+    beq draw_next_column_right ; Since we just drew the left part of the screen, x is now 0, which is correct for drawing the right part of the screen. So we skip the x-initialization (which is done if we *started* on the right part of the screen)
     
-    ; Since we just drew the left part of the screen, x is now 0, which is correct for drawing the right part of the screen. So we skip the x-initialization (which is done if we *started* on the right part of the screen)
-    bra draw_next_column_right
+    ; We iterate to the next column (left side of the screen)
+    jmp draw_next_column_left
+
 
     ; Right part of the screen (56 columns)
 draw_right_part_of_screen:
@@ -297,16 +338,51 @@ draw_next_column_right:
     sta VERA_ADDR_HIGH
     
     ; FIXME: also get TANGENS_HIGH!
-; FIXME: allow RAY_INDEX to be > 456 (up until 1824) and allow negative/flipped results?
     lda RAY_INDEX+1
-    bne is_high_ray_index_right   
-is_low_ray_index_right:
+    cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
+    bcs is_negative_right
+    
+    lda RAY_INDEX+1
+    bne is_high_positive_ray_index_right
+is_low_positive_ray_index_right:
     ldy RAY_INDEX
     lda TANGENS_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
     bra got_tangens_right
-is_high_ray_index_right:
+is_high_positive_ray_index_right:
     ldy RAY_INDEX
     lda TANGENS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    
+    bra got_tangens_right
+
+is_negative_right:
+    ; SPEED: we do this EACH time, this can be sped up!!
+
+    ; We substract RAY_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangens
+    sec 
+	lda #$20
+	sbc RAY_INDEX
+	sta RAY_INDEX_NEGATED
+	lda #$7
+	sbc RAY_INDEX+1
+	sta RAY_INDEX_NEGATED+1
+    
+    bne is_high_negative_ray_index_right
+is_low_negative_ray_index_right:
+    ldy RAY_INDEX_NEGATED
+    lda TANGENS_LOW,y             ; When the negated ray index >= 256, we retrieve from 256 positions further
+    bra got_negative_tangens_right
+is_high_negative_ray_index_right:
+    ldy RAY_INDEX_NEGATED
+    lda TANGENS_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
+
+got_negative_tangens_right:
+    ; We negate the tangens result
+    ; SPEED: can this be done faster?
+    sec
+    sta TMP1
+    lda #0
+    sbc TMP1
+    
 got_tangens_right:
     ; FIXME: We do a * 2.0 (normal distance from wall), then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). So effectively divide by 2 here
     ; FIXME: multiply with NORMAL_DISTANCE_TO_WALL instead! (and 'cache' the distance in the multiplier)
@@ -368,7 +444,10 @@ ray_index_is_updated_right:
 continue_drawing_right:
     inx
     cpx #56
-    bne draw_next_column_right
+    beq done_drawing_wall
+    
+    ; We iterate to the next column (right side of the screen)
+    jmp draw_next_column_right
     
 done_drawing_wall:
     
