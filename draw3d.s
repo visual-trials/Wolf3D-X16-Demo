@@ -18,6 +18,14 @@ draw_3d_view_fast:
     
     ; TEMP IDEA: in order to calculate the invtan(delta-y/delta-x) we could *FOR *NOW* simply do the "delta-y/delta-x" and *search* in the tangens-table if we find the two numbers it falls in-between. The index of those numbers is our invtan()!
     
+    ; BETTER IDEA: 1) check if dx < 0 and if dy < 0 (to see what quadrant youre in).  Note: maybe this is not needed if you know which way the wall is facing.
+    ;              2) then normalize x and y to be positive
+    ;              3) and check if dx < dy
+    ;                  3a) if dy <= dx, then do: angle = invtan(dy/dx)
+    ;                  3b) if dx < dy, then do: angle = 45 + (90 - invtan(dx/dy))
+    ;                 -> this way the invtan only has to cover a number between 0.0 and 1.0 to result in 0-45 degrees (= 0-228 ray indexes)
+    
+    
     
     lda #0
     sta FROM_RAY_INDEX
