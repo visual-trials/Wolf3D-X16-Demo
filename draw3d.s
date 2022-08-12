@@ -15,6 +15,10 @@ draw_3d_view_fast:
     
     ; FIXME: from ray index is now hardcoded to 0
     
+    
+    ; TEMP IDEA: in order to calculate the invtan(delta-y/delta-x) we could *FOR *NOW* simply do the "delta-y/delta-x" and *search* in the tangens-table if we find the two numbers it falls in-between. The index of those numbers is our invtan()!
+    
+    
     lda #0
     sta FROM_RAY_INDEX
     lda #0
