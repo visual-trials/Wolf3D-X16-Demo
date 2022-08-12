@@ -471,6 +471,22 @@ done_adding_code_byte:
 ; === TODO: put this in a more common place (e.g. math.s): ===
 
 
+; See: https://github.com/commanderx16/x16-demo/blob/master/cc65-sprite/demo.c
+
+; Python script to generate the table:
+; import math
+; # cycle=320
+; cycle=1824
+; ampl=256
+; [int(math.sin(float(i)/cycle*2.0*math.pi)*ampl+0.5) for i in range(cycle)]
+; [int(math.cos(float(i)/cycle*2.0*math.pi)*ampl+0.5) for i in range(cycle)]
+
+; [int(math.tan(float(i)/cycle*2.0*math.pi)*ampl+0.5) for i in range(cycle)]
+; [int((1/math.tan(float(i)/cycle*2.0*math.pi))*ampl+0.5) if (math.tan(float(i)/cycle*2.0*math.pi) != 0) else 9999999999 for i in range(cycle)]
+
+; Also see: https://csdb.dk/forums/?roomid=11&topicid=26608&firstpost=2
+
+
 ; This is a list of 8.8 bit values (so 16 bits each, 8 bits for fraction, 8 bits for whole number)
 ; Since there are 456 angle-indexes per 90 degrees, this list contains 456 values.
 tangens:
