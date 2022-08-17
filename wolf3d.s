@@ -63,6 +63,18 @@ TO_WALL_HEIGHT            = $4A ; 4B  ; the height of the right side of the wall
 WALL_HEIGHT_INCREASES     = $4C       ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
 START_SCREEN_X            = $4D ; 4E  ; the x-position of the wall starting on screen
 
+PLAYER_POS_X              = $50 ; 51  ; x-position of the player (8.8 bits)
+PLAYER_POS_Y              = $52 ; 53  ; y-position of the player (8.8 bits)
+PLAYER_LOOKING_DIR        = $54 ; 55  ; looking direction of the player (0-1823)
+
+CURRENT_WALL_INDEX        = $56
+WALL_START_X              = $57       ; x-coordinate of start of wall
+WALL_START_Y              = $58       ; y-coordinate of start of wall)
+WALL_END_X                = $59       ; x-coordinate of end of wall)
+WALL_END_Y                = $5A       ; y-coordinate of end of wall)
+WALL_FACING_DIR           = $5B       ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+
+
 ; === VRAM addresses ===
 
 TEXTURE_DATA             = $13000
@@ -76,6 +88,18 @@ TANGENS_LOW              = $7A00    ; 456 bytes (fraction)
 TANGENS_HIGH             = $7C00    ; 456 bytes (whole number)
 CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
 DRAW_COLUMN_CODE         = $A000    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes for each wall height (512 wall heights_
+
+WALL_INFO_START_X        = $6000    ; 256 bytes (x-coordinate of start of wall)
+WALL_INFO_START_Y        = $6100    ; 256 bytes (y-coordinate of start of wall)
+WALL_INFO_END_X          = $6200    ; 256 bytes (x-coordinate of end of wall)
+WALL_INFO_END_Y          = $6300    ; 256 bytes (y-coordinate of end of wall)
+WALL_INFO_FACING_DIR     = $6400    ; 256 bytes (facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+
+
+
+    ; Info on Wolfenstein3D engine: https://fabiensanglard.net/gebbwolf3d.pdf
+    ; Info on Doom (classic) renderer: https://fabiensanglard.net/doomIphone/doomClassicRenderer.php
+    ; Some more helpful info on raycasting: https://lodev.org/cgtutor/raycasting.html  (note: we are not casting rays in this engine!)
 
 
     .org $C000
@@ -99,6 +123,8 @@ reset:
     jsr init_timer
     ; jsr init_elapsed_time_sprite
     
+    jsr setup_player
+    jsr setup_wall_info
     
 
     ; Texture pixels
@@ -133,13 +159,13 @@ reset:
     jsr generate_draw_column_code
     
     jsr clear_3d_view_fast
-    jsr draw_3d_view_fast
+    jsr draw_3d_view
     
     ; jmp vsync_measurement
     
 loop2:
     jsr start_timer
-    jsr draw_3d_view_fast
+    jsr draw_3d_view
     ;jsr clear_3d_view_fast
     ;jsr clear_bitmap_screen
     ;jsr copy_petscii_charset

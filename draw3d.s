@@ -1,22 +1,181 @@
 
-    
-draw_3d_view_fast:
 
+; FIXME: this is temporary data to get some wall information into the engine
 
-    ; Given a wall, we determine whether its to the top, left, right or bottom of the player (so horizontal/vertical and on which side). Also check if its facing the right way? Or is that a given at this point?
-    ; After that we can determine the length of normal line from the wall (x or y coord) to the player
-    ; We can also determine from which and to which ray index the wall extends (relative to the normal line)
+wall_0_info:
+    .byte 0, 3 ; start x, y
+    .byte 3, 3 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
-    ; FIXME: distance to wall is now hardcoded to 2.0
+wall_1_info:
+    .byte 3, 3 ; start x, y
+    .byte 3, 0 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+
+setup_wall_info:
+
+    ldy #0
+    
+    lda wall_0_info
+    sta WALL_INFO_START_X, y
+    lda wall_0_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_0_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_0_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_0_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #1
+
+    lda wall_1_info
+    sta WALL_INFO_START_X, y
+    lda wall_1_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_1_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_1_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_1_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    rts
+
+setup_player:
+
+    ; TODO: this is now hardcoded, but this should to taken from a map
+
+    ; x-position of the player (8.8 bits)
     lda #0
+    sta PLAYER_POS_X 
+    lda #1
+    sta PLAYER_POS_X+1
+    
+    ; y-position of the player (8.8 bits)
+    lda #0
+    sta PLAYER_POS_Y
+    lda #1
+    sta PLAYER_POS_Y+1
+    
+    ; looking direction of the player (0-1823)
+    lda #152              ; 30 degrees from facing straight north
+    sta PLAYER_LOOKING_DIR
+    lda #0
+    sta PLAYER_LOOKING_DIR+1
+    
+    rts
+
+    
+    
+draw_3d_view:
+
+    ; TODO: get a set of ordered walls (near to far) from some kind of BSP tree...
+        ; Also check if walls are facing the right way? Or is that a given at this point?
+
+    jsr draw_walls
+    
+    ; TODO: draw more than just the walls...
+
+    rts
+
+
+draw_walls:
+
+    lda #0
+    sta CURRENT_WALL_INDEX
+
+draw_next_wall:
+    ldy CURRENT_WALL_INDEX
+    
+    lda WALL_INFO_START_X, y   ; x-coordinate of start of wall
+    sta WALL_START_X
+    
+    lda WALL_INFO_START_Y, y   ; y-coordinate of start of wall
+    sta WALL_START_Y
+    
+    lda WALL_INFO_END_X, y   ; x-coordinate of end of wall
+    sta WALL_END_X
+    
+    lda WALL_INFO_END_Y, y   ; y-coordinate of end of wall
+    sta WALL_END_Y
+    
+    lda WALL_INFO_FACING_DIR, y   ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+    sta WALL_FACING_DIR
+    
+    jsr draw_wall
+    
+    inc CURRENT_WALL_INDEX
+    lda CURRENT_WALL_INDEX
+; FIXME: now limited to 1 wall
+    cmp #1
+;    cmp #2
+    bne draw_next_wall
+    
+    rts
+    
+    
+    
+draw_wall:
+    
+    ; Given a wall, we determine whether its to the north, east, west or south of the player (so horizontal/vertical and on which side). 
+    ; After that we can determine the length of normal line from the wall (x or y coord) to the player
+    
+    ; TODO: if the wall is facing the player from its back, we dont have to consider drawing it at all, so that could be an easy out.
+    
+    lda WALL_INFO_FACING_DIR
+    cmp #3  ; west
+    beq normal_distance_from_wall_facing_west
+    cmp #2  ; south
+    beq normal_distance_from_wall_facing_south
+    cmp #1  ; east
+    beq normal_distance_from_wall_facing_east
+    ; cmp #0  ; north
+    ; beq normal_distance_from_wall_facing_north
+    
+normal_distance_from_wall_facing_north:
+    sec
+    lda PLAYER_POS_Y
+    sbc #0                      ; Walls are always on .0
     sta NORMAL_DISTANCE_TO_WALL
-    lda #2
+    lda PLAYER_POS_Y+1
+    sbc WALL_START_Y
     sta NORMAL_DISTANCE_TO_WALL+1
+    bra calculated_normal_distance_to_wall
     
-    ; FIXME: from ray index is now hardcoded to 0
+normal_distance_from_wall_facing_east:
+    sec
+    lda PLAYER_POS_X
+    sbc #0                      ; Walls are always on .0
+    sta NORMAL_DISTANCE_TO_WALL
+    lda PLAYER_POS_X+1
+    sbc WALL_START_X
+    sta NORMAL_DISTANCE_TO_WALL+1
+    bra calculated_normal_distance_to_wall
+
+normal_distance_from_wall_facing_south:
+    sec
+    lda #0                      ; Walls are always on .0
+    sbc PLAYER_POS_Y
+    sta NORMAL_DISTANCE_TO_WALL
+    lda WALL_START_Y
+    sbc PLAYER_POS_Y+1
+    sta NORMAL_DISTANCE_TO_WALL+1
+    bra calculated_normal_distance_to_wall
     
+normal_distance_from_wall_facing_west:
+    sec
+    lda #0                      ; Walls are always on .0
+    sbc PLAYER_POS_X
+    sta NORMAL_DISTANCE_TO_WALL
+    lda WALL_START_X
+    sbc PLAYER_POS_X+1
+    sta NORMAL_DISTANCE_TO_WALL+1
+    ; bra calculated_normal_distance_to_wall
     
-    ; TEMP IDEA: in order to calculate the invtan(delta-y/delta-x) we could *FOR *NOW* simply do the "delta-y/delta-x" and *search* in the tangens-table if we find the two numbers it falls in-between. The index of those numbers is our invtan()!
+calculated_normal_distance_to_wall:
+
+    ; We can now also determine from which and to which ray index the wall extends (relative to the normal line)
     
     ; BETTER IDEA: 1) check if dx < 0 and if dy < 0 (to see what quadrant youre in).  Note: maybe this is not needed if you know which way the wall is facing.
     ;              2) then normalize x and y to be positive
@@ -25,8 +184,59 @@ draw_3d_view_fast:
     ;                  3b) if dx < dy, then do: angle = 45 + (90 - invtan(dx/dy))
     ;                 -> this way the invtan only has to cover a number between 0.0 and 1.0 to result in 0-45 degrees (= 0-228 ray indexes)
     
+        
+    lda WALL_INFO_FACING_DIR
+    cmp #3  ; west
+    beq angles_to_wall_facing_west
+    cmp #2  ; south
+    beq angles_to_wall_facing_south
+    cmp #1  ; east
+    beq angles_to_wall_facing_east
+    ; cmp #0  ; north
+    ; beq angles_to_wall_facing_north
+
+angles_to_wall_facing_north:
+    
+    lda #0
+    sta DELTA_X
+    lda #0
+    sta DELTA_X+1
+
+    lda #0
+    sta DELTA_Y
+    lda #0
+    sta DELTA_Y+1
+    
+
+; FIXME
+    .if 0
+    
+    lda #0
+    sta DELTA_X
+    lda #0
+    sta DELTA_X+1
+    
+    lda #0
+    sta DELTA_Y
+    lda #0
+    sta DELTA_Y+1
+    
+    jsr calculate_ray_index_from_delta_x_and_y
+    
+    ; Output:
+    
+    ; RAY_INDEX
+    ; QAUDRANT
+    
+; FIXME
+    .endif
     
     
+; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
+; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
+
+    
+    ; FIXME: from ray index is now hardcoded to 0
     lda #0
     sta FROM_RAY_INDEX
     lda #0
@@ -70,9 +280,12 @@ draw_3d_view_fast:
     sta WALL_HEIGHT_INCREASES
     
     
-    jsr draw_wall_fast
+    jsr draw_wall_part
     
-
+    
+; FIXME: get rid of this if the above is dynamic
+    .if 0
+    
     ; - 90 degrees = 1824-456 = 1368 = $558
     lda #$58
     sta SCREEN_START_RAY
@@ -106,15 +319,16 @@ draw_3d_view_fast:
     lda #1
     sta WALL_HEIGHT_INCREASES
 
-    jsr draw_wall_fast
-
-
+    jsr draw_wall_part
+    
+; FIXME: get rid of this if the above is dynamic
+    .endif
 
 
     rts
 
 
-draw_wall_fast:
+draw_wall_part:
 
     ; NORMAL_DISTANCE_TO_WALL      ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
     ; FROM_RAY_INDEX               ; the ray index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
