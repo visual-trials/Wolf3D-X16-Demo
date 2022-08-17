@@ -74,6 +74,11 @@ WALL_END_X                = $59       ; x-coordinate of end of wall)
 WALL_END_Y                = $5A       ; y-coordinate of end of wall)
 WALL_FACING_DIR           = $5B       ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
 
+QUADRANT_CORRECTION       = $5C
+FLIP_TAN_ANGLE            = $5D
+DELTA_X                   = $5E ; 5F
+DELTA_Y                   = $60 ; 61
+
 
 ; === VRAM addresses ===
 
