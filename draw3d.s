@@ -4,7 +4,7 @@
 
 wall_0_info:
     .byte 0, 3 ; start x, y
-    .byte 4, 3 ; end x, y
+    .byte 3, 3 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
 wall_1_info:
@@ -385,10 +385,37 @@ from_ray_is_left_of_screen:
 from_ray_is_not_left_of_screen:
 
 
-; FIXME: check to ray index!
-; FIXME: check to ray index!
-; FIXME: check to ray index!
-
+    ; Check if end of wall is between the left and right of the screen
+    ; To do this, we first need to know the ray number on the screen (TO_RAY_INDEX - SCREEN_START_RAY)
+    sec
+    lda TO_RAY_INDEX
+    sbc SCREEN_START_RAY
+    sta TESTING_RAY_INDEX
+    lda TO_RAY_INDEX+1
+    sbc SCREEN_START_RAY+1
+    sta TESTING_RAY_INDEX+1
+    
+    ; Check if to ray > 60 degrees
+    cmp #>(304)
+    bcc to_ray_is_not_right_of_screen
+    lda TESTING_RAY_INDEX
+    cmp #<(304)
+    bcc to_ray_is_not_right_of_screen
+    
+    ; Set to-ray to screen start ray + 60 degrees (right column of the screen)
+    clc
+    lda SCREEN_START_RAY
+    adc #<(304)
+    sta TO_RAY_INDEX
+    lda SCREEN_START_RAY+1
+    adc #>(304)
+    sta TO_RAY_INDEX+1
+    
+    ; FIXME: only do this IF the wall is not COMPLETELY right of the screen!
+    
+to_ray_is_not_right_of_screen:
+    
+    
     
     ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part:
     ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
