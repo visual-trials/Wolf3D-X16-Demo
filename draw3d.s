@@ -120,9 +120,26 @@ draw_next_wall:
     
 draw_wall:
     
+    ; Steps:
+    
     ; Given a wall, we determine whether its to the north, east, west or south of the player (so horizontal/vertical and on which side). 
     ; After that we can determine the length of normal line from the wall (x or y coord) to the player
     
+    ; Given the direction the player is facing we can also determine what would be the screen start ray index (left most angle in the viewing area of the player, relative to the normal line)
+    ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
+    
+    ; We can now also determine from which and to which ray index the wall extends (relative to the normal line)
+    
+    ; BETTER IDEA: 1) check if dx < 0 and if dy < 0 (to see what quadrant youre in).  Note: maybe this is not needed if you know which way the wall is facing.
+    ;              2) then normalize x and y to be positive
+    ;              3) and check if dx < dy
+    ;                  3a) if dy <= dx, then do: angle = invtan(dy/dx)
+    ;                  3b) if dx < dy, then do: angle = 45 + (90 - invtan(dx/dy))
+    ;                 -> this way the invtan only has to cover a number between 0.0 and 1.0 to result in 0-45 degrees (= 0-228 ray indexes)
+    
+    ; We use the QUADRANT_CORRECTION to store how many 90-degrees (quadrants) we have to be added at the end (in order to get a *normalized* result, so relative to the normal line)
+    ; We use FLIP_TAN_ANGLE to store if the result of the tan() routine should be "flip": 90 degrees - tan()
+
     ; Assumptions:
     ;   0,0 starts at the most south-west position
     ;   angles run clock-wise (viewed from the top of the map) and starts due north (index = 0)
@@ -130,9 +147,6 @@ draw_wall:
     ;   we use 0-1823 indexes instead of 0-360 degrees
     
     ; TODO: if the wall is facing the player from its back, we dont have to consider drawing it at all, so that could be an easy out.
-    
-    ; We use the QUADRANT_CORRECTION to store how many 90-degrees (quadrants) we have to be added at the end (in order to get a *normalized* result, so relative to the normal line)
-    ; We use FLIP_TAN_ANGLE to store if the result of the tan() routine should be "flip": 90 degrees - tan()
     
     lda WALL_INFO_FACING_DIR
     cmp #3  ; west
@@ -178,9 +192,6 @@ wall_facing_east:
 
 wall_facing_south:
 
-    ; Given the direction the player is facing we can also determine what would be the screen start ray index (left most angle in the viewing area of the player, relative to the normal line)
-    ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
-    
     ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 30 degrees) - (WALL_INFO_FACING_DIR-2) * 90 degrees
     ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 152) - (WALL_INFO_FACING_DIR-2) * 456
     
@@ -343,15 +354,6 @@ wall_facing_west:
     
 calculated_normal_distance_to_wall:
 
-    ; We can now also determine from which and to which ray index the wall extends (relative to the normal line)
-    
-    ; BETTER IDEA: 1) check if dx < 0 and if dy < 0 (to see what quadrant youre in).  Note: maybe this is not needed if you know which way the wall is facing.
-    ;              2) then normalize x and y to be positive
-    ;              3) and check if dx < dy
-    ;                  3a) if dy <= dx, then do: angle = invtan(dy/dx)
-    ;                  3b) if dx < dy, then do: angle = 45 + (90 - invtan(dx/dy))
-    ;                 -> this way the invtan only has to cover a number between 0.0 and 1.0 to result in 0-45 degrees (= 0-228 ray indexes)
-    
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 
