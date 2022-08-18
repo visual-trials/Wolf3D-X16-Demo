@@ -68,6 +68,7 @@ setup_player:
     lda #0
     sta PLAYER_POS_X 
     lda #1
+;    lda #2
     sta PLAYER_POS_X+1
     
     ; y-position of the player (8.8 bits)
@@ -77,13 +78,13 @@ setup_player:
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player (0-1823)
-    lda #152              ; 30 degrees from facing straight north
+;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
 ;    lda #228
-;    lda #<(1824-228)
+    lda #<(1824-228)
     sta PLAYER_LOOKING_DIR
-    lda #0
-;    lda #>(1824-228)
+;    lda #0
+    lda #>(1824-228)
     sta PLAYER_LOOKING_DIR+1
     
     rts
@@ -105,7 +106,7 @@ draw_3d_view:
 draw_walls:
 
     lda #0
-;    lda #2
+    lda #2
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
@@ -131,8 +132,8 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #1
-;    cmp #3
+;    cmp #1
+    cmp #3
     bne draw_next_wall
     
     rts
