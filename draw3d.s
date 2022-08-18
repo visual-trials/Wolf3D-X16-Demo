@@ -59,7 +59,9 @@ setup_player:
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player (0-1823)
-    lda #152              ; 30 degrees from facing straight north
+;    lda #152              ; 30 degrees from facing straight north
+; FIXME
+    lda #228
     sta PLAYER_LOOKING_DIR
     lda #0
     sta PLAYER_LOOKING_DIR+1
@@ -238,12 +240,12 @@ wall_facing_west_screen_start_ray_calculated:
     
 wall_facing_west_starting_south:
 
-    ; We need to correct the angle +2 quadrants to be normalized
-    lda #2
+    ; We need to correct the angle +0 quadrants to be normalized
+    lda #0
     sta QUADRANT_CORRECTION
     
-    ; By default we dont need to flip the tan() result in this quadrant
-    lda #0
+    ; By default we do need to flip the tan() result in this quadrant
+    lda #1
     sta FLIP_TAN_ANGLE
 
     ; negating DELTA_Y
@@ -263,8 +265,8 @@ wall_facing_west_starting_north:
     lda #3
     sta QUADRANT_CORRECTION
     
-    ; By default we do need to flip the tan() result in this quadrant
-    lda #1
+    ; By default we do not need to flip the tan() result in this quadrant
+    lda #0
     sta FLIP_TAN_ANGLE
     
     bra wall_facing_west_calc_angle_for_start_of_wall
@@ -297,12 +299,12 @@ wall_facing_west_calc_angle_for_start_of_wall:
     
 wall_facing_west_ending_south:
 
-    ; We need to correct the angle +2 quadrants to be normalized
-    lda #2
+    ; We need to correct the angle +0 quadrants to be normalized
+    lda #0
     sta QUADRANT_CORRECTION
     
     ; By default we do need to flip the tan() result in this quadrant
-    lda #0
+    lda #1
     sta FLIP_TAN_ANGLE
 
     ; negating DELTA_Y
@@ -318,8 +320,8 @@ wall_facing_west_ending_south:
     
 wall_facing_west_ending_north:
     
-    ; We need to correct the angle +2 quadrants to be normalized
-    lda #2
+    ; We need to correct the angle +3 quadrants to be normalized
+    lda #3
     sta QUADRANT_CORRECTION
     
     ; By default we dont need to flip the tan() result in this quadrant
