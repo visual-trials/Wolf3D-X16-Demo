@@ -133,19 +133,25 @@ draw_wall:
     
     ; We use the QUADRANT_CORRECTION to store how many 90-degrees (quadrants) we have to be added at the end (in order to get a *normalized* result, so relative to the normal line)
     ; We use FLIP_TAN_ANGLE to store if the result of the tan() routine should be "flip": 90 degrees - tan()
-    lda #0
-    sta QUADRANT_CORRECTION
-    sta FLIP_TAN_ANGLE
     
     lda WALL_INFO_FACING_DIR
     cmp #3  ; west
-    beq wall_facing_west
+    beq wall_facing_west_jmp
     cmp #2  ; south
-    beq wall_facing_south
+    beq wall_facing_south_jmp
     cmp #1  ; east
-    beq wall_facing_east
-    ; cmp #0  ; north
-    ; beq wall_facing_north
+    beq wall_facing_east_jmp
+    cmp #0  ; north
+    beq wall_facing_north_jmp
+
+wall_facing_west_jmp:
+    jmp wall_facing_west
+wall_facing_south_jmp:
+    jmp wall_facing_south
+wall_facing_east_jmp:
+    jmp wall_facing_east
+wall_facing_north_jmp:
+    jmp wall_facing_north
     
     ; FIXME: DOORS are not on .0 but 0.5 instead!!
     ; FIXME: Opening or closing doors do not start/stop on .0 but on some intermediate value instead!!
@@ -172,20 +178,43 @@ wall_facing_east:
 
 wall_facing_south:
 
-    ; FIXME: we also want to determine the correction for the SCREEN_START_RAY (or the SCREEN_START_RAY itself)
+    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 30 degrees) - (WALL_INFO_FACING_DIR-2) * 90 degrees
+    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 152) - (WALL_INFO_FACING_DIR-2) * 456
     
+    sec
+    lda PLAYER_LOOKING_DIR
+    sbc #<(152+456*0)
+    sta SCREEN_START_RAY
+    lda PLAYER_LOOKING_DIR+1
+    sbc #>(152+456*0)
+    sta SCREEN_START_RAY+1
+    
+    bpl wall_facing_south_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
+    
+    clc
+    lda SCREEN_START_RAY
+    adc #<(1824)
+    sta SCREEN_START_RAY
+    lda SCREEN_START_RAY+1
+    adc #>(1824)
+    sta SCREEN_START_RAY+1
+
+wall_facing_south_screen_start_ray_calculated:
+    
+    ; ============ START OF SOUTH FACING WALL ===========
+
     ; First determine the normal distance to the wall, in the y-direction (delta Y)
     sec
     lda #0                      ; Walls are always on .0
     sbc PLAYER_POS_Y
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_Y
-    lda WALL_START_Y
+    lda WALL_START_Y            ; it doesnt matter if we use WALL_START_Y or WALL_END_Y here
     sbc PLAYER_POS_Y+1
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_Y+1
     
-    ; Then determine the distance in the x-direction (delta X) for the START of the wall
+    ; Determine the distance in the x-direction (delta X) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
     sbc PLAYER_POS_X
@@ -216,30 +245,86 @@ wall_facing_south_starting_west:
     sbc DELTA_X+1
     sta DELTA_X+1
     
-    bra calc_angle_for_start_of_wall
+    bra wall_facing_south_calc_angle_for_start_of_wall
     
 wall_facing_south_starting_east:
     
     ; We DONT need to correct the angle any quadrants to be normalized
-    ; lda #0
-    ; sta QUADRANT_CORRECTION
+    lda #0
+    sta QUADRANT_CORRECTION
     
     ; By default we DONT need to flip the tan() result in this quadrant
-    ; lda #0
-    ; sta FLIP_TAN_ANGLE
+    lda #0
+    sta FLIP_TAN_ANGLE
     
-    bra calc_angle_for_start_of_wall
+    bra wall_facing_south_calc_angle_for_start_of_wall
     
-calc_angle_for_start_of_wall:
+wall_facing_south_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
-; FIXME
-    stp
     lda RAY_INDEX
     sta FROM_RAY_INDEX
     lda RAY_INDEX+1
     sta FROM_RAY_INDEX+1
+
+    ; ============ END OF SOUTH FACING WALL ===========
+
+    ; We already determined the distance in y-direction above 
     
+    ;  ... So nothing todo here for DELTA_Y...
+
+    ; Determine the distance in the x-direction (delta X) for the END of the wall
+    sec
+    lda #0                      ; Walls always end on .0
+    sbc PLAYER_POS_X
+    sta DELTA_X
+    lda WALL_END_X
+    sbc PLAYER_POS_X+1
+    sta DELTA_X+1
+    
+    ; Check if DELTA_X is negative: if so, this means it end to the west of the player, if not, it end to the east
+    bpl wall_facing_south_ending_east
+    
+wall_facing_south_ending_west:
+
+    ; We need to correct the angle +3 quadrants to be normalized
+    lda #3
+    sta QUADRANT_CORRECTION
+    
+    ; By default we need to flip the tan() result in this quadrant
+    lda #1
+    sta FLIP_TAN_ANGLE
+
+    ; negating DELTA_X
+    sec
+    lda #0
+    sbc DELTA_X
+    sta DELTA_X
+    lda #0
+    sbc DELTA_X+1
+    sta DELTA_X+1
+    
+    bra wall_facing_south_calc_angle_for_end_of_wall
+    
+wall_facing_south_ending_east:
+    
+    ; We DONT need to correct the angle any quadrants to be normalized
+    lda #0
+    sta QUADRANT_CORRECTION
+    
+    ; By default we DONT need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+    
+    bra wall_facing_south_calc_angle_for_end_of_wall
+    
+wall_facing_south_calc_angle_for_end_of_wall:
+    jsr calc_angle_for_point
+    
+    lda RAY_INDEX
+    sta TO_RAY_INDEX
+    lda RAY_INDEX+1
+    sta TO_RAY_INDEX+1
     
     jmp calculated_normal_distance_to_wall
     
@@ -266,6 +351,12 @@ calculated_normal_distance_to_wall:
     
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
+
+    
+
+
+
+
 
     
     ; FIXME: from ray index is now hardcoded to 0
@@ -361,8 +452,6 @@ calculated_normal_distance_to_wall:
 
 calc_angle_for_point:
 
-    stp
-
     ; ---------------------------------------------------------------------------------------
     ; From here on, we calculate the angle based on the absolute values of DELTA_X and DELTA_Y
     ; We can -later on- normalize the result using QUADRANT_CORRECTION and FLIP_TAN_ANGLE
@@ -375,6 +464,7 @@ calc_angle_for_point:
     bcc dx_smaller_than_dy
     lda DELTA_X
     cmp DELTA_Y
+    beq dx_equal_to_dy
     bcc dx_smaller_than_dy
 
 dy_smaller_than_or_equal_to_dx:
@@ -407,6 +497,18 @@ dy_smaller_than_or_equal_to_dx:
     lda invtangens, y
     
     bra do_tan_lookup
+    
+dx_equal_to_dy:
+
+    ; Since x and y are the same, we are at 45 degrees (228)
+    lda #228
+    sta RAY_INDEX
+    lda #0              ; The angle from invtangens is always < 256 (so the high byte is 0)
+    sta RAY_INDEX+1
+    
+    ; No need to look this up in the invtangens table
+    
+    bra tan_angle_result_is_correct
     
 dx_smaller_than_dy:
 
