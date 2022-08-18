@@ -82,8 +82,7 @@ draw_3d_view:
 
 draw_walls:
 
-;    lda #0
-    lda #1
+    lda #0
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
@@ -127,8 +126,8 @@ draw_wall:
     ; Given the direction the player is facing we can also determine what would be the screen start ray index (left most angle in the viewing area of the player, relative to the normal line)
     ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
     
-    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 30 degrees) - (WALL_INFO_FACING_DIR-2) * 90 degrees
-    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 152) - (WALL_INFO_FACING_DIR-2) * 456
+    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 30 degrees) - (WALL_FACING_DIR-2) * 90 degrees
+    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 152) - (WALL_FACING_DIR-2) * 456
     
     ; We can now also determine from which and to which ray index the wall extends (relative to the normal line)
     
@@ -150,7 +149,7 @@ draw_wall:
     
     ; TODO: if the wall is facing the player from its back, we dont have to consider drawing it at all, so that could be an easy out.
     
-    lda WALL_INFO_FACING_DIR
+    lda WALL_FACING_DIR
     cmp #3  ; west
     beq wall_facing_west_jmp
     cmp #2  ; south
@@ -780,13 +779,6 @@ HACK_wall_height_wall_0:
 
 
 HACK_wall_height_wall_1:    
-
-    stp
-    lda FROM_RAY_INDEX
-    lda FROM_RAY_INDEX+1
-    lda TO_RAY_INDEX
-    lda TO_RAY_INDEX+1
-
 
 
     lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
