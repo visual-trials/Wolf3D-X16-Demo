@@ -12,6 +12,11 @@ wall_1_info:
     .byte 3, 0 ; end x, y
     .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
 
+wall_2_info:
+    .byte 0, 0 ; start x, y
+    .byte 0, 3 ; end x, y
+    .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
 setup_wall_info:
 
     ldy #0
@@ -40,6 +45,19 @@ setup_wall_info:
     lda wall_1_info+4
     sta WALL_INFO_FACING_DIR, y
     
+    ldy #2
+
+    lda wall_2_info
+    sta WALL_INFO_START_X, y
+    lda wall_2_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_2_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_2_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_2_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
     rts
 
 setup_player:
@@ -59,11 +77,13 @@ setup_player:
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player (0-1823)
-;    lda #152              ; 30 degrees from facing straight north
+    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-    lda #228
+;    lda #228
+;    lda #<(1824-228)
     sta PLAYER_LOOKING_DIR
     lda #0
+;    lda #>(1824-228)
     sta PLAYER_LOOKING_DIR+1
     
     rts
@@ -85,6 +105,7 @@ draw_3d_view:
 draw_walls:
 
     lda #0
+;    lda #2
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
@@ -110,8 +131,8 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-;    cmp #1
-    cmp #2
+    cmp #1
+;    cmp #3
     bne draw_next_wall
     
     rts
@@ -532,12 +553,12 @@ wall_facing_east_screen_start_ray_calculated:
     ; First determine the normal distance to the wall, in the x-direction (delta X)
     
     sec
-    lda #0                      ; Walls are always on .0
-    sbc PLAYER_POS_X
+    lda PLAYER_POS_X
+    sbc #0                      ; Walls are always on .0
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_X
-    lda WALL_START_X            ; it doesnt matter if we use WALL_START_X or WALL_END_X here
-    sbc PLAYER_POS_X+1
+    lda PLAYER_POS_X+1
+    sbc WALL_START_X            ; it doesnt matter if we use WALL_START_X or WALL_END_X here
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_X+1
     
@@ -556,7 +577,7 @@ wall_facing_east_screen_start_ray_calculated:
 wall_facing_east_starting_south:
 
     ; We need to correct the angle +2 quadrants to be normalized
-    lda #2
+    lda #3
     sta QUADRANT_CORRECTION
     
     ; By default we dont need to flip the tan() result in this quadrant
@@ -577,7 +598,7 @@ wall_facing_east_starting_south:
 wall_facing_east_starting_north:
     
     ; We need to correct the angle +3 quadrants to be normalized
-    lda #3
+    lda #0
     sta QUADRANT_CORRECTION
     
     ; By default we do need to flip the tan() result in this quadrant
@@ -615,7 +636,7 @@ wall_facing_east_calc_angle_for_start_of_wall:
 wall_facing_east_ending_south:
 
     ; We need to correct the angle +2 quadrants to be normalized
-    lda #2
+    lda #3
     sta QUADRANT_CORRECTION
     
     ; By default we do need to flip the tan() result in this quadrant
@@ -636,11 +657,11 @@ wall_facing_east_ending_south:
 wall_facing_east_ending_north:
     
     ; We need to correct the angle +2 quadrants to be normalized
-    lda #2
+    lda #0
     sta QUADRANT_CORRECTION
     
     ; By default we dont need to flip the tan() result in this quadrant
-    lda #0
+    lda #1
     sta FLIP_TAN_ANGLE
     
     ; bra wall_facing_east_calc_angle_for_end_of_wall
@@ -658,6 +679,15 @@ wall_facing_east_calc_angle_for_end_of_wall:
 
     
 calculated_normal_distance_to_wall:
+
+;    stp
+;    lda SCREEN_START_RAY
+;    lda SCREEN_START_RAY+1
+;    lda FROM_RAY_INDEX
+;    lda FROM_RAY_INDEX+1
+;    lda TO_RAY_INDEX
+;    lda TO_RAY_INDEX+1
+
 
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
@@ -730,7 +760,10 @@ to_ray_is_not_right_of_screen:
     
 ; FIXME!
     lda CURRENT_WALL_INDEX
-    bne HACK_wall_height_wall_1
+    cmp #1
+    beq HACK_wall_height_wall_1
+    cmp #2
+    beq HACK_wall_height_wall_2
     
 HACK_wall_height_wall_0:
     ; FIXME: from wall height is now hardcoded to 128
@@ -802,6 +835,28 @@ HACK_wall_height_wall_1:
     rts
 
 
+HACK_wall_height_wall_2:    
+
+
+    lda #200
+    sta FROM_WALL_HEIGHT
+    lda #0
+    sta FROM_WALL_HEIGHT+1
+
+    ; FIXME: this value (180) is GUESSED!
+    lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
+    sta TO_WALL_HEIGHT
+    lda #0
+    sta TO_WALL_HEIGHT+1
+
+    lda #0
+    sta WALL_HEIGHT_INCREASES
+
+    jsr draw_wall_part
+
+    rts
+    
+    
 calc_angle_for_point:
 
     ; ---------------------------------------------------------------------------------------
