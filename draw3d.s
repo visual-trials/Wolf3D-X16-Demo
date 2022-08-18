@@ -78,13 +78,13 @@ setup_player:
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player (0-1823)
-;    lda #152              ; 30 degrees from facing straight north
+    lda #152              ; 30 degrees from facing straight north
 ; FIXME
 ;    lda #228
-    lda #<(1824-228)
+;    lda #<(1824-228)
     sta PLAYER_LOOKING_DIR
-;    lda #0
-    lda #>(1824-228)
+    lda #0
+;    lda #>(1824-228)
     sta PLAYER_LOOKING_DIR+1
     
     rts
@@ -106,7 +106,7 @@ draw_3d_view:
 draw_walls:
 
     lda #0
-    lda #2
+;    lda #2
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
@@ -132,8 +132,8 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-;    cmp #1
-    cmp #3
+    cmp #2
+;    cmp #3
     bne draw_next_wall
     
     rts
@@ -1267,9 +1267,24 @@ got_negative_tangens_left:
     
 got_tangens_left:
     
-    ; FIXME: We do a * 2.0 (normal distance from wall), then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). So effectively divide by 2 here
-; FIXME: multiply with NORMAL_DISTANCE_TO_WALL instead! (and 'cache' the distance in the multiplier)
+    ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
+    ;        note that this needs to run in RAM in order for the 'cache' to work.
+
+    ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
+    sta MULTIPLICAND
+    stz MULTIPLICAND+1   ; FIXME: we should get the TANGENS_HIGH instead!!
+    
+    ; SPEED: copying this 16-bit value is slow
+    lda NORMAL_DISTANCE_TO_WALL
+    sta MULTIPLIER
+    lda NORMAL_DISTANCE_TO_WALL+1
+    sta MULTIPLIER+1
+
+    jsr multply_16bits
+    lda PRODUCT+1
     lsr
+    lsr
+    
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
 
@@ -1405,9 +1420,24 @@ got_negative_tangens_right:
     sbc TMP1
     
 got_tangens_right:
-    ; FIXME: We do a * 2.0 (normal distance from wall), then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). So effectively divide by 2 here
-    ; FIXME: multiply with NORMAL_DISTANCE_TO_WALL instead! (and 'cache' the distance in the multiplier)
+    ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
+    ;        note that this needs to run in RAM in order for the 'cache' to work.
+
+    ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
+    sta MULTIPLICAND
+    stz MULTIPLICAND+1   ; FIXME: we should get the TANGENS_HIGH instead!!
+    
+    ; SPEED: copying this 16-bit value is slow
+    lda NORMAL_DISTANCE_TO_WALL
+    sta MULTIPLIER
+    lda NORMAL_DISTANCE_TO_WALL+1
+    sta MULTIPLIER+1
+
+    jsr multply_16bits
+    lda PRODUCT+1
     lsr
+    lsr
+    
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
 

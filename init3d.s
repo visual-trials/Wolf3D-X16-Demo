@@ -290,15 +290,15 @@ done_reading_and_writing_for_virtual_pixel_top:
 
     ; Increment the texture cursor
     clc
-	lda TEXTURE_CURSOR
-	adc TEXTURE_INCREMENT
-	sta TEXTURE_CURSOR
-	lda TEXTURE_CURSOR+1
-	adc TEXTURE_INCREMENT+1
-	sta TEXTURE_CURSOR+1
-	lda TEXTURE_CURSOR+2
-	adc TEXTURE_INCREMENT+2
-	sta TEXTURE_CURSOR+2
+    lda TEXTURE_CURSOR
+    adc TEXTURE_INCREMENT
+    sta TEXTURE_CURSOR
+    lda TEXTURE_CURSOR+1
+    adc TEXTURE_INCREMENT+1
+    sta TEXTURE_CURSOR+1
+    lda TEXTURE_CURSOR+2
+    adc TEXTURE_INCREMENT+2
+    sta TEXTURE_CURSOR+2
     
     ; Increment the virtual cursor
     inc VIRTUAL_SCREEN_CURSOR
@@ -354,15 +354,15 @@ done_reading_and_writing_for_virtual_pixel_bottom:
 
     ; Increment the texture cursor
     clc
-	lda TEXTURE_CURSOR
-	adc TEXTURE_INCREMENT
-	sta TEXTURE_CURSOR
-	lda TEXTURE_CURSOR+1
-	adc TEXTURE_INCREMENT+1
-	sta TEXTURE_CURSOR+1
-	lda TEXTURE_CURSOR+2
-	adc TEXTURE_INCREMENT+2
-	sta TEXTURE_CURSOR+2
+    lda TEXTURE_CURSOR
+    adc TEXTURE_INCREMENT
+    sta TEXTURE_CURSOR
+    lda TEXTURE_CURSOR+1
+    adc TEXTURE_INCREMENT+1
+    sta TEXTURE_CURSOR+1
+    lda TEXTURE_CURSOR+2
+    adc TEXTURE_INCREMENT+2
+    sta TEXTURE_CURSOR+2
     
     ; Increment the virtual cursor
     
@@ -577,42 +577,73 @@ divide_24bits:
     phx
     phy
 
-	lda #0	        ; preset REMAINDER to 0
-	sta REMAINDER
-	sta REMAINDER+1
-	sta REMAINDER+2
-	ldx #24	        ; repeat for each bit: ...
+    lda #0            ; preset REMAINDER to 0
+    sta REMAINDER
+    sta REMAINDER+1
+    sta REMAINDER+2
+    ldx #24            ; repeat for each bit: ...
 
 divloop:
-	asl DIVIDEND	; DIVIDEND lb & hb*2, msb -> Carry
-	rol DIVIDEND+1	
-	rol DIVIDEND+2
-	rol REMAINDER	; REMAINDER lb & hb * 2 + msb from carry
-	rol REMAINDER+1
-	rol REMAINDER+2
-	lda REMAINDER
-	sec
-	sbc DIVISOR	    ; substract DIVISOR to see if it fits in
-	tay	            ; lb result -> Y, for we may need it later
-	lda REMAINDER+1
-	sbc DIVISOR+1
+    asl DIVIDEND    ; DIVIDEND lb & hb*2, msb -> Carry
+    rol DIVIDEND+1    
+    rol DIVIDEND+2
+    rol REMAINDER    ; REMAINDER lb & hb * 2 + msb from carry
+    rol REMAINDER+1
+    rol REMAINDER+2
+    lda REMAINDER
+    sec
+    sbc DIVISOR        ; substract DIVISOR to see if it fits in
+    tay                ; lb result -> Y, for we may need it later
+    lda REMAINDER+1
+    sbc DIVISOR+1
     sta TMP1
-	lda REMAINDER+2
-	sbc DIVISOR+2
-	bcc divskip     ; if carry=0 then DIVISOR didnt fit in yet
+    lda REMAINDER+2
+    sbc DIVISOR+2
+    bcc divskip     ; if carry=0 then DIVISOR didnt fit in yet
 
-	sta REMAINDER+2 ; else save substraction result as new REMAINDER,
+    sta REMAINDER+2 ; else save substraction result as new REMAINDER,
     lda TMP1
-	sta REMAINDER+1
-	sty REMAINDER	
-	inc DIVIDEND    ; and INCrement result cause DIVISOR fit in 1 times
+    sta REMAINDER+1
+    sty REMAINDER    
+    inc DIVIDEND    ; and INCrement result cause DIVISOR fit in 1 times
 
 divskip:
-	dex
-	bne divloop	
+    dex
+    bne divloop    
     
     ply
     plx
-	rts
+    rts
 
+
+    
+; https://codebase64.org/doku.php?id=base:16bit_multiplication_32-bit_product
+
+multply_16bits:
+    phx
+    lda    #$00
+    sta    PRODUCT+2    ; clear upper bits of PRODUCT
+    sta    PRODUCT+3 
+    ldx    #$10         ; set binary count to 16 
+shift_r:
+    lsr    MULTIPLIER+1 ; divide MULTIPLIER by 2 
+    ror    MULTIPLIER
+    bcc    rotate_r 
+    lda    PRODUCT+2    ; get upper half of PRODUCT and add MULTIPLICAND
+    clc
+    adc    MULTIPLICAND
+    sta    PRODUCT+2
+    lda    PRODUCT+3 
+    adc    MULTIPLICAND+1
+rotate_r:
+    ror                 ; rotate partial PRODUCT 
+    sta    PRODUCT+3 
+    ror    PRODUCT+2
+    ror    PRODUCT+1 
+    ror    PRODUCT 
+    dex
+    bne    shift_r 
+    plx
+    
+    rts
     

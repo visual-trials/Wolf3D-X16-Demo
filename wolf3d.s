@@ -80,6 +80,11 @@ DELTA_X                   = $5E ; 5F
 DELTA_Y                   = $60 ; 61
 TESTING_RAY_INDEX         = $62 ; 63
 
+; Used only by (slow) 16bit multiplier (multply_16bits)
+MULTIPLIER                = $64 ; 65
+MULTIPLICAND              = $66 ; 67
+PRODUCT                   = $68 ; 69 ; 6A ; 6B
+
 
 ; === VRAM addresses ===
 
