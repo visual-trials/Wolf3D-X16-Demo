@@ -78,6 +78,7 @@ QUADRANT_CORRECTION       = $5C
 FLIP_TAN_ANGLE            = $5D
 DELTA_X                   = $5E ; 5F
 DELTA_Y                   = $60 ; 61
+TESTING_RAY_INDEX         = $62 ; 63
 
 
 ; === VRAM addresses ===

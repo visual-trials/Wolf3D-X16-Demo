@@ -10,7 +10,7 @@ wall_0_info:
 wall_1_info:
     .byte 3, 3 ; start x, y
     .byte 3, 0 ; end x, y
-    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
 
 setup_wall_info:
 
@@ -26,7 +26,7 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_0_info+4
     sta WALL_INFO_FACING_DIR, y
-    
+
     ldy #1
 
     lda wall_1_info
@@ -82,7 +82,8 @@ draw_3d_view:
 
 draw_walls:
 
-    lda #0
+;    lda #0
+    lda #1
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
@@ -108,13 +109,11 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #1
-;    cmp #2
+;    cmp #1
+    cmp #2
     bne draw_next_wall
     
     rts
-    
-    
     
 
     
@@ -127,6 +126,9 @@ draw_wall:
     
     ; Given the direction the player is facing we can also determine what would be the screen start ray index (left most angle in the viewing area of the player, relative to the normal line)
     ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
+    
+    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 30 degrees) - (WALL_INFO_FACING_DIR-2) * 90 degrees
+    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 152) - (WALL_INFO_FACING_DIR-2) * 456
     
     ; We can now also determine from which and to which ray index the wall extends (relative to the normal line)
     
@@ -180,21 +182,173 @@ wall_facing_north:
     sta NORMAL_DISTANCE_TO_WALL+1
     jmp calculated_normal_distance_to_wall
     
-wall_facing_east:
+
+; #############################################################################################################
+; #                                                                                                           #
+; #                                            WALL FACING WEST                                               #
+; #                                                                                                           #
+; #############################################################################################################
+
+wall_facing_west:
+
     sec
-    lda PLAYER_POS_X
-    sbc #0                      ; Walls are always on .0
+    lda PLAYER_LOOKING_DIR
+    sbc #<(152+456*1)
+    sta SCREEN_START_RAY
+    lda PLAYER_LOOKING_DIR+1
+    sbc #>(152+456*1)
+    sta SCREEN_START_RAY+1
+    
+    bpl wall_facing_west_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
+    
+    clc
+    lda SCREEN_START_RAY
+    adc #<(1824)
+    sta SCREEN_START_RAY
+    lda SCREEN_START_RAY+1
+    adc #>(1824)
+    sta SCREEN_START_RAY+1
+
+wall_facing_west_screen_start_ray_calculated:
+    
+    ; ============ START OF WEST FACING WALL ===========
+
+    ; First determine the normal distance to the wall, in the x-direction (delta X)
+    
+    sec
+    lda #0                      ; Walls are always on .0
+    sbc PLAYER_POS_X
     sta NORMAL_DISTANCE_TO_WALL
-    lda PLAYER_POS_X+1
-    sbc WALL_START_X
+    sta DELTA_X
+    lda WALL_START_X            ; it doesnt matter if we use WALL_START_X or WALL_END_X here
+    sbc PLAYER_POS_X+1
     sta NORMAL_DISTANCE_TO_WALL+1
+    sta DELTA_X+1
+    
+    ; Determine the distance in the y-direction (delta Y) for the START of the wall
+    sec
+    lda #0                      ; Walls always start on .0
+    sbc PLAYER_POS_Y
+    sta DELTA_Y
+    lda WALL_START_Y
+    sbc PLAYER_POS_Y+1
+    sta DELTA_Y+1
+    
+    ; Check if DELTA_Y is negative: if so, this means it starts to the south of the player, if not, it starts to the north
+    bpl wall_facing_west_starting_north
+    
+wall_facing_west_starting_south:
+
+    ; We need to correct the angle +2 quadrants to be normalized
+    lda #2
+    sta QUADRANT_CORRECTION
+    
+    ; By default we dont need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+
+    ; negating DELTA_Y
+    sec
+    lda #0
+    sbc DELTA_Y
+    sta DELTA_Y
+    lda #0
+    sbc DELTA_Y+1
+    sta DELTA_Y+1
+    
+    bra wall_facing_west_calc_angle_for_start_of_wall
+    
+wall_facing_west_starting_north:
+    
+    ; We need to correct the angle +3 quadrants to be normalized
+    lda #3
+    sta QUADRANT_CORRECTION
+    
+    ; By default we do need to flip the tan() result in this quadrant
+    lda #1
+    sta FLIP_TAN_ANGLE
+    
+    bra wall_facing_west_calc_angle_for_start_of_wall
+    
+wall_facing_west_calc_angle_for_start_of_wall:
+    jsr calc_angle_for_point
+    
+    lda RAY_INDEX
+    sta FROM_RAY_INDEX
+    lda RAY_INDEX+1
+    sta FROM_RAY_INDEX+1
+
+    ; ============ END OF WEST FACING WALL ===========
+    
+    ; We already determined the distance in x-direction above 
+    
+    ;  ... So nothing todo here for DELTA_X...
+
+    ; Determine the distance in the y-direction (delta Y) for the END of the wall
+    sec
+    lda #0                      ; Walls always end on .0
+    sbc PLAYER_POS_Y
+    sta DELTA_Y
+    lda WALL_END_Y
+    sbc PLAYER_POS_Y+1
+    sta DELTA_Y+1
+    
+    ; Check if DELTA_Y is negative: if so, this means it end to the south of the player, if not, it starts to the north
+    bpl wall_facing_west_ending_north
+    
+wall_facing_west_ending_south:
+
+    ; We need to correct the angle +2 quadrants to be normalized
+    lda #2
+    sta QUADRANT_CORRECTION
+    
+    ; By default we do need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+
+    ; negating DELTA_Y
+    sec
+    lda #0
+    sbc DELTA_Y
+    sta DELTA_Y
+    lda #0
+    sbc DELTA_Y+1
+    sta DELTA_Y+1
+    
+    bra wall_facing_west_calc_angle_for_end_of_wall
+    
+wall_facing_west_ending_north:
+    
+    ; We need to correct the angle +2 quadrants to be normalized
+    lda #2
+    sta QUADRANT_CORRECTION
+    
+    ; By default we dont need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+    
+    ; bra wall_facing_west_calc_angle_for_end_of_wall
+    
+wall_facing_west_calc_angle_for_end_of_wall:
+    jsr calc_angle_for_point
+    
+    lda RAY_INDEX
+    sta TO_RAY_INDEX
+    lda RAY_INDEX+1
+    sta TO_RAY_INDEX+1
+    
     jmp calculated_normal_distance_to_wall
+
+
+
+; #############################################################################################################
+; #                                                                                                           #
+; #                                            WALL FACING SOUTH                                              #
+; #                                                                                                           #
+; #############################################################################################################
 
 wall_facing_south:
 
-    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 30 degrees) - (WALL_INFO_FACING_DIR-2) * 90 degrees
-    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 152) - (WALL_INFO_FACING_DIR-2) * 456
-    
     sec
     lda PLAYER_LOOKING_DIR
     sbc #<(152+456*0)
@@ -342,15 +496,165 @@ wall_facing_south_calc_angle_for_end_of_wall:
     
     jmp calculated_normal_distance_to_wall
     
-wall_facing_west:
+    
+
+; #############################################################################################################
+; #                                                                                                           #
+; #                                            WALL FACING EAST                                               #
+; #                                                                                                           #
+; #############################################################################################################
+
+wall_facing_east:
+
+    sec
+    lda PLAYER_LOOKING_DIR
+    sbc #<(152+456*3)
+    sta SCREEN_START_RAY
+    lda PLAYER_LOOKING_DIR+1
+    sbc #>(152+456*3)
+    sta SCREEN_START_RAY+1
+    
+    bpl wall_facing_east_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
+    
+    clc
+    lda SCREEN_START_RAY
+    adc #<(1824)
+    sta SCREEN_START_RAY
+    lda SCREEN_START_RAY+1
+    adc #>(1824)
+    sta SCREEN_START_RAY+1
+
+wall_facing_east_screen_start_ray_calculated:
+    
+    ; ============ START OF EAST FACING WALL ===========
+
+    ; First determine the normal distance to the wall, in the x-direction (delta X)
+    
     sec
     lda #0                      ; Walls are always on .0
     sbc PLAYER_POS_X
     sta NORMAL_DISTANCE_TO_WALL
-    lda WALL_START_X
+    sta DELTA_X
+    lda WALL_START_X            ; it doesnt matter if we use WALL_START_X or WALL_END_X here
     sbc PLAYER_POS_X+1
     sta NORMAL_DISTANCE_TO_WALL+1
-    ; jmp calculated_normal_distance_to_wall
+    sta DELTA_X+1
+    
+    ; Determine the distance in the y-direction (delta Y) for the START of the wall
+    sec
+    lda #0                      ; Walls always start on .0
+    sbc PLAYER_POS_Y
+    sta DELTA_Y
+    lda WALL_START_Y
+    sbc PLAYER_POS_Y+1
+    sta DELTA_Y+1
+    
+    ; Check if DELTA_Y is negative: if so, this means it starts to the south of the player, if not, it starts to the north
+    bpl wall_facing_east_starting_north
+    
+wall_facing_east_starting_south:
+
+    ; We need to correct the angle +2 quadrants to be normalized
+    lda #2
+    sta QUADRANT_CORRECTION
+    
+    ; By default we dont need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+
+    ; negating DELTA_Y
+    sec
+    lda #0
+    sbc DELTA_Y
+    sta DELTA_Y
+    lda #0
+    sbc DELTA_Y+1
+    sta DELTA_Y+1
+    
+    bra wall_facing_east_calc_angle_for_start_of_wall
+    
+wall_facing_east_starting_north:
+    
+    ; We need to correct the angle +3 quadrants to be normalized
+    lda #3
+    sta QUADRANT_CORRECTION
+    
+    ; By default we do need to flip the tan() result in this quadrant
+    lda #1
+    sta FLIP_TAN_ANGLE
+    
+    bra wall_facing_east_calc_angle_for_start_of_wall
+    
+wall_facing_east_calc_angle_for_start_of_wall:
+    jsr calc_angle_for_point
+    
+    lda RAY_INDEX
+    sta FROM_RAY_INDEX
+    lda RAY_INDEX+1
+    sta FROM_RAY_INDEX+1
+
+    ; ============ END OF EAST FACING WALL ===========
+    
+    ; We already determined the distance in x-direction above 
+    
+    ;  ... So nothing todo here for DELTA_X...
+
+    ; Determine the distance in the y-direction (delta Y) for the END of the wall
+    sec
+    lda #0                      ; Walls always end on .0
+    sbc PLAYER_POS_Y
+    sta DELTA_Y
+    lda WALL_END_Y
+    sbc PLAYER_POS_Y+1
+    sta DELTA_Y+1
+    
+    ; Check if DELTA_Y is negative: if so, this means it end to the south of the player, if not, it starts to the north
+    bpl wall_facing_east_ending_north
+    
+wall_facing_east_ending_south:
+
+    ; We need to correct the angle +2 quadrants to be normalized
+    lda #2
+    sta QUADRANT_CORRECTION
+    
+    ; By default we do need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+
+    ; negating DELTA_Y
+    sec
+    lda #0
+    sbc DELTA_Y
+    sta DELTA_Y
+    lda #0
+    sbc DELTA_Y+1
+    sta DELTA_Y+1
+    
+    bra wall_facing_east_calc_angle_for_end_of_wall
+    
+wall_facing_east_ending_north:
+    
+    ; We need to correct the angle +2 quadrants to be normalized
+    lda #2
+    sta QUADRANT_CORRECTION
+    
+    ; By default we dont need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+    
+    ; bra wall_facing_east_calc_angle_for_end_of_wall
+    
+wall_facing_east_calc_angle_for_end_of_wall:
+    jsr calc_angle_for_point
+    
+    lda RAY_INDEX
+    sta TO_RAY_INDEX
+    lda RAY_INDEX+1
+    sta TO_RAY_INDEX+1
+    
+    jmp calculated_normal_distance_to_wall
+
+
     
 calculated_normal_distance_to_wall:
 
@@ -423,6 +727,11 @@ to_ray_is_not_right_of_screen:
     ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
     ; Given these two distances, we can also determine the left and right wall heights.
     
+; FIXME!
+    lda CURRENT_WALL_INDEX
+    bne HACK_wall_height_wall_1
+    
+HACK_wall_height_wall_0:
     ; FIXME: from wall height is now hardcoded to 128
     lda #128
     sta FROM_WALL_HEIGHT
@@ -439,10 +748,11 @@ to_ray_is_not_right_of_screen:
     lda #0
     sta WALL_HEIGHT_INCREASES
     
-    
     jsr draw_wall_part
     
-    
+    rts
+
+
 ; FIXME: get rid of this if the above is dynamic
     .if 0
     
@@ -465,6 +775,20 @@ to_ray_is_not_right_of_screen:
     sta TO_RAY_INDEX+1
 
 
+; FIXME: get rid of this if the above is dynamic
+    .endif
+
+
+HACK_wall_height_wall_1:    
+
+    stp
+    lda FROM_RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    lda TO_RAY_INDEX
+    lda TO_RAY_INDEX+1
+
+
+
     lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
     sta FROM_WALL_HEIGHT
     lda #0
@@ -480,12 +804,9 @@ to_ray_is_not_right_of_screen:
     sta WALL_HEIGHT_INCREASES
 
     jsr draw_wall_part
-    
-; FIXME: get rid of this if the above is dynamic
-    .endif
-
 
     rts
+
 
 calc_angle_for_point:
 
