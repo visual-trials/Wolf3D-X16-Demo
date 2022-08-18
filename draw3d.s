@@ -4,7 +4,7 @@
 
 wall_0_info:
     .byte 0, 3 ; start x, y
-    .byte 3, 3 ; end x, y
+    .byte 4, 3 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
 wall_1_info:
@@ -178,6 +178,9 @@ wall_facing_east:
 
 wall_facing_south:
 
+    ; Given the direction the player is facing we can also determine what would be the screen start ray index (left most angle in the viewing area of the player, relative to the normal line)
+    ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
+    
     ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 30 degrees) - (WALL_INFO_FACING_DIR-2) * 90 degrees
     ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 152) - (WALL_INFO_FACING_DIR-2) * 456
     
@@ -268,7 +271,7 @@ wall_facing_south_calc_angle_for_start_of_wall:
     sta FROM_RAY_INDEX+1
 
     ; ============ END OF SOUTH FACING WALL ===========
-
+    
     ; We already determined the distance in y-direction above 
     
     ;  ... So nothing todo here for DELTA_Y...
@@ -316,7 +319,7 @@ wall_facing_south_ending_east:
     lda #0
     sta FLIP_TAN_ANGLE
     
-    bra wall_facing_south_calc_angle_for_end_of_wall
+    ; bra wall_facing_south_calc_angle_for_end_of_wall
     
 wall_facing_south_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
@@ -352,35 +355,40 @@ calculated_normal_distance_to_wall:
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 
+    ; For now we ONLY cut off walls if they do not fit into the screen
     
-
-
-
-
-
+    ; Check if start of wall is between the left and right of the screen
+    ; To do this, we first need to know the ray number on the screen (FROM_RAY_INDEX - SCREEN_START_RAY)
+    sec
+    lda FROM_RAY_INDEX
+    sbc SCREEN_START_RAY
+    sta TESTING_RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    sbc SCREEN_START_RAY+1
+    sta TESTING_RAY_INDEX+1
     
-    ; FIXME: from ray index is now hardcoded to 0
-    lda #0
+; FIXME: HACK!!
+    cmp #5
+    bcc from_ray_is_not_left_of_screen   
+;    bpl from_ray_is_not_left_of_screen
+    
+from_ray_is_left_of_screen:
+    ; Cut off left part of wall to the beginning of the screen
+    
+    lda SCREEN_START_RAY
     sta FROM_RAY_INDEX
-    lda #0
+    lda SCREEN_START_RAY+1
     sta FROM_RAY_INDEX+1
     
-    ; FIXME: to ray index is now hardcoded to 304 (=256+48)
-;    lda #(304-256)
-    lda #228   ; 45 degrees
-    sta TO_RAY_INDEX
-;    lda #1
-    lda #0
-    sta TO_RAY_INDEX+1
+    ; FIXME: only do this IF the wall is not COMPLETELY left of the screen!
     
-    ; Given the direction the player is facing we can also determine what would be the screen start ray index (left most angle in the viewing area of the player, relative to the normal line)
-    ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
-    
-    ; FIXME: screen start ray index is now hardcoded to 0
-    lda #0
-    sta SCREEN_START_RAY
-    lda #0
-    sta SCREEN_START_RAY+1
+from_ray_is_not_left_of_screen:
+
+
+; FIXME: check to ray index!
+; FIXME: check to ray index!
+; FIXME: check to ray index!
+
     
     ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part:
     ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
@@ -461,13 +469,16 @@ calc_angle_for_point:
     ; Check if dx < dy
     lda DELTA_X+1
     cmp DELTA_Y+1
+    beq dx_high_equal_to_dy_high
     bcc dx_smaller_than_dy
+    bra dy_smaller_than_dx
+dx_high_equal_to_dy_high:
     lda DELTA_X
     cmp DELTA_Y
     beq dx_equal_to_dy
     bcc dx_smaller_than_dy
 
-dy_smaller_than_or_equal_to_dx:
+dy_smaller_than_dx:
     ; We invert FLIP_TAN_ANGLE because y <= x
     lda FLIP_TAN_ANGLE
     eor #1
@@ -491,10 +502,8 @@ dy_smaller_than_or_equal_to_dx:
     ; FIXME: can we speed this up?
     jsr divide_24bits
     
-    ; FIXME?
-    ldy DIVIDEND+1 
-    
-    lda invtangens, y
+    ; We take the fraction-part, since that is the input/index of the invtangens table
+    ldy DIVIDEND
     
     bra do_tan_lookup
     
