@@ -899,7 +899,7 @@ dy_smaller_than_dx:
     lda #0
     sta DIVISOR+2
     
-    ; FIXME: can we speed this up?
+    ; SPEED: can we speed this up?
     jsr divide_24bits
     
     ; We take the fraction-part, since that is the input/index of the invtangens table
@@ -937,7 +937,7 @@ dx_smaller_than_dy:
     lda #0
     sta DIVISOR+2
     
-    ; FIXME: can we speed this up?
+    ; SPEED: can we speed this up?
     jsr divide_24bits
     
     ; We take the fraction-part, since that is the input/index of the invtangens table
@@ -1293,7 +1293,7 @@ got_tangens_left:
     ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
     and #$FE ; make even
     sta RAM_BANK
-    ; FIXME: remove this nop!
+    ; SPEED: remove this nop!
     nop
 
     jsr DRAW_COLUMN_CODE
@@ -1446,7 +1446,7 @@ got_tangens_right:
     ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
     and #$FE ; make even
     sta RAM_BANK
-    ; FIXME: remove this nop!
+    ; SPEED: remove this nop!
     nop
     
     jsr DRAW_COLUMN_CODE
