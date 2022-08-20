@@ -96,6 +96,7 @@ void CalcProjection (long focal)
     printf("Minimum distance (fixed) %f \n", (double)(MINDIST >> 16) + (double)(MINDIST & 0x0000ffff)/(double)(256*256));
     printf("Focal length (fixed) %f \n", (double)(focallength >> 16) + (double)(focallength & 0x0000ffff)/(double)(256*256));
     printf("Face distance %f \n", facedist);
+    printf("Face distance (fixed) %f \n", (double)((long)facedist >> 16) + (double)((long)facedist & 0x0000ffff)/(double)(256*256));
     printf("Half view %d px\n", halfview);
 
     //
