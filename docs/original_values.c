@@ -1,10 +1,12 @@
 #include <stdio.h>
 
+// Can be run online quickly: https://www.onlinegdb.com/online_c_compiler
+
 // From WL_MAIN.C
 
-#define FOCALLENGTH     (0x5700l)               // in global coordinates
+#define FOCALLENGTH     (0x5700l)               // in global coordinates             --> 0.340
 
-#define VIEWGLOBAL      0x10000                 // globals visable flush to wall
+#define VIEWGLOBAL      0x10000                 // globals visable flush to wall     --> 1.00
 
 #define VIEWWIDTH       256                     // size of view window
 #define VIEWHEIGHT      144
@@ -15,11 +17,13 @@
 
 #define PLAYERSIZE      MINDIST         // player radius
 
-#define GLOBAL1         (1l<<16)
-#define TILEGLOBAL      GLOBAL1
-#define PIXGLOBAL       (GLOBAL1/64)
+#define GLOBAL1         (1l<<16)        //                                          --> 1.00
+#define TILEGLOBAL      GLOBAL1         //                                          --> 1.00
+#define PIXGLOBAL       (GLOBAL1/64)        //                                      --> 1.00 / 64
 
-#define MINDIST         (0x5800l)
+#define TILESHIFT              16l
+
+#define MINDIST         (0x5800l)       //                                          --> 0.344
 
 #define MAXSCALEHEIGHT  256                     // largest scale on largest view
 
@@ -133,11 +137,11 @@ void CalcProjection (long focal)
     
     
     
-    // NOTE: We are assuming that a single TILE in the game is 11.0 global units big (=TILEGLOBAL)
+    // NOTE: We are assuming that a single TILE in the game is 1.0 global units big (=TILEGLOBAL)
     // This would mean that -when looking at a wall from a distance of one tile- the wall would be this high:
     
-    // 211968 / 11 * 256 = 75.27 px
-    // Since wall heights are halved, this would mean an actual wall height of 151 pixels!
+    // 211968 / 1.0 * 256 = 828 px ??
+    // BUT this does not yet make sence! This cannot be an entry into a 256-entry table!
     
     
 }
