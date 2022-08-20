@@ -146,8 +146,6 @@ void CalcProjection (long focal)
     
 }
         
-        
-}
 
 boolean SetViewSize (unsigned width, unsigned height)
 {
