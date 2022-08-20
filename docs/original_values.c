@@ -21,7 +21,7 @@
 #define TILEGLOBAL      GLOBAL1         //                                          --> 1.00
 #define PIXGLOBAL       (GLOBAL1/64)        //                                      --> 1.00 / 64
 
-#define TILESHIFT              16l
+#define TILESHIFT              16l      // 16 bits shift to the left
 
 #define MINDIST         (0x5800l)       //                                          --> 0.344
 
