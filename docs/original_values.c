@@ -2,6 +2,21 @@
 
 // Can be run online quickly: https://www.onlinegdb.com/online_c_compiler
 
+/* Current output when run:
+
+View width 304 px
+View height 152 px
+Minimum distance (fixed) 0.343750 
+Focal length (fixed) 0.339844 
+Face distance 44800.000000 
+Half view 152 px
+Scale 0.003159 
+Height numerator 211968 
+Min Height div 7
+
+*/
+
+
 // From WL_MAIN.C
 
 #define FOCALLENGTH     (0x5700l)               // in global coordinates             --> 0.340
