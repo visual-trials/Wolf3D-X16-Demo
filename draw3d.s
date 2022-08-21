@@ -213,16 +213,16 @@ looking_dir_info_updated:
     bne is_high_index_sine
 is_low_index_sine:
     ldy RAY_INDEX
-    lda SINUS_LOW,y
+    lda SINE_LOW,y
     sta LOOKING_DIR_SINE
-    lda SINUS_HIGH,y
+    lda SINE_HIGH,y
     sta LOOKING_DIR_SINE+1
     bra got_looking_dir_sine
 is_high_index_sine:
     ldy LOOKING_DIR
-    lda SINUS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    lda SINE_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
     sta LOOKING_DIR_SINE
-    lda SINUS_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
+    lda SINE_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
     sta LOOKING_DIR_SINE+1
 got_looking_dir_sine:
 
@@ -232,17 +232,17 @@ got_looking_dir_sine:
     bne is_high_index_cosine
 is_low_index_cosine:
     ldy RAY_INDEX
-    lda COSINUS_LOW,y
-    sta LOOKING_DIR_SINE
-    lda COSINUS_HIGH,y
-    sta LOOKING_DIR_SINE+1
+    lda COSINE_LOW,y
+    sta LOOKING_DIR_COSINE
+    lda COSINE_HIGH,y
+    sta LOOKING_DIR_COSINE+1
     bra got_looking_dir_cosine
 is_high_index_cosine:
     ldy LOOKING_DIR
-    lda COSINUS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
-    sta LOOKING_DIR_SINE
-    lda COSINUS_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
-    sta LOOKING_DIR_SINE+1
+    lda COSINE_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    sta LOOKING_DIR_COSINE
+    lda COSINE_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
+    sta LOOKING_DIR_COSINE+1
 got_looking_dir_cosine:
 
     rts
@@ -1207,7 +1207,7 @@ dy_smaller_than_dx:
     ; SPEED: can we speed this up?
     jsr divide_24bits
     
-    ; We take the fraction-part, since that is the input/index of the invtangens table
+    ; We take the fraction-part, since that is the input/index of the invtangent table
     ldy DIVIDEND
     
     bra do_tan_lookup
@@ -1217,10 +1217,10 @@ dx_equal_to_dy:
     ; Since x and y are the same, we are at 45 degrees (228)
     lda #228
     sta RAY_INDEX
-    lda #0              ; The angle from invtangens is always < 256 (so the high byte is 0)
+    lda #0              ; The angle from invtangent is always < 256 (so the high byte is 0)
     sta RAY_INDEX+1
     
-    ; No need to look this up in the invtangens table
+    ; No need to look this up in the invtangent table
     
     bra tan_angle_result_is_correct
     
@@ -1245,18 +1245,18 @@ dx_smaller_than_dy:
     ; SPEED: can we speed this up?
     jsr divide_24bits
     
-    ; We take the fraction-part, since that is the input/index of the invtangens table
+    ; We take the fraction-part, since that is the input/index of the invtangent table
     ldy DIVIDEND
     
 do_tan_lookup:
     
-    lda invtangens, y
+    lda invtangent, y
     
     sta RAY_INDEX
-    lda #0              ; The angle from invtangens is always < 256 (so the high byte is 0)
+    lda #0              ; The angle from invtangent is always < 256 (so the high byte is 0)
     sta RAY_INDEX+1
     
-    ; We check if the invtangens result should be flipped
+    ; We check if the invtangent result should be flipped
     
     ldy FLIP_TAN_ANGLE
     beq tan_angle_result_is_correct
@@ -1271,7 +1271,7 @@ do_tan_lookup:
     
 tan_angle_result_is_correct:
 
-    ; We assume here the (flipped) result of invtangens is in a
+    ; We assume here the (flipped) result of invtangent is in a
     
     ldy QUADRANT_CORRECTION
     beq add_0_quadrants_to_angle
@@ -1521,11 +1521,11 @@ draw_next_column_left:
     sta VERA_CTRL
     lda #%01110001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 64 bytes (=7=%0111)
     sta VERA_ADDR_BANK
-    ; FIXME: we should not use only ONE texture! -> use (high) result of tangens to determine which cell of the wall you are in!
+    ; FIXME: we should not use only ONE texture! -> use (high) result of tangent to determine which cell of the wall you are in!
     lda #>TEXTURE_DATA
     sta VERA_ADDR_HIGH
     
-    ; FIXME: also get TANGENS_HIGH!
+    ; FIXME: also get TANGENT_HIGH!
     lda RAY_INDEX+1
     cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
     bcs is_negative_left
@@ -1534,17 +1534,17 @@ draw_next_column_left:
     bne is_high_positive_ray_index_left
 is_low_positive_ray_index_left:
     ldy RAY_INDEX
-    lda TANGENS_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
-    bra got_tangens_left
+    lda TANGENT_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
+    bra got_tangent_left
 is_high_positive_ray_index_left:
     ldy RAY_INDEX
-    lda TANGENS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
-    bra got_tangens_left
+    lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    bra got_tangent_left
 
 is_negative_left:
     ; SPEED: we do this EACH time, this can be sped up!!
 
-    ; We substract RAY_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangens
+    ; We substract RAY_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangent
     sec 
 	lda #$20
 	sbc RAY_INDEX
@@ -1556,28 +1556,28 @@ is_negative_left:
     bne is_high_negative_ray_index_left
 is_low_negative_ray_index_left:
     ldy RAY_INDEX_NEGATED
-    lda TANGENS_LOW,y             ; When the negated ray index >= 256, we retrieve from 256 positions further
-    bra got_negative_tangens_left
+    lda TANGENT_LOW,y             ; When the negated ray index >= 256, we retrieve from 256 positions further
+    bra got_negative_tangent_left
 is_high_negative_ray_index_left:
     ldy RAY_INDEX_NEGATED
-    lda TANGENS_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
 
-got_negative_tangens_left:
-    ; We negate the tangens result
+got_negative_tangent_left:
+    ; We negate the tangent result
     ; SPEED: can this be done faster?
     sec
     sta TMP1
     lda #0
     sbc TMP1
     
-got_tangens_left:
+got_tangent_left:
     
     ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
     ;        note that this needs to run in RAM in order for the 'cache' to work.
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
     sta MULTIPLICAND
-    stz MULTIPLICAND+1   ; FIXME: we should get the TANGENS_HIGH instead!!
+    stz MULTIPLICAND+1   ; FIXME: we should get the tangent_HIGH instead!!
     
     ; SPEED: copying this 16-bit value is slow
     lda NORMAL_DISTANCE_TO_WALL
@@ -1674,11 +1674,11 @@ draw_next_column_right:
     sta VERA_CTRL
     lda #%01110001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 64 bytes (=7=%0111)
     sta VERA_ADDR_BANK
-    ; FIXME: we should not use only ONE texture! -> use (high) result of tangens to determine which cell of the wall you are in!
+    ; FIXME: we should not use only ONE texture! -> use (high) result of tangent to determine which cell of the wall you are in!
     lda #>TEXTURE_DATA
     sta VERA_ADDR_HIGH
     
-    ; FIXME: also get TANGENS_HIGH!
+    ; FIXME: also get TANGENT_HIGH!
     lda RAY_INDEX+1
     cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
     bcs is_negative_right
@@ -1687,18 +1687,18 @@ draw_next_column_right:
     bne is_high_positive_ray_index_right
 is_low_positive_ray_index_right:
     ldy RAY_INDEX
-    lda TANGENS_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
-    bra got_tangens_right
+    lda TANGENT_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
+    bra got_tangent_right
 is_high_positive_ray_index_right:
     ldy RAY_INDEX
-    lda TANGENS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
     
-    bra got_tangens_right
+    bra got_tangent_right
 
 is_negative_right:
     ; SPEED: we do this EACH time, this can be sped up!!
 
-    ; We substract RAY_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangens
+    ; We substract RAY_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangent
     sec 
 	lda #$20
 	sbc RAY_INDEX
@@ -1710,27 +1710,27 @@ is_negative_right:
     bne is_high_negative_ray_index_right
 is_low_negative_ray_index_right:
     ldy RAY_INDEX_NEGATED
-    lda TANGENS_LOW,y             ; When the negated ray index >= 256, we retrieve from 256 positions further
-    bra got_negative_tangens_right
+    lda TANGENT_LOW,y             ; When the negated ray index >= 256, we retrieve from 256 positions further
+    bra got_negative_tangent_right
 is_high_negative_ray_index_right:
     ldy RAY_INDEX_NEGATED
-    lda TANGENS_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
 
-got_negative_tangens_right:
-    ; We negate the tangens result
+got_negative_tangent_right:
+    ; We negate the tangent result
     ; SPEED: can this be done faster?
     sec
     sta TMP1
     lda #0
     sbc TMP1
     
-got_tangens_right:
+got_tangent_right:
     ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
     ;        note that this needs to run in RAM in order for the 'cache' to work.
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
     sta MULTIPLICAND
-    stz MULTIPLICAND+1   ; FIXME: we should get the TANGENS_HIGH instead!!
+    stz MULTIPLICAND+1   ; FIXME: we should get the tangent_HIGH instead!!
     
     ; SPEED: copying this 16-bit value is slow
     lda NORMAL_DISTANCE_TO_WALL
