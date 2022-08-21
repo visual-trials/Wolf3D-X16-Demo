@@ -62,35 +62,191 @@ setup_wall_info:
 
 setup_player:
 
-    ; FIXME: We should rename PLAYER_POS_X/Y to VIEWPOINT_X/Y (probably add it actually) since we are dealing with a player position and a view position (which is focallength away from the player position)
-
     ; TODO: this is now hardcoded, but this should to taken from a map
 
-    ; x-position of the player (8.8 bits)
+    .if 0
+    ; x-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_X 
     lda #1
 ;    lda #2
     sta PLAYER_POS_X+1
     
-    ; y-position of the player (8.8 bits)
+    ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_Y
     lda #1
-    sta PLAYER_POS_Y+1
+    sta PLAYER_POS_Ys+1
+    .endif
     
-    ; looking direction of the player (0-1823)
+    ; looking direction of the player/view (0-1823)
     lda #152              ; 30 degrees from facing straight north
 ; FIXME
 ;    lda #228
 ;    lda #<(1824-228)
-    sta PLAYER_LOOKING_DIR
+    sta LOOKING_DIR
     lda #0
 ;    lda #>(1824-228)
-    sta PLAYER_LOOKING_DIR+1
+    sta LOOKING_DIR+1
     
     rts
 
+update_viewpoint:
+
+    ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR (every frame)
+    ;        The viewpoint position is around 0.34 tiles "behind" the player position.
+
+    ; TODO: this is now hardcoded, but this should to taken from a map
+
+    ; x-position of the viewpoint (8.8 bits)
+    lda #0
+    sta VIEWPOINT_X 
+    lda #1
+;    lda #2
+    sta VIEWPOINT_X+1
+    
+    ; y-position of the viewpoint (8.8 bits)
+    lda #0
+    sta VIEWPOINT_Y
+    lda #1
+    sta VIEWPOINT_Y+1
+
+
+    ; When calculating the distance to the wall (from the viewing-plane) we need the sine and cosine of the player direction
+    ; But since we have the *absolute* values of DELTA_X and DELTA_Y, we also need the positive values of sine and cosine.
+    ; Therefore we normalize the viewing angle first to the positive quadrants of both sine and cosine (which lies between 0 and 90 degrees)
+    
+    ; Apart from that we also have to mark the quarter the looking dir is in, so the calculation can negate the cosine/sine result
+    ; when the ray for which the distance has to be calculated does not lie in the same quadrant.
+
+    ; Two bits for LOOKING_DIR_QUANDRANT: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
+    ; This way you can easely check if something is in a different quadrant horizontally or vertically
+    
+    ; NOTE: I am (ab)using RAY_INDEX here for temporary storage of the normalized LOOKING_DIR
+    
+    lda LOOKING_DIR+1
+    cmp #>(456*1)
+    bcc looking_dir_in_q0
+    bne looking_dir_in_not_in_q0
+    lda LOOKING_DIR
+    cmp #<(456*1)
+    bcc looking_dir_in_q0
+    
+looking_dir_in_not_in_q0:
+    lda LOOKING_DIR+1
+    cmp #>(456*2)
+    bcc looking_dir_in_q1
+    bne looking_dir_in_not_in_q1
+    lda LOOKING_DIR
+    cmp #<(456*2)
+    bcc looking_dir_in_q1
+    
+looking_dir_in_not_in_q1:
+    lda LOOKING_DIR+1
+    cmp #>(456*3)
+    bcc looking_dir_in_q2
+    bne looking_dir_in_q3
+    lda LOOKING_DIR
+    cmp #<(456*3)
+    bcc looking_dir_in_q2
+    
+looking_dir_in_q3:
+    ; Normalize angle (360 degrees - q3angle = q0angle)
+    sec
+    lda #<(452*4)
+    sbc LOOKING_DIR
+    sta RAY_INDEX
+    lda #>(452*4)
+    sbc LOOKING_DIR+1
+    sta RAY_INDEX+1
+
+    ; Mark as q3
+    lda #%00000010
+    sta LOOKING_DIR_QUANDRANT
+    
+    bra looking_dir_info_updated
+    
+looking_dir_in_q2:
+    ; Normalize angle (q2angle - 180 degrees = q0angle)
+    sec
+    lda LOOKING_DIR
+    sbc #<(452*2)
+    sta RAY_INDEX
+    lda LOOKING_DIR+1
+    sbc #>(452*2)
+    sta RAY_INDEX+1
+    
+    ; Mark as q2
+    lda #%00000011
+    sta LOOKING_DIR_QUANDRANT
+    
+    bra looking_dir_info_updated
+    
+looking_dir_in_q1:
+    ; Normalize angle (180 degrees - q1angle = q0angle)
+    sec
+    lda #<(452*2)
+    sbc LOOKING_DIR
+    sta RAY_INDEX
+    lda #>(452*2)
+    sbc LOOKING_DIR+1
+    sta RAY_INDEX+1
+    
+    ; Mark as q1
+    lda #%00000001
+    sta LOOKING_DIR_QUANDRANT
+    
+    bra looking_dir_info_updated
+    
+looking_dir_in_q0:
+
+    ; Mark as q0
+    lda #%00000000
+    sta LOOKING_DIR_QUANDRANT
+
+
+looking_dir_info_updated:
+
+    ; Sine for looking dir
+    
+    lda RAY_INDEX+1
+    bne is_high_index_sine
+is_low_index_sine:
+    ldy RAY_INDEX
+    lda SINUS_LOW,y
+    sta LOOKING_DIR_SINE
+    lda SINUS_HIGH,y
+    sta LOOKING_DIR_SINE+1
+    bra got_looking_dir_sine
+is_high_index_sine:
+    ldy LOOKING_DIR
+    lda SINUS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    sta LOOKING_DIR_SINE
+    lda SINUS_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
+    sta LOOKING_DIR_SINE+1
+got_looking_dir_sine:
+
+    ; Cosine for looking dir
+    
+    lda RAY_INDEX+1
+    bne is_high_index_cosine
+is_low_index_cosine:
+    ldy RAY_INDEX
+    lda COSINUS_LOW,y
+    sta LOOKING_DIR_SINE
+    lda COSINUS_HIGH,y
+    sta LOOKING_DIR_SINE+1
+    bra got_looking_dir_cosine
+is_high_index_cosine:
+    ldy LOOKING_DIR
+    lda COSINUS_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    sta LOOKING_DIR_SINE
+    lda COSINUS_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
+    sta LOOKING_DIR_SINE+1
+got_looking_dir_cosine:
+
+    rts
+    
     
     
 draw_3d_view:
@@ -152,8 +308,8 @@ draw_wall:
     ; Given the direction the player is facing we can also determine what would be the screen start ray index (left most angle in the viewing area of the player, relative to the normal line)
     ; If we know what parts of the screen columns/rays have been drawn already, we can now cut-off left and right parts of the wall.
     
-    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 30 degrees) - (WALL_FACING_DIR-2) * 90 degrees
-    ; SCREEN_START_RAY = (PLAYER_LOOKING_DIR - 152) - (WALL_FACING_DIR-2) * 456
+    ; SCREEN_START_RAY = (LOOKING_DIR - 30 degrees) - (WALL_FACING_DIR-2) * 90 degrees
+    ; SCREEN_START_RAY = (LOOKING_DIR - 152) - (WALL_FACING_DIR-2) * 456
     
     ; We can now also determine from which and to which ray index the wall extends (relative to the normal line)
     
@@ -207,10 +363,10 @@ wall_facing_north_jmp:
 wall_facing_north:
 
     sec
-    lda PLAYER_LOOKING_DIR
+    lda LOOKING_DIR
     sbc #<(152+456*0)
     sta SCREEN_START_RAY
-    lda PLAYER_LOOKING_DIR+1
+    lda LOOKING_DIR+1
     sbc #>(152+456*0)
     sta SCREEN_START_RAY+1
     
@@ -230,11 +386,11 @@ wall_facing_north_screen_start_ray_calculated:
 
     ; First determine the normal distance to the wall, in the y-direction (delta Y)
     sec
-    lda PLAYER_POS_Y
+    lda VIEWPOINT_Y
     sbc #0                      ; Walls are always on .0
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_Y
-    lda PLAYER_POS_Y+1
+    lda VIEWPOINT_Y+1
     sbc WALL_START_Y            ; it doesnt matter if we use WALL_START_Y or WALL_END_Y here
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_Y+1
@@ -242,10 +398,10 @@ wall_facing_north_screen_start_ray_calculated:
     ; Determine the distance in the x-direction (delta X) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
-    sbc PLAYER_POS_X
+    sbc VIEWPOINT_X
     sta DELTA_X
     lda WALL_START_X
-    sbc PLAYER_POS_X+1
+    sbc VIEWPOINT_X+1
     sta DELTA_X+1
     
     ; Check if DELTA_X is negative: if so, this means it starts to the west of the player, if not, it starts to the east
@@ -301,10 +457,10 @@ wall_facing_north_calc_angle_for_start_of_wall:
     ; Determine the distance in the x-direction (delta X) for the END of the wall
     sec
     lda #0                      ; Walls always end on .0
-    sbc PLAYER_POS_X
+    sbc VIEWPOINT_X
     sta DELTA_X
     lda WALL_END_X
-    sbc PLAYER_POS_X+1
+    sbc VIEWPOINT_X+1
     sta DELTA_X+1
     
     ; Check if DELTA_X is negative: if so, this means it end to the west of the player, if not, it end to the east
@@ -364,10 +520,10 @@ wall_facing_north_calc_angle_for_end_of_wall:
 wall_facing_west:
 
     sec
-    lda PLAYER_LOOKING_DIR
+    lda LOOKING_DIR
     sbc #<(152+456*1)
     sta SCREEN_START_RAY
-    lda PLAYER_LOOKING_DIR+1
+    lda LOOKING_DIR+1
     sbc #>(152+456*1)
     sta SCREEN_START_RAY+1
     
@@ -389,21 +545,21 @@ wall_facing_west_screen_start_ray_calculated:
     
     sec
     lda #0                      ; Walls are always on .0
-    sbc PLAYER_POS_X
+    sbc VIEWPOINT_X
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_X
     lda WALL_START_X            ; it doesnt matter if we use WALL_START_X or WALL_END_X here
-    sbc PLAYER_POS_X+1
+    sbc VIEWPOINT_X+1
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_X+1
     
     ; Determine the distance in the y-direction (delta Y) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
-    sbc PLAYER_POS_Y
+    sbc VIEWPOINT_Y
     sta DELTA_Y
     lda WALL_START_Y
-    sbc PLAYER_POS_Y+1
+    sbc VIEWPOINT_Y+1
     sta DELTA_Y+1
     
     ; Check if DELTA_Y is negative: if so, this means it starts to the south of the player, if not, it starts to the north
@@ -459,10 +615,10 @@ wall_facing_west_calc_angle_for_start_of_wall:
     ; Determine the distance in the y-direction (delta Y) for the END of the wall
     sec
     lda #0                      ; Walls always end on .0
-    sbc PLAYER_POS_Y
+    sbc VIEWPOINT_Y
     sta DELTA_Y
     lda WALL_END_Y
-    sbc PLAYER_POS_Y+1
+    sbc VIEWPOINT_Y+1
     sta DELTA_Y+1
     
     ; Check if DELTA_Y is negative: if so, this means it end to the south of the player, if not, it starts to the north
@@ -522,10 +678,10 @@ wall_facing_west_calc_angle_for_end_of_wall:
 wall_facing_south:
 
     sec
-    lda PLAYER_LOOKING_DIR
+    lda LOOKING_DIR
     sbc #<(152+456*0)
     sta SCREEN_START_RAY
-    lda PLAYER_LOOKING_DIR+1
+    lda LOOKING_DIR+1
     sbc #>(152+456*0)
     sta SCREEN_START_RAY+1
     
@@ -546,21 +702,21 @@ wall_facing_south_screen_start_ray_calculated:
     ; First determine the normal distance to the wall, in the y-direction (delta Y)
     sec
     lda #0                      ; Walls are always on .0
-    sbc PLAYER_POS_Y
+    sbc VIEWPOINT_Y
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_Y
     lda WALL_START_Y            ; it doesnt matter if we use WALL_START_Y or WALL_END_Y here
-    sbc PLAYER_POS_Y+1
+    sbc VIEWPOINT_Y+1
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_Y+1
     
     ; Determine the distance in the x-direction (delta X) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
-    sbc PLAYER_POS_X
+    sbc VIEWPOINT_X
     sta DELTA_X
     lda WALL_START_X
-    sbc PLAYER_POS_X+1
+    sbc VIEWPOINT_X+1
     sta DELTA_X+1
     
     ; Check if DELTA_X is negative: if so, this means it starts to the west of the player, if not, it starts to the east
@@ -616,10 +772,10 @@ wall_facing_south_calc_angle_for_start_of_wall:
     ; Determine the distance in the x-direction (delta X) for the END of the wall
     sec
     lda #0                      ; Walls always end on .0
-    sbc PLAYER_POS_X
+    sbc VIEWPOINT_X
     sta DELTA_X
     lda WALL_END_X
-    sbc PLAYER_POS_X+1
+    sbc VIEWPOINT_X+1
     sta DELTA_X+1
     
     ; Check if DELTA_X is negative: if so, this means it end to the west of the player, if not, it end to the east
@@ -679,10 +835,10 @@ wall_facing_south_calc_angle_for_end_of_wall:
 wall_facing_east:
 
     sec
-    lda PLAYER_LOOKING_DIR
+    lda LOOKING_DIR
     sbc #<(152+456*3)
     sta SCREEN_START_RAY
-    lda PLAYER_LOOKING_DIR+1
+    lda LOOKING_DIR+1
     sbc #>(152+456*3)
     sta SCREEN_START_RAY+1
     
@@ -703,11 +859,11 @@ wall_facing_east_screen_start_ray_calculated:
     ; First determine the normal distance to the wall, in the x-direction (delta X)
     
     sec
-    lda PLAYER_POS_X
+    lda VIEWPOINT_X
     sbc #0                      ; Walls are always on .0
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_X
-    lda PLAYER_POS_X+1
+    lda VIEWPOINT_X+1
     sbc WALL_START_X            ; it doesnt matter if we use WALL_START_X or WALL_END_X here
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_X+1
@@ -715,10 +871,10 @@ wall_facing_east_screen_start_ray_calculated:
     ; Determine the distance in the y-direction (delta Y) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
-    sbc PLAYER_POS_Y
+    sbc VIEWPOINT_Y
     sta DELTA_Y
     lda WALL_START_Y
-    sbc PLAYER_POS_Y+1
+    sbc VIEWPOINT_Y+1
     sta DELTA_Y+1
     
     ; Check if DELTA_Y is negative: if so, this means it starts to the south of the player, if not, it starts to the north
@@ -774,10 +930,10 @@ wall_facing_east_calc_angle_for_start_of_wall:
     ; Determine the distance in the y-direction (delta Y) for the END of the wall
     sec
     lda #0                      ; Walls always end on .0
-    sbc PLAYER_POS_Y
+    sbc VIEWPOINT_Y
     sta DELTA_Y
     lda WALL_END_Y
-    sbc PLAYER_POS_Y+1
+    sbc VIEWPOINT_Y+1
     sta DELTA_Y+1
     
     ; Check if DELTA_Y is negative: if so, this means it end to the south of the player, if not, it starts to the north

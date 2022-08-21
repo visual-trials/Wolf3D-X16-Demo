@@ -63,27 +63,33 @@ TO_WALL_HEIGHT            = $4A ; 4B  ; the height of the right side of the wall
 WALL_HEIGHT_INCREASES     = $4C       ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
 START_SCREEN_X            = $4D ; 4E  ; the x-position of the wall starting on screen
 
-PLAYER_POS_X              = $50 ; 51  ; x-position of the player (8.8 bits)
-PLAYER_POS_Y              = $52 ; 53  ; y-position of the player (8.8 bits)
-PLAYER_LOOKING_DIR        = $54 ; 55  ; looking direction of the player (0-1823)
+; FIXME: add PLAYER_POS_X/Y
+;PLAYER_POS_X              = $50 ; 51  ; x-position of the player (8.8 bits)
+;PLAYER_POS_Y              = $52 ; 53  ; y-position of the player (8.8 bits)
+VIEWPOINT_X               = $50 ; 51  ; x-position of the player (8.8 bits)
+VIEWPOINT_Y               = $52 ; 53  ; y-position of the player (8.8 bits)
+LOOKING_DIR               = $54 ; 55  ; looking direction of the player (0-1823)
+LOOKING_DIR_QUANDRANT     = $56       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) -> this way you can easely check if something is in a different quadrant horizontally or vertically
+LOOKING_DIR_SINE          = $57 ; 58
+LOOKING_DIR_COSINE        = $59 ; 5A
 
-CURRENT_WALL_INDEX        = $56
-WALL_START_X              = $57       ; x-coordinate of start of wall
-WALL_START_Y              = $58       ; y-coordinate of start of wall)
-WALL_END_X                = $59       ; x-coordinate of end of wall)
-WALL_END_Y                = $5A       ; y-coordinate of end of wall)
-WALL_FACING_DIR           = $5B       ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+CURRENT_WALL_INDEX        = $60
+WALL_START_X              = $61       ; x-coordinate of start of wall
+WALL_START_Y              = $62       ; y-coordinate of start of wall)
+WALL_END_X                = $63       ; x-coordinate of end of wall)
+WALL_END_Y                = $64       ; y-coordinate of end of wall)
+WALL_FACING_DIR           = $65       ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
 
-QUADRANT_CORRECTION       = $5C
-FLIP_TAN_ANGLE            = $5D
-DELTA_X                   = $5E ; 5F
-DELTA_Y                   = $60 ; 61
-TESTING_RAY_INDEX         = $62 ; 63
+QUADRANT_CORRECTION       = $68
+FLIP_TAN_ANGLE            = $69
+DELTA_X                   = $6A ; 6B
+DELTA_Y                   = $6C ; 6D
+TESTING_RAY_INDEX         = $6E ; 6F
 
 ; Used only by (slow) 16bit multiplier (multply_16bits)
-MULTIPLIER                = $64 ; 65
-MULTIPLICAND              = $66 ; 67
-PRODUCT                   = $68 ; 69 ; 6A ; 6B
+MULTIPLIER                = $70 ; 71
+MULTIPLICAND              = $72 ; 73
+PRODUCT                   = $74 ; 75 ; 76 ; 77
 
 
 ; === VRAM addresses ===
@@ -178,12 +184,15 @@ reset:
     jsr generate_draw_column_code
     
     jsr clear_3d_view_fast
-    jsr draw_3d_view
+    
+    ;jsr update_viewpoint
+    ;jsr draw_3d_view
     
     ; jmp vsync_measurement
     
 loop2:
     jsr start_timer
+    jsr update_viewpoint
     jsr draw_3d_view
     ;jsr clear_3d_view_fast
     ;jsr clear_bitmap_screen
