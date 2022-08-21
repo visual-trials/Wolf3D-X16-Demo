@@ -62,7 +62,7 @@ setup_wall_info:
 
 setup_player:
 
-    ; FIXME: We should rename PLAYER_POS_X/Y to VIEW_POS_X/Y (probably add it actually) since we are dealing with a player position and a view position (which is focallength away from the player position)
+    ; FIXME: We should rename PLAYER_POS_X/Y to VIEWPOINT_X/Y (probably add it actually) since we are dealing with a player position and a view position (which is focallength away from the player position)
 
     ; TODO: this is now hardcoded, but this should to taken from a map
 
