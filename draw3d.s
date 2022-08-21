@@ -331,6 +331,11 @@ draw_wall:
     
     ; TODO: if the wall is facing the player from its back, we dont have to consider drawing it at all, so that could be an easy out.
     
+    stz NEGATE_SINE_FROM
+    stz NEGATE_COSINE_FROM
+    stz NEGATE_SINE_TO
+    stz NEGATE_COSINE_TO
+    
     lda WALL_FACING_DIR
     cmp #3  ; west
     beq wall_facing_west_jmp
@@ -416,7 +421,10 @@ wall_facing_north_starting_west:
     ; By default we do not need to flip the tan() result in this quadrant
     lda #0
     sta FLIP_TAN_ANGLE
-
+    
+    lda #%00000011      ; we are quadrant q2 (code %00000011)
+    sta FROM_QUADRANT
+    
     ; negating DELTA_X
     sec
     lda #0
@@ -437,6 +445,9 @@ wall_facing_north_starting_east:
     ; By default we need to flip the tan() result in this quadrant
     lda #1
     sta FLIP_TAN_ANGLE
+    
+    lda #%00000001      ; we are quadrant q1 (code %00000001)
+    sta FROM_QUADRANT
     
     bra wall_facing_north_calc_angle_for_start_of_wall
     
@@ -476,6 +487,9 @@ wall_facing_north_ending_west:
     lda #0
     sta FLIP_TAN_ANGLE
 
+    lda #%00000011      ; we are quadrant q2 (code %00000011)
+    sta TO_QUADRANT
+
     ; negating DELTA_X
     sec
     lda #0
@@ -497,6 +511,9 @@ wall_facing_north_ending_east:
     lda #1
     sta FLIP_TAN_ANGLE
     
+    lda #%00000001      ; we are quadrant q1 (code %00000001)
+    sta TO_QUADRANT
+
     ; bra wall_facing_north_calc_angle_for_end_of_wall
     
 wall_facing_north_calc_angle_for_end_of_wall:
@@ -575,6 +592,9 @@ wall_facing_west_starting_south:
     lda #1
     sta FLIP_TAN_ANGLE
 
+    lda #%00000001      ; we are quadrant q1 (code %00000001)
+    sta FROM_QUADRANT
+    
     ; negating DELTA_Y
     sec
     lda #0
@@ -595,6 +615,9 @@ wall_facing_west_starting_north:
     ; By default we do not need to flip the tan() result in this quadrant
     lda #0
     sta FLIP_TAN_ANGLE
+    
+    lda #%00000000      ; we are quadrant q0 (code %00000000)
+    sta FROM_QUADRANT
     
     bra wall_facing_west_calc_angle_for_start_of_wall
     
@@ -634,6 +657,9 @@ wall_facing_west_ending_south:
     lda #1
     sta FLIP_TAN_ANGLE
 
+    lda #%00000001      ; we are quadrant q1 (code %00000001)
+    sta TO_QUADRANT
+    
     ; negating DELTA_Y
     sec
     lda #0
@@ -654,6 +680,9 @@ wall_facing_west_ending_north:
     ; By default we dont need to flip the tan() result in this quadrant
     lda #0
     sta FLIP_TAN_ANGLE
+    
+    lda #%00000000      ; we are quadrant q0 (code %00000000)
+    sta TO_QUADRANT
     
     ; bra wall_facing_west_calc_angle_for_end_of_wall
     
@@ -732,6 +761,9 @@ wall_facing_south_starting_west:
     lda #1
     sta FLIP_TAN_ANGLE
 
+    lda #%00000010      ; we are quadrant q3 (code %00000010)
+    sta FROM_QUADRANT
+    
     ; negating DELTA_X
     sec
     lda #0
@@ -752,6 +784,9 @@ wall_facing_south_starting_east:
     ; By default we DONT need to flip the tan() result in this quadrant
     lda #0
     sta FLIP_TAN_ANGLE
+    
+    lda #%00000000      ; we are quadrant q0 (code %00000000)
+    sta FROM_QUADRANT
     
     bra wall_facing_south_calc_angle_for_start_of_wall
     
@@ -791,6 +826,9 @@ wall_facing_south_ending_west:
     lda #1
     sta FLIP_TAN_ANGLE
 
+    lda #%00000010      ; we are quadrant q3 (code %00000010)
+    sta TO_QUADRANT
+    
     ; negating DELTA_X
     sec
     lda #0
@@ -811,6 +849,9 @@ wall_facing_south_ending_east:
     ; By default we DONT need to flip the tan() result in this quadrant
     lda #0
     sta FLIP_TAN_ANGLE
+    
+    lda #%00000000      ; we are quadrant q0 (code %00000000)
+    sta TO_QUADRANT
     
     ; bra wall_facing_south_calc_angle_for_end_of_wall
     
@@ -890,6 +931,9 @@ wall_facing_east_starting_south:
     lda #0
     sta FLIP_TAN_ANGLE
 
+    lda #%00000011      ; we are quadrant q2 (code %00000011)
+    sta FROM_QUADRANT
+    
     ; negating DELTA_Y
     sec
     lda #0
@@ -910,6 +954,9 @@ wall_facing_east_starting_north:
     ; By default we do need to flip the tan() result in this quadrant
     lda #1
     sta FLIP_TAN_ANGLE
+    
+    lda #%00000010      ; we are quadrant q3 (code %00000010)
+    sta FROM_QUADRANT
     
     bra wall_facing_east_calc_angle_for_start_of_wall
     
@@ -949,6 +996,9 @@ wall_facing_east_ending_south:
     lda #0
     sta FLIP_TAN_ANGLE
 
+    lda #%00000011      ; we are quadrant q2 (code %00000011)
+    sta TO_QUADRANT
+    
     ; negating DELTA_Y
     sec
     lda #0
@@ -969,6 +1019,9 @@ wall_facing_east_ending_north:
     ; By default we dont need to flip the tan() result in this quadrant
     lda #1
     sta FLIP_TAN_ANGLE
+    
+    lda #%00000010      ; we are quadrant q3 (code %00000010)
+    sta TO_QUADRANT
     
     ; bra wall_facing_east_calc_angle_for_end_of_wall
     
@@ -1063,6 +1116,61 @@ to_ray_is_not_right_of_screen:
     ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part:
     ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
     ; Given these two distances, we can also determine the left and right wall heights.
+
+    
+    .if 0
+    
+; FIXME: implement this properly!
+
+
+    lda LOOKING_DIR_QUANDRANT
+    and #%00000010 ; we are quadrant q2 (code %00000011) so we if the horizontal bit (bit 1) is the same as where the looking quadrant
+    bne wall_facing_north_starting_west_negated_cosine  ; the looking quadrant is the same horizontally, so no need to negate COSINE
+    lda #1 
+    sta NEGATE_COSINE_FROM
+wall_facing_north_starting_west_negated_cosine:
+
+    lda LOOKING_DIR_QUANDRANT
+    and #%00000001 ; we are quadrant q2 (code %00000011) so we if the vertical bit (bit 1) is the same as where the looking quadrant
+    bne wall_facing_north_starting_west_negated_sine  ; the looking quadrant is the same vertically (zero), so no need to negate SINE
+    lda #1 
+    sta NEGATE_SINE_FROM
+wall_facing_north_starting_west_negated_sine:
+
+
+    lda LOOKING_DIR_QUANDRANT
+    and #%00000010 ; we are quadrant q1 (code %00000001) so we if the horizontal bit (bit 1) is the same as where the looking quadrant
+    beq wall_facing_north_starting_east_negated_cosine  ; the looking quadrant is the same horizontally, so no need to negate COSINE
+    lda #1 
+    sta NEGATE_COSINE_FROM
+wall_facing_north_starting_east_negated_cosine:
+
+    lda LOOKING_DIR_QUANDRANT
+    and #%00000001 ; we are quadrant q1 (code %00000001) so we if the vertical bit (bit 1) is the same as where the looking quadrant
+    bne wall_facing_north_starting_east_negated_sine  ; the looking quadrant is the same vertically (zero), so no need to negate SINE
+    lda #1 
+    sta NEGATE_SINE_FROM
+wall_facing_north_starting_east_negated_sine:
+
+    
+    lda LOOKING_DIR_QUANDRANT
+    and #%00000010 ; we are quadrant q3 (code %00000010) so we if the horizontal bit (bit 1) is the same as where the looking quadrant
+    bne wall_facing_south_starting_west_negated_cosine  ; the looking quadrant is the same horizontally, so no need to negate COSINE
+    lda #1 
+    sta NEGATE_COSINE_FROM
+wall_facing_south_starting_west_negated_cosine:
+
+    lda LOOKING_DIR_QUANDRANT
+    and #%00000001 ; we are quadrant q3 (code %00000010) so we if the vertical bit (bit 1) is the same as where the looking quadrant
+    beq wall_facing_south_starting_west_negated_sine  ; the looking quadrant is the same vertically (zero), so no need to negate SINE
+    lda #1 
+    sta NEGATE_SINE_FROM
+wall_facing_south_starting_west_negated_sine:
+
+
+    .endif
+
+
     
 ; FIXME!
     lda CURRENT_WALL_INDEX

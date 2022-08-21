@@ -45,6 +45,7 @@ CURRENT_WALL_HEIGHT       = $27 ; 28
 VIRTUAL_SCREEN_CURSOR     = $29
 TOP_HALF_WALL_HEIGHT      = $2A
 BOTTOM_HALF_WALL_HEIGHT   = $2B
+
 DIVIDEND                  = $2C ; 2D ; 2E  ; the thing you want to divide (e.g. 100 /) . This will also the result after the division
 DIVISOR                   = $2F ; 30 ; 31  ; the thing you divide by (e.g. / 10)
 REMAINDER                 = $32 ; 33 ; 34
@@ -63,15 +64,15 @@ TO_WALL_HEIGHT            = $4A ; 4B  ; the height of the right side of the wall
 WALL_HEIGHT_INCREASES     = $4C       ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
 START_SCREEN_X            = $4D ; 4E  ; the x-position of the wall starting on screen
 
-; FIXME: add PLAYER_POS_X/Y
-;PLAYER_POS_X              = $50 ; 51  ; x-position of the player (8.8 bits)
-;PLAYER_POS_Y              = $52 ; 53  ; y-position of the player (8.8 bits)
-VIEWPOINT_X               = $50 ; 51  ; x-position of the player (8.8 bits)
-VIEWPOINT_Y               = $52 ; 53  ; y-position of the player (8.8 bits)
-LOOKING_DIR               = $54 ; 55  ; looking direction of the player (0-1823)
-LOOKING_DIR_QUANDRANT     = $56       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) -> this way you can easely check if something is in a different quadrant horizontally or vertically
-LOOKING_DIR_SINE          = $57 ; 58
-LOOKING_DIR_COSINE        = $59 ; 5A
+; FIXME: *use* PLAYER_POS_X/Y
+PLAYER_POS_X              = $51 ; 52  ; x-position of the player (8.8 bits)
+PLAYER_POS_Y              = $53 ; 54  ; y-position of the player (8.8 bits)
+VIEWPOINT_X               = $55 ; 56  ; x-position of the player (8.8 bits)
+VIEWPOINT_Y               = $57 ; 58  ; y-position of the player (8.8 bits)
+LOOKING_DIR               = $59 ; 5A  ; looking direction of the player (0-1823)
+LOOKING_DIR_QUANDRANT     = $5B       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) -> this way you can easely check if something is in a different quadrant horizontally or vertically
+LOOKING_DIR_SINE          = $5C ; 5D
+LOOKING_DIR_COSINE        = $5E ; 5F
 
 CURRENT_WALL_INDEX        = $60
 WALL_START_X              = $61       ; x-coordinate of start of wall
@@ -91,6 +92,13 @@ MULTIPLIER                = $70 ; 71
 MULTIPLICAND              = $72 ; 73
 PRODUCT                   = $74 ; 75 ; 76 ; 77
 
+; FIXME: not only do we need to have variable for knowing when to negate from and to points, but also after walls have been cut-off, these points also need their distance be calculated. So we need a different solution.
+FROM_QUADRANT             = $78       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
+TO_QUADRANT               = $79       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
+NEGATE_SINE_FROM          = $7A       ; This says that (for calculating the distance to the from-point on a wall) the sine part has to be negated
+NEGATE_COSINE_FROM        = $7B       ; This says that (for calculating the distance to the from-point on a wall) the sine part has to be negated
+NEGATE_SINE_TO            = $7C       ; This says that (for calculating the distance to the to-point on a wall) the sine part has to be negated
+NEGATE_COSINE_TO          = $7D       ; This says that (for calculating the distance to the to-point on a wall) the sine part has to be negated
 
 ; === VRAM addresses ===
 
