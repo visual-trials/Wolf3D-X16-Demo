@@ -192,11 +192,10 @@ reset:
     
 loop2:
     jsr start_timer
+    
     jsr update_viewpoint
     jsr draw_3d_view
-    ;jsr clear_3d_view_fast
-    ;jsr clear_bitmap_screen
-    ;jsr copy_petscii_charset
+    
     jsr stop_timer
     
 ; FIXME:
