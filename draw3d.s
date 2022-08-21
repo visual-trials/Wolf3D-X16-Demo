@@ -197,15 +197,162 @@ wall_facing_north_jmp:
     ; FIXME: DOORS are not on .0 but 0.5 instead!!
     ; FIXME: Opening or closing doors do not start/stop on .0 but on some intermediate value instead!!
     
+    
+; #############################################################################################################
+; #                                                                                                           #
+; #                                            WALL FACING NORTH                                              #
+; #                                                                                                           #
+; #############################################################################################################
+
 wall_facing_north:
+
+    sec
+    lda PLAYER_LOOKING_DIR
+    sbc #<(152+456*0)
+    sta SCREEN_START_RAY
+    lda PLAYER_LOOKING_DIR+1
+    sbc #>(152+456*0)
+    sta SCREEN_START_RAY+1
+    
+    bpl wall_facing_north_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
+    
+    clc
+    lda SCREEN_START_RAY
+    adc #<(1824)
+    sta SCREEN_START_RAY
+    lda SCREEN_START_RAY+1
+    adc #>(1824)
+    sta SCREEN_START_RAY+1
+
+wall_facing_north_screen_start_ray_calculated:
+    
+    ; ============ START OF NORTH FACING WALL ===========
+
+    ; First determine the normal distance to the wall, in the y-direction (delta Y)
     sec
     lda PLAYER_POS_Y
     sbc #0                      ; Walls are always on .0
     sta NORMAL_DISTANCE_TO_WALL
+    sta DELTA_Y
     lda PLAYER_POS_Y+1
-    sbc WALL_START_Y
+    sbc WALL_START_Y            ; it doesnt matter if we use WALL_START_Y or WALL_END_Y here
     sta NORMAL_DISTANCE_TO_WALL+1
+    sta DELTA_Y+1
+    
+    ; Determine the distance in the x-direction (delta X) for the START of the wall
+    sec
+    lda #0                      ; Walls always start on .0
+    sbc PLAYER_POS_X
+    sta DELTA_X
+    lda WALL_START_X
+    sbc PLAYER_POS_X+1
+    sta DELTA_X+1
+    
+    ; Check if DELTA_X is negative: if so, this means it starts to the west of the player, if not, it starts to the east
+    bpl wall_facing_north_starting_east
+    
+wall_facing_north_starting_west:
+
+    ; We need to correct the angle +0 quadrants to be normalized
+    lda #0
+    sta QUADRANT_CORRECTION
+    
+    ; By default we do not need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+
+    ; negating DELTA_X
+    sec
+    lda #0
+    sbc DELTA_X
+    sta DELTA_X
+    lda #0
+    sbc DELTA_X+1
+    sta DELTA_X+1
+    
+    bra wall_facing_north_calc_angle_for_start_of_wall
+    
+wall_facing_north_starting_east:
+    
+    ; We need to correct the angle +3 quadrants to be normalized
+    lda #3
+    sta QUADRANT_CORRECTION
+    
+    ; By default we need to flip the tan() result in this quadrant
+    lda #1
+    sta FLIP_TAN_ANGLE
+    
+    bra wall_facing_north_calc_angle_for_start_of_wall
+    
+wall_facing_north_calc_angle_for_start_of_wall:
+    jsr calc_angle_for_point
+    
+    lda RAY_INDEX
+    sta FROM_RAY_INDEX
+    lda RAY_INDEX+1
+    sta FROM_RAY_INDEX+1
+
+    ; ============ END OF NORTH FACING WALL ===========
+    
+    ; We already determined the distance in y-direction above 
+    
+    ;  ... So nothing todo here for DELTA_Y...
+
+    ; Determine the distance in the x-direction (delta X) for the END of the wall
+    sec
+    lda #0                      ; Walls always end on .0
+    sbc PLAYER_POS_X
+    sta DELTA_X
+    lda WALL_END_X
+    sbc PLAYER_POS_X+1
+    sta DELTA_X+1
+    
+    ; Check if DELTA_X is negative: if so, this means it end to the west of the player, if not, it end to the east
+    bpl wall_facing_north_ending_east
+    
+wall_facing_north_ending_west:
+
+    ; We need to correct the angle +0 quadrants to be normalized
+    lda #0
+    sta QUADRANT_CORRECTION
+    
+    ; By default we DONT need to flip the tan() result in this quadrant
+    lda #0
+    sta FLIP_TAN_ANGLE
+
+    ; negating DELTA_X
+    sec
+    lda #0
+    sbc DELTA_X
+    sta DELTA_X
+    lda #0
+    sbc DELTA_X+1
+    sta DELTA_X+1
+    
+    bra wall_facing_north_calc_angle_for_end_of_wall
+    
+wall_facing_north_ending_east:
+    
+    ; We need to correct the angle +3 quadrants to be normalized
+    lda #3
+    sta QUADRANT_CORRECTION
+    
+    ; By default we need to flip the tan() result in this quadrant
+    lda #1
+    sta FLIP_TAN_ANGLE
+    
+    ; bra wall_facing_north_calc_angle_for_end_of_wall
+    
+wall_facing_north_calc_angle_for_end_of_wall:
+    jsr calc_angle_for_point
+    
+    lda RAY_INDEX
+    sta TO_RAY_INDEX
+    lda RAY_INDEX+1
+    sta TO_RAY_INDEX+1
+    
     jmp calculated_normal_distance_to_wall
+
     
 
 ; #############################################################################################################
