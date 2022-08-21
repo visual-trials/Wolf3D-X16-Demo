@@ -491,6 +491,18 @@ done_adding_code_byte:
 ; Also see: https://csdb.dk/forums/?roomid=11&topicid=26608&firstpost=2
 
 
+; FIXME: we only need ONE byte per entry for sinus and cosinus! (the last few are 256, but that can be handled a different way)
+
+; This is a list of 8.8 bit values (so 16 bits each, 8 bits for fraction, 8 bits for whole number)
+; Since there are 456 angle-indexes per 90 degrees, this list contains 456 values (actually a bit more, but I am lazy and havent removed the last/extra ones).
+sinus:
+    .word 0, 1, 2, 3, 4, 4, 5, 6, 7, 8, 9, 10, 11, 11, 12, 13, 14, 15, 16, 17, 18, 19, 19, 20, 21, 22, 23, 24, 25, 26, 26, 27, 28, 29, 30, 31, 32, 33, 33, 34, 35, 36, 37, 38, 39, 40, 40, 41, 42, 43, 44, 45, 46, 46, 47, 48, 49, 50, 51, 52, 53, 53, 54, 55, 56, 57, 58, 59, 59, 60, 61, 62, 63, 64, 65, 65, 66, 67, 68, 69, 70, 71, 71, 72, 73, 74, 75, 76, 76, 77, 78, 79, 80, 81, 81, 82, 83, 84, 85, 86, 86, 87, 88, 89, 90, 91, 91, 92, 93, 94, 95, 96, 96, 97, 98, 99, 100, 100, 101, 102, 103, 104, 104, 105, 106, 107, 108, 108, 109, 110, 111, 112, 112, 113, 114, 115, 116, 116, 117, 118, 119, 120, 120, 121, 122, 123, 123, 124, 125, 126, 126, 127, 128, 129, 130, 130, 131, 132, 133, 133, 134, 135, 136, 136, 137, 138, 139, 139, 140, 141, 141, 142, 143, 144, 144, 145, 146, 147, 147, 148, 149, 149, 150, 151, 152, 152, 153, 154, 154, 155, 156, 157, 157, 158, 159, 159, 160, 161, 161, 162, 163, 163, 164, 165, 165, 166, 167, 167, 168, 169, 169, 170, 171, 171, 172, 173, 173, 174, 175, 175, 176, 177, 177, 178, 179, 179, 180, 180, 181, 182, 182, 183, 183, 184, 185, 185, 186, 187, 187, 188, 188, 189, 190, 190, 191, 191, 192, 192, 193, 194, 194, 195, 195, 196, 196, 197, 198, 198, 199, 199, 200, 200, 201, 201, 202, 203, 203, 204, 204, 205, 205, 206, 206, 207, 207, 208, 208, 209, 209, 210, 210, 211, 211, 212, 212, 213, 213, 214, 214, 215, 215, 216, 216, 217, 217, 218, 218, 219, 219, 219, 220, 220, 221, 221, 222, 222, 223, 223, 223, 224, 224, 225, 225, 226, 226, 226, 227, 227, 228, 228, 228, 229, 229, 230, 230, 230, 231, 231, 232, 232, 232, 233, 233, 233, 234, 234, 234, 235, 235, 235, 236, 236, 237, 237, 237, 238, 238, 238, 238, 239, 239, 239, 240, 240, 240, 241, 241, 241, 242, 242, 242, 242, 243, 243, 243, 244, 244, 244, 244, 245, 245, 245, 245, 246, 246, 246, 246, 247, 247, 247, 247, 248, 248, 248, 248, 248, 249, 249, 249, 249, 249, 250, 250, 250, 250, 250, 251, 251, 251, 251, 251, 251, 252, 252, 252, 252, 252, 252, 253, 253, 253, 253, 253, 253, 253, 253, 254, 254, 254, 254, 254, 254, 254, 254, 254, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 255
+
+; This is a list of 8 bit values (8 bits for a fraction, no bits for the whole number, since that is assumed to be 0)
+; Since there are 456 angle-indexes per 90 degrees, this list contains 456 values (actually a bit more, but I am lazy and havent removed the last/extra ones).
+cosinus:
+    .word 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 254, 254, 254, 254, 254, 254, 254, 254, 254, 253, 253, 253, 253, 253, 253, 253, 253, 252, 252, 252, 252, 252, 252, 251, 251, 251, 251, 251, 251, 250, 250, 250, 250, 250, 249, 249, 249, 249, 249, 248, 248, 248, 248, 248, 247, 247, 247, 247, 246, 246, 246, 246, 245, 245, 245, 245, 244, 244, 244, 244, 243, 243, 243, 242, 242, 242, 242, 241, 241, 241, 240, 240, 240, 239, 239, 239, 238, 238, 238, 238, 237, 237, 237, 236, 236, 235, 235, 235, 234, 234, 234, 233, 233, 233, 232, 232, 232, 231, 231, 230, 230, 230, 229, 229, 228, 228, 228, 227, 227, 226, 226, 226, 225, 225, 224, 224, 223, 223, 223, 222, 222, 221, 221, 220, 220, 219, 219, 219, 218, 218, 217, 217, 216, 216, 215, 215, 214, 214, 213, 213, 212, 212, 211, 211, 210, 210, 209, 209, 208, 208, 207, 207, 206, 206, 205, 205, 204, 204, 203, 203, 202, 201, 201, 200, 200, 199, 199, 198, 198, 197, 196, 196, 195, 195, 194, 194, 193, 192, 192, 191, 191, 190, 190, 189, 188, 188, 187, 187, 186, 185, 185, 184, 183, 183, 182, 182, 181, 180, 180, 179, 179, 178, 177, 177, 176, 175, 175, 174, 173, 173, 172, 171, 171, 170, 169, 169, 168, 167, 167, 166, 165, 165, 164, 163, 163, 162, 161, 161, 160, 159, 159, 158, 157, 157, 156, 155, 154, 154, 153, 152, 152, 151, 150, 149, 149, 148, 147, 147, 146, 145, 144, 144, 143, 142, 141, 141, 140, 139, 139, 138, 137, 136, 136, 135, 134, 133, 133, 132, 131, 130, 130, 129, 128, 127, 126, 126, 125, 124, 123, 123, 122, 121, 120, 120, 119, 118, 117, 116, 116, 115, 114, 113, 112, 112, 111, 110, 109, 108, 108, 107, 106, 105, 104, 104, 103, 102, 101, 100, 100, 99, 98, 97, 96, 96, 95, 94, 93, 92, 91, 91, 90, 89, 88, 87, 86, 86, 85, 84, 83, 82, 81, 81, 80, 79, 78, 77, 76, 76, 75, 74, 73, 72, 71, 71, 70, 69, 68, 67, 66, 65, 65, 64, 63, 62, 61, 60, 59, 59, 58, 57, 56, 55, 54, 53, 53, 52, 51, 50, 49, 48, 47, 46, 46, 45, 44, 43, 42, 41, 40, 40, 39, 38, 37, 36, 35, 34, 33, 33, 32, 31, 30, 29, 28, 27, 26, 26, 25, 24, 23, 22, 21, 20, 19, 19, 18, 17, 16, 15, 14, 13, 12, 11, 11, 10, 9, 8, 7, 6, 5, 4, 4, 3, 2, 1, 0, 0
+
 ; This is a list of 8.8 bit values (so 16 bits each, 8 bits for fraction, 8 bits for whole number)
 ; Since there are 456 angle-indexes per 90 degrees, this list contains 456 values.
 tangens:
@@ -505,6 +517,137 @@ invtangens:
     ; manually: .byte 0, 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20, 21, 23, 24, 25, 26, 27, 28, 29, 30, 32, 33, 34, 35, 36, 37, 38, 39, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 64, 65, 
     .byte 0, 1, 2, 3, 4, 5, 6, 7, 9, 10, 11, 12, 13, 14, 15, 16, 18, 19, 20, 21, 22, 23, 24, 26, 27, 28, 29, 30, 31, 32, 33, 34, 36, 37, 38, 39, 40, 41, 42, 43, 44, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 91, 92, 93, 94, 95, 96, 97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 139, 140, 141, 142, 143, 144, 145, 146, 147, 147, 148, 149, 150, 151, 152, 153, 153, 154, 155, 156, 157, 158, 158, 159, 160, 161, 162, 162, 163, 164, 165, 166, 167, 167, 168, 169, 170, 170, 171, 172, 173, 174, 174, 175, 176, 177, 177, 178, 179, 180, 180, 181, 182, 183, 183, 184, 185, 186, 186, 187, 188, 188, 189, 190, 191, 191, 192, 193, 193, 194, 195, 196, 196, 197, 198, 198, 199, 200, 200, 201, 202, 202, 203, 204, 204, 205, 206, 206, 207, 208, 208, 209, 209, 210, 211, 211, 212, 213, 213, 214, 214, 215, 216, 216, 217, 218, 218, 219, 219, 220, 221, 221, 222, 222, 223, 223, 224, 225, 225, 226, 226, 227
     ; idx 0, 1, 2, 3, 4, 5, 6, 7, 8,  9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87, 88, 89, 90, 91,  92,  93,  94,  95,  96,  97,  98,  99, 100, 101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 112, 113, 114, 115, 116, 117, 118, 119, 120, 121, 122, 123, 124, 125, 126, 127, 128, 129, 130, 131, 132, 133, 134, 135, 136, 137, 138, 139, 140, 141, 142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157, 158, 159, 160, 161, 162, 163, 164, 165, 166, 167, 168, 169, 170, 171, 172, 173, 174, 175, 176, 177, 178, 179, 180, 181, 182, 183, 184, 185, 186, 187, 188, 189, 190, 191, 192, 193, 194, 195, 196, 197, 198, 199, 200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215, 216, 217, 218, 219, 220, 221, 222, 223, 224, 225, 226, 227, 228, 229, 230, 231, 232, 233, 234, 235, 236, 237, 238, 239, 240, 241, 242, 243, 244, 245, 246, 247, 248, 249, 250, 251, 252, 253, 254, 255
+    
+init_sinus:
+
+    lda #<sinus
+    sta LOAD_ADDRESS
+    lda #>sinus
+    sta LOAD_ADDRESS+1
+    
+    ldx #0
+next_sinus_value_first_part:
+    ldy #0
+    lda (LOAD_ADDRESS),y
+    sta SINUS_LOW, x
+    
+    ldy #1
+    lda (LOAD_ADDRESS),y
+    sta SINUS_HIGH, x
+    
+    inx
+    beq done_sinus_first_part
+    
+    inc LOAD_ADDRESS
+    bne sinus_incemented_load_address_once_first
+    inc LOAD_ADDRESS+1
+sinus_incemented_load_address_once_first:
+    inc LOAD_ADDRESS
+    bne sinus_incemented_load_address_twice_first
+    inc LOAD_ADDRESS+1
+sinus_incemented_load_address_twice_first:
+    bra next_sinus_value_first_part
+    
+done_sinus_first_part:
+    
+    lda #<(sinus+512)
+    sta LOAD_ADDRESS
+    lda #>(sinus+512)
+    sta LOAD_ADDRESS+1
+    
+    ldx #0
+next_sinus_value_last_part:
+    ldy #0
+    lda (LOAD_ADDRESS),y
+    sta SINUS_LOW+256, x
+    
+    ldy #1
+    lda (LOAD_ADDRESS),y
+    sta SINUS_HIGH+256, x
+    
+    inx
+    cpx #(456-256)
+    beq done_sinus_last_part
+    
+    inc LOAD_ADDRESS
+    bne sinus_incemented_load_address_once_last
+    inc LOAD_ADDRESS+1
+sinus_incemented_load_address_once_last:
+    inc LOAD_ADDRESS
+    bne sinus_incemented_load_address_twice_last
+    inc LOAD_ADDRESS+1
+sinus_incemented_load_address_twice_last:
+    bra next_sinus_value_last_part
+    
+done_sinus_last_part:
+
+    rts
+
+init_cosinus:
+
+    lda #<cosinus
+    sta LOAD_ADDRESS
+    lda #>cosinus
+    sta LOAD_ADDRESS+1
+    
+    ldx #0
+next_cosinus_value_first_part:
+    ldy #0
+    lda (LOAD_ADDRESS),y
+    sta COSINUS_LOW, x
+    
+    ldy #1
+    lda (LOAD_ADDRESS),y
+    sta COSINUS_HIGH, x
+    
+    inx
+    beq done_cosinus_first_part
+    
+    inc LOAD_ADDRESS
+    bne cosinus_incemented_load_address_once_first
+    inc LOAD_ADDRESS+1
+cosinus_incemented_load_address_once_first:
+    inc LOAD_ADDRESS
+    bne cosinus_incemented_load_address_twice_first
+    inc LOAD_ADDRESS+1
+cosinus_incemented_load_address_twice_first:
+    bra next_cosinus_value_first_part
+    
+done_cosinus_first_part:
+    
+    lda #<(cosinus+512)
+    sta LOAD_ADDRESS
+    lda #>(cosinus+512)
+    sta LOAD_ADDRESS+1
+    
+    ldx #0
+next_cosinus_value_last_part:
+    ldy #0
+    lda (LOAD_ADDRESS),y
+    sta COSINUS_LOW+256, x
+    
+    ldy #1
+    lda (LOAD_ADDRESS),y
+    sta COSINUS_HIGH+256, x
+    
+    inx
+    cpx #(456-256)
+    beq done_cosinus_last_part
+    
+    inc LOAD_ADDRESS
+    bne cosinus_incemented_load_address_once_last
+    inc LOAD_ADDRESS+1
+cosinus_incemented_load_address_once_last:
+    inc LOAD_ADDRESS
+    bne cosinus_incemented_load_address_twice_last
+    inc LOAD_ADDRESS+1
+cosinus_incemented_load_address_twice_last:
+    bra next_cosinus_value_last_part
+    
+done_cosinus_last_part:
+
+    rts
+    
     
 init_tangens:
 
@@ -527,13 +670,13 @@ next_tangens_value_first_part:
     beq done_tangens_first_part
     
     inc LOAD_ADDRESS
-    bne incemented_load_address_once_first
+    bne tangens_incemented_load_address_once_first
     inc LOAD_ADDRESS+1
-incemented_load_address_once_first:
+tangens_incemented_load_address_once_first:
     inc LOAD_ADDRESS
-    bne incemented_load_address_twice_first
+    bne tangens_incemented_load_address_twice_first
     inc LOAD_ADDRESS+1
-incemented_load_address_twice_first:
+tangens_incemented_load_address_twice_first:
     bra next_tangens_value_first_part
     
 done_tangens_first_part:
@@ -558,13 +701,13 @@ next_tangens_value_last_part:
     beq done_tangens_last_part
     
     inc LOAD_ADDRESS
-    bne incemented_load_address_once_last
+    bne tangens_incemented_load_address_once_last
     inc LOAD_ADDRESS+1
-incemented_load_address_once_last:
+tangens_incemented_load_address_once_last:
     inc LOAD_ADDRESS
-    bne incemented_load_address_twice_last
+    bne tangens_incemented_load_address_twice_last
     inc LOAD_ADDRESS+1
-incemented_load_address_twice_last:
+tangens_incemented_load_address_twice_last:
     bra next_tangens_value_last_part
     
 done_tangens_last_part:

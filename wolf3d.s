@@ -95,10 +95,15 @@ ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right a
 
 ; === RAM addresses ===
 
-TANGENS_LOW              = $7A00    ; 456 bytes (fraction)
-TANGENS_HIGH             = $7C00    ; 456 bytes (whole number)
+TANGENS_LOW              = $7200    ; 456 bytes (fraction)
+TANGENS_HIGH             = $7400    ; 456 bytes (whole number)
+SINUS_LOW                = $7600    ; 456 bytes (fraction)
+SINUS_HIGH               = $7800    ; 456 bytes (whole number)   ; FIXME: do we really need this (values goes to 256)
+COSINUS_LOW              = $7A00    ; 456 bytes (fraction)
+COSINUS_HIGH             = $7C00    ; 456 bytes (whole number)   ; FIXME: do we really need this (values goes to 256)
+
 CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
-DRAW_COLUMN_CODE         = $A000    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes for each wall height (512 wall heights_
+DRAW_COLUMN_CODE         = $A000    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes for each wall height (512 wall heights)
 
 WALL_INFO_START_X        = $6000    ; 256 bytes (x-coordinate of start of wall)
 WALL_INFO_START_Y        = $6100    ; 256 bytes (y-coordinate of start of wall)
@@ -166,6 +171,9 @@ reset:
     ; Drawing 3D View
     
     jsr init_tangens
+    jsr init_sinus
+    jsr init_cosinus
+    
     jsr generate_clear_column_code
     jsr generate_draw_column_code
     
