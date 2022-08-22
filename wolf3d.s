@@ -106,6 +106,8 @@ FROM_DELTA_X              = $82 ; 83
 FROM_DELTA_Y              = $84 ; 85
 TO_DELTA_X                = $86 ; 87
 TO_DELTA_Y                = $88 ; 89
+FROM_DISTANCE             = $8A ; 8B
+TO_DISTANCE               = $8C ; 8D
 
 ; === VRAM addresses ===
 

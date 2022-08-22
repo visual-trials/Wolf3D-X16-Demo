@@ -3,7 +3,7 @@
 ; FIXME: this is temporary data to get some wall information into the engine
 
 wall_0_info:
-    .byte 2, 3 ; start x, y
+    .byte 1, 3 ; start x, y
     .byte 3, 3 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
@@ -65,6 +65,9 @@ setup_player:
     ; TODO: this is now hardcoded, but this should to taken from a map
 
     .if 0
+; FIXME: enable this (again)!!
+; FIXME: enable this (again)!!
+; FIXME: enable this (again)!!
     ; x-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_X 
@@ -1209,7 +1212,6 @@ from_ray_is_not_left_of_screen:
 to_ray_is_not_right_of_screen:
     
 ; FIXME:
-    stp
     lda LOOKING_DIR_QUANDRANT
     lda FROM_QUADRANT
     
@@ -1233,30 +1235,48 @@ to_ray_is_not_right_of_screen:
 
     ; First we calculate the *positive* distance along the looking direction due to DELTA_X and DELTA_Y accordingly
 
+    ; -- FROM: DISTANCE_DUE_TO_DELTA_X --
+
+    ; SPEED: copying this 16-bit value is slow
+    lda LOOKING_DIR_SINE
+    sta MULTIPLIER
+    lda LOOKING_DIR_SINE+1
+    sta MULTIPLIER+1
+
+    lda FROM_DELTA_X
+    sta MULTIPLICAND
+    lda FROM_DELTA_X+1
+    sta MULTIPLICAND+1
+
+    ; SPEED: this multiplier is SLOW
+    jsr multply_16bits
+    
+    lda PRODUCT+1
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda PRODUCT+2
+    sta DISTANCE_DUE_TO_DELTA_X+1
+
+    ; -- FROM: DISTANCE_DUE_TO_DELTA_Y --
+    
     ; SPEED: copying this 16-bit value is slow
     lda LOOKING_DIR_COSINE
     sta MULTIPLIER
     lda LOOKING_DIR_COSINE+1
     sta MULTIPLIER+1
 
-    lda DELTA_X
+    lda FROM_DELTA_Y
     sta MULTIPLICAND
-    lda DELTA_X+1
-    stz MULTIPLICAND+1
+    lda FROM_DELTA_Y+1
+    sta MULTIPLICAND+1
 
     ; SPEED: this multiplier is SLOW
     jsr multply_16bits
     
-; FIXME: is this correct?
     lda PRODUCT+1
-    sta DISTANCE_DUE_TO_DELTA_X
+    sta DISTANCE_DUE_TO_DELTA_Y
     lda PRODUCT+2
-    sta DISTANCE_DUE_TO_DELTA_X+1
+    sta DISTANCE_DUE_TO_DELTA_Y+1
 
-
-    
-;    DISTANCE_DUE_TO_DELTA_Y
-    
     ; Now we need to know whether to negate either of these DISTANCES
 
     lda LOOKING_DIR_QUANDRANT
@@ -1267,12 +1287,17 @@ from_check_vertical_difference:
     and #%00000001  ; check vertical
     beq from_is_the_same_vertically
 from_is_not_the_same_vertically:
-    ; FIXME: we should negate the SINE result (after multiplication)
-
+    ; We negate the DISTANCE_DUE_TO_DELTA_Y
+    sec
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_Y
+    sta DISTANCE_DUE_TO_DELTA_Y
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_Y+1
+    sta DISTANCE_DUE_TO_DELTA_Y+1
 
 from_is_the_same_vertically:
-    ; FIXME: add the sine result to the distance
-    
+    ; Nothing to do with the DISTANCE_DUE_TO_DELTA_Y
 
 
 from_check_horizontal_difference:
@@ -1281,19 +1306,173 @@ from_check_horizontal_difference:
     and #%00000010  ; check horizontal
     beq from_is_the_same_horizontally
 from_is_not_the_same_horizontally:
-    ; FIXME: we should negate the COSINE result (after multiplication)
-
+    ; We negate the DISTANCE_DUE_TO_DELTA_X
+    sec
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_X
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_X+1
+    sta DISTANCE_DUE_TO_DELTA_X+1
 
 from_is_the_same_horizontally:
-    ; FIXME: add the cosine result to the distance
+    ; Nothing to do with the DISTANCE_DUE_TO_DELTA_X
 
 
-
-    ; ADD the DISTANCES!
-    ; ADD the DISTANCES!
-    ; ADD the DISTANCES!
+    ; --- Calculate the distance and then the wall height ---
+    clc
+    lda DISTANCE_DUE_TO_DELTA_Y
+    adc DISTANCE_DUE_TO_DELTA_X
+    sta FROM_DISTANCE
+    lda DISTANCE_DUE_TO_DELTA_Y+1
+    adc DISTANCE_DUE_TO_DELTA_X+1
+    sta FROM_DISTANCE+1
+    
+    ; FIXME: For now we do: 265.0*256/distance
+    lda #0
+    sta DIVIDEND
+    lda #<(265)
+    sta DIVIDEND+1
+    lda #>(265)
+    sta DIVIDEND+2
+    
+    lda FROM_DISTANCE
+    sta DIVISOR
+    lda FROM_DISTANCE+1
+    sta DIVISOR+1
+    lda #0
+    sta DIVISOR+2
+    
+    ; SPEED: we can speed this up using a lookup table: distance2height!
+    jsr divide_24bits
+    
+    lda DIVIDEND
+    sta FROM_WALL_HEIGHT
+    lda DIVIDEND+1
+    sta FROM_WALL_HEIGHT+1
+    
 
     ; ================ TO DISTANCE ===============
+    
+    
+    
+    ; First we calculate the *positive* distance along the looking direction due to DELTA_X and DELTA_Y accordingly
+
+    ; -- TO: DISTANCE_DUE_TO_DELTA_X --
+
+    ; SPEED: copying this 16-bit value is slow
+    lda LOOKING_DIR_SINE
+    sta MULTIPLIER
+    lda LOOKING_DIR_SINE+1
+    sta MULTIPLIER+1
+
+    lda TO_DELTA_X
+    sta MULTIPLICAND
+    lda TO_DELTA_X+1
+    sta MULTIPLICAND+1
+
+    ; SPEED: this multiplier is SLOW
+    jsr multply_16bits
+    
+    lda PRODUCT+1
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda PRODUCT+2
+    sta DISTANCE_DUE_TO_DELTA_X+1
+
+    ; -- TO: DISTANCE_DUE_TO_DELTA_Y --
+    
+    ; SPEED: copying this 16-bit value is slow
+    lda LOOKING_DIR_COSINE
+    sta MULTIPLIER
+    lda LOOKING_DIR_COSINE+1
+    sta MULTIPLIER+1
+
+    lda TO_DELTA_Y
+    sta MULTIPLICAND
+    lda TO_DELTA_Y+1
+    sta MULTIPLICAND+1
+
+    ; SPEED: this multiplier is SLOW
+    jsr multply_16bits
+    
+    lda PRODUCT+1
+    sta DISTANCE_DUE_TO_DELTA_Y
+    lda PRODUCT+2
+    sta DISTANCE_DUE_TO_DELTA_Y+1
+
+    ; Now we need to know whether to negate either of these DISTANCES
+
+    lda LOOKING_DIR_QUANDRANT
+    eor TO_QUADRANT             ; we XOR the bits with the TO_QUADRANT. If bit 0 or 1 become a 1, this means there is a difference horizontally or vertically and we have to negate sine/cosine accordingly
+    sta TMP1
+
+to_check_vertical_difference:    
+    and #%00000001  ; check vertical
+    beq to_is_the_same_vertically
+to_is_not_the_same_vertically:
+    ; We negate the DISTANCE_DUE_TO_DELTA_Y
+    sec
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_Y
+    sta DISTANCE_DUE_TO_DELTA_Y
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_Y+1
+    sta DISTANCE_DUE_TO_DELTA_Y+1
+
+to_is_the_same_vertically:
+    ; Nothing to do with the DISTANCE_DUE_TO_DELTA_Y
+
+
+to_check_horizontal_difference:
+    lda TMP1
+    
+    and #%00000010  ; check horizontal
+    beq to_is_the_same_horizontally
+to_is_not_the_same_horizontally:
+    ; We negate the DISTANCE_DUE_TO_DELTA_X
+    sec
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_X
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_X+1
+    sta DISTANCE_DUE_TO_DELTA_X+1
+
+to_is_the_same_horizontally:
+    ; Nothing to do with the DISTANCE_DUE_TO_DELTA_X
+
+
+    ; --- Calculate the distance and then the wall height ---
+    clc
+    lda DISTANCE_DUE_TO_DELTA_Y
+    adc DISTANCE_DUE_TO_DELTA_X
+    sta TO_DISTANCE
+    lda DISTANCE_DUE_TO_DELTA_Y+1
+    adc DISTANCE_DUE_TO_DELTA_X+1
+    sta TO_DISTANCE+1
+    
+    ; FIXME: For now we do: 265.0*256/distance
+    lda #0
+    sta DIVIDEND
+    lda #<(265)
+    sta DIVIDEND+1
+    lda #>(265)
+    sta DIVIDEND+2
+    
+    lda TO_DISTANCE
+    sta DIVISOR
+    lda TO_DISTANCE+1
+    sta DIVISOR+1
+    lda #0
+    sta DIVISOR+2
+    
+    ; SPEED: we can speed this up using a lookup table: distance2height!
+    jsr divide_24bits
+    
+    lda DIVIDEND
+    sta TO_WALL_HEIGHT
+    lda DIVIDEND+1
+    sta TO_WALL_HEIGHT+1
 
     
 ; FIXME!
@@ -1305,17 +1484,19 @@ from_is_the_same_horizontally:
     
 HACK_wall_height_wall_0:
     ; FIXME: from wall height is now hardcoded to 128
-    lda #128
-    sta FROM_WALL_HEIGHT
-    lda #0
-    sta FROM_WALL_HEIGHT+1
+;    lda #128
+;    sta FROM_WALL_HEIGHT
+;    lda #0
+;    sta FROM_WALL_HEIGHT+1
     
-    lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
-    sta TO_WALL_HEIGHT
-    lda #0
-    sta TO_WALL_HEIGHT+1
+;    lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
+;    sta TO_WALL_HEIGHT
+;    lda #0
+;    sta TO_WALL_HEIGHT+1
     
     ; We also have to determine whether the wall decreases (in height) from left to right, or the other way around and maybe do a different draw-wall-call accordingly
+    
+    ; FIXME: compare TO_WALL_HEIGHT with FROM_WALL_HEIGHT to determine WALL_HEIGHT_INCREASES!
     
     lda #0
     sta WALL_HEIGHT_INCREASES
@@ -1809,7 +1990,8 @@ got_tangent_left:
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
     sta MULTIPLICAND
-    stz MULTIPLICAND+1   ; FIXME: we should get the tangent_HIGH instead!!
+    lda #0               ; FIXME: we should get the tangent_HIGH instead!!
+    sta MULTIPLICAND+1   
     
     ; SPEED: copying this 16-bit value is slow
     lda NORMAL_DISTANCE_TO_WALL
@@ -1963,7 +2145,8 @@ got_tangent_right:
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
     sta MULTIPLICAND
-    stz MULTIPLICAND+1   ; FIXME: we should get the tangent_HIGH instead!!
+    lda #0               ; FIXME: we should get the tangent_HIGH instead!!
+    sta MULTIPLICAND+1   
     
     ; SPEED: copying this 16-bit value is slow
     lda NORMAL_DISTANCE_TO_WALL
