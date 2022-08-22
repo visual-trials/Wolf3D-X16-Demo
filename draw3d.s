@@ -3,7 +3,7 @@
 ; FIXME: this is temporary data to get some wall information into the engine
 
 wall_0_info:
-    .byte 1, 3 ; start x, y
+    .byte 2, 3 ; start x, y
     .byte 3, 3 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
@@ -83,8 +83,9 @@ setup_player:
     .endif
     
     ; looking direction of the player/view (0-1823)
-    lda #152              ; 30 degrees from facing straight north
+;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
+    lda #151
 ;    lda #228
 ;    lda #<(1824-228)
     sta LOOKING_DIR
@@ -1139,14 +1140,6 @@ wall_facing_east_calc_angle_for_end_of_wall:
     
 calculated_normal_distance_to_wall:
 
-;    stp
-;    lda SCREEN_START_RAY
-;    lda SCREEN_START_RAY+1
-;    lda FROM_RAY_INDEX
-;    lda FROM_RAY_INDEX+1
-;    lda TO_RAY_INDEX
-;    lda TO_RAY_INDEX+1
-
 
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
@@ -1155,6 +1148,14 @@ calculated_normal_distance_to_wall:
     
     ; Check if start of wall is between the left and right of the screen
     ; To do this, we first need to know the ray number on the screen (FROM_RAY_INDEX - SCREEN_START_RAY)
+    
+    ; Maybe: To do this, we first need to know the ray number on the screen: (FROM_RAY_INDEX + (1824 - SCREEN_START_RAY))%1824 > 0 and < 60
+    
+; FIXME: this is a BUG!!
+; FIXME: this is a BUG!!
+; FIXME: this is a BUG!!
+    stp
+    
     sec
     lda FROM_RAY_INDEX
     sbc SCREEN_START_RAY
@@ -1210,6 +1211,17 @@ from_ray_is_not_left_of_screen:
     ; FIXME: only do this IF the wall is not COMPLETELY right of the screen!
     
 to_ray_is_not_right_of_screen:
+    
+    
+    stp
+    lda SCREEN_START_RAY
+    lda SCREEN_START_RAY+1
+    lda FROM_RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    lda TO_RAY_INDEX
+    lda TO_RAY_INDEX+1
+
+    
     
 ; FIXME:
     lda LOOKING_DIR_QUANDRANT
