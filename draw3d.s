@@ -245,6 +245,18 @@ is_high_index_cosine:
     sta LOOKING_DIR_COSINE+1
 got_looking_dir_cosine:
 
+
+; FIXME:
+    stp
+    lda LOOKING_DIR_QUANDRANT
+    lda LOOKING_DIR_COSINE
+    lda LOOKING_DIR_COSINE+1
+    lda LOOKING_DIR_SINE
+    lda LOOKING_DIR_SINE+1
+
+
+
+
     rts
     
     
