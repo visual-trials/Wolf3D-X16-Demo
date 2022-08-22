@@ -92,11 +92,20 @@ MULTIPLIER                = $70 ; 71
 MULTIPLICAND              = $72 ; 73
 PRODUCT                   = $74 ; 75 ; 76 ; 77
 
-; FIXME: not only do we need to have variable for knowing when to negate from and to points, but also after walls have been cut-off, these points also need their distance be calculated. So we need a different solution.
 FROM_QUADRANT             = $78       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
 TO_QUADRANT               = $79       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
-DISTANCE_DUE_TO_DELTA_X   = $4A ; 4B  ; The distance along the looking direction due to DELTA_X 
-DISTANCE_DUE_TO_DELTA_Y   = $4C ; 4D  ; The distance along the looking direction due to DELTA_Y 
+DISTANCE_DUE_TO_DELTA_X   = $7A ; 7B  ; The distance along the looking direction due to DELTA_X 
+DISTANCE_DUE_TO_DELTA_Y   = $7C ; 7D  ; The distance along the looking direction due to DELTA_Y 
+; FIXME: not only do we need to have variable for knowing when to negate from and to points, but also after walls have been cut-off, these points also need their distance be calculated. So we need a different solution.
+NEGATE_COSINE_RESULT_FROM = $7E       ; This indicates whether we have to negate the result from cosine (FROM)
+NEGATE_SINE_RESULT_FROM   = $7F       ; This indicates whether we have to negate the result from sine (FROM)
+NEGATE_COSINE_RESULT_TO   = $80       ; This indicates whether we have to negate the result from cosine (TO)
+NEGATE_SINE_RESULT_TO     = $81       ; This indicates whether we have to negate the result from sine (TO)
+; FIXME: we want to get rid of these, but for now this is helpful
+FROM_DELTA_X              = $82 ; 83
+FROM_DELTA_Y              = $84 ; 85
+TO_DELTA_X                = $86 ; 87
+TO_DELTA_Y                = $88 ; 89
 
 ; === VRAM addresses ===
 

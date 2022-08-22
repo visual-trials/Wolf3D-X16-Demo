@@ -200,6 +200,11 @@ looking_dir_in_q1:
     
 looking_dir_in_q0:
 
+    lda LOOKING_DIR
+    sta RAY_INDEX
+    lda LOOKING_DIR+1
+    sta RAY_INDEX+1
+    
     ; Mark as q0
     lda #%00000000
     sta LOOKING_DIR_QUANDRANT
@@ -244,17 +249,6 @@ is_high_index_cosine:
     lda COSINE_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
     sta LOOKING_DIR_COSINE+1
 got_looking_dir_cosine:
-
-
-; FIXME:
-    stp
-    lda LOOKING_DIR_QUANDRANT
-    lda LOOKING_DIR_COSINE
-    lda LOOKING_DIR_COSINE+1
-    lda LOOKING_DIR_SINE
-    lda LOOKING_DIR_SINE+1
-
-
 
 
     rts
@@ -461,6 +455,18 @@ wall_facing_north_starting_east:
 wall_facing_north_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
+    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    lda DELTA_X
+    sta FROM_DELTA_X
+    lda DELTA_X+1
+    sta FROM_DELTA_X+1
+    
+    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    lda DELTA_Y
+    sta FROM_DELTA_Y
+    lda DELTA_Y+1
+    sta FROM_DELTA_Y+1
+    
     lda RAY_INDEX
     sta FROM_RAY_INDEX
     lda RAY_INDEX+1
@@ -526,6 +532,18 @@ wall_facing_north_ending_east:
 wall_facing_north_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
     
+    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    lda DELTA_X
+    sta TO_DELTA_X
+    lda DELTA_X+1
+    sta TO_DELTA_X+1
+    
+    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    lda DELTA_Y
+    sta TO_DELTA_Y
+    lda DELTA_Y+1
+    sta TO_DELTA_Y+1
+
     lda RAY_INDEX
     sta TO_RAY_INDEX
     lda RAY_INDEX+1
@@ -631,6 +649,18 @@ wall_facing_west_starting_north:
 wall_facing_west_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
+    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    lda DELTA_X
+    sta FROM_DELTA_X
+    lda DELTA_X+1
+    sta FROM_DELTA_X+1
+    
+    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    lda DELTA_Y
+    sta FROM_DELTA_Y
+    lda DELTA_Y+1
+    sta FROM_DELTA_Y+1
+    
     lda RAY_INDEX
     sta FROM_RAY_INDEX
     lda RAY_INDEX+1
@@ -696,6 +726,18 @@ wall_facing_west_ending_north:
 wall_facing_west_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
     
+    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    lda DELTA_X
+    sta TO_DELTA_X
+    lda DELTA_X+1
+    sta TO_DELTA_X+1
+    
+    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    lda DELTA_Y
+    sta TO_DELTA_Y
+    lda DELTA_Y+1
+    sta TO_DELTA_Y+1
+
     lda RAY_INDEX
     sta TO_RAY_INDEX
     lda RAY_INDEX+1
@@ -800,6 +842,18 @@ wall_facing_south_starting_east:
 wall_facing_south_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
+    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    lda DELTA_X
+    sta FROM_DELTA_X
+    lda DELTA_X+1
+    sta FROM_DELTA_X+1
+    
+    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    lda DELTA_Y
+    sta FROM_DELTA_Y
+    lda DELTA_Y+1
+    sta FROM_DELTA_Y+1
+    
     lda RAY_INDEX
     sta FROM_RAY_INDEX
     lda RAY_INDEX+1
@@ -865,6 +919,18 @@ wall_facing_south_ending_east:
 wall_facing_south_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
     
+    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    lda DELTA_X
+    sta TO_DELTA_X
+    lda DELTA_X+1
+    sta TO_DELTA_X+1
+    
+    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    lda DELTA_Y
+    sta TO_DELTA_Y
+    lda DELTA_Y+1
+    sta TO_DELTA_Y+1
+
     lda RAY_INDEX
     sta TO_RAY_INDEX
     lda RAY_INDEX+1
@@ -970,6 +1036,18 @@ wall_facing_east_starting_north:
 wall_facing_east_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
+    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    lda DELTA_X
+    sta FROM_DELTA_X
+    lda DELTA_X+1
+    sta FROM_DELTA_X+1
+    
+    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    lda DELTA_Y
+    sta FROM_DELTA_Y
+    lda DELTA_Y+1
+    sta FROM_DELTA_Y+1
+    
     lda RAY_INDEX
     sta FROM_RAY_INDEX
     lda RAY_INDEX+1
@@ -1035,6 +1113,18 @@ wall_facing_east_ending_north:
 wall_facing_east_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
     
+    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    lda DELTA_X
+    sta TO_DELTA_X
+    lda DELTA_X+1
+    sta TO_DELTA_X+1
+    
+    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    lda DELTA_Y
+    sta TO_DELTA_Y
+    lda DELTA_Y+1
+    sta TO_DELTA_Y+1
+
     lda RAY_INDEX
     sta TO_RAY_INDEX
     lda RAY_INDEX+1
@@ -1118,7 +1208,22 @@ from_ray_is_not_left_of_screen:
     
 to_ray_is_not_right_of_screen:
     
+; FIXME:
+    stp
+    lda LOOKING_DIR_QUANDRANT
+    lda FROM_QUADRANT
     
+    lda FROM_DELTA_X
+    lda FROM_DELTA_X+1
+    
+    lda FROM_DELTA_Y
+    lda FROM_DELTA_Y+1
+    
+    lda LOOKING_DIR_COSINE
+    lda LOOKING_DIR_COSINE+1
+    
+    lda LOOKING_DIR_SINE
+    lda LOOKING_DIR_SINE+1
     
     ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part:
     ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
