@@ -95,10 +95,8 @@ PRODUCT                   = $74 ; 75 ; 76 ; 77
 ; FIXME: not only do we need to have variable for knowing when to negate from and to points, but also after walls have been cut-off, these points also need their distance be calculated. So we need a different solution.
 FROM_QUADRANT             = $78       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
 TO_QUADRANT               = $79       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
-NEGATE_SINE_FROM          = $7A       ; This says that (for calculating the distance to the from-point on a wall) the sine part has to be negated
-NEGATE_COSINE_FROM        = $7B       ; This says that (for calculating the distance to the from-point on a wall) the sine part has to be negated
-NEGATE_SINE_TO            = $7C       ; This says that (for calculating the distance to the to-point on a wall) the sine part has to be negated
-NEGATE_COSINE_TO          = $7D       ; This says that (for calculating the distance to the to-point on a wall) the sine part has to be negated
+DISTANCE_DUE_TO_DELTA_X   = $4A ; 4B  ; The distance along the looking direction due to DELTA_X 
+DISTANCE_DUE_TO_DELTA_Y   = $4C ; 4D  ; The distance along the looking direction due to DELTA_Y 
 
 ; === VRAM addresses ===
 

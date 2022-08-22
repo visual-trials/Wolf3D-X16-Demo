@@ -3,7 +3,7 @@
 ; FIXME: this is temporary data to get some wall information into the engine
 
 wall_0_info:
-    .byte 0, 3 ; start x, y
+    .byte 2, 3 ; start x, y
     .byte 3, 3 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
@@ -290,7 +290,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #2
+    cmp #1
 ;    cmp #3
     bne draw_next_wall
     
@@ -330,11 +330,6 @@ draw_wall:
     ;   we use 0-1823 indexes instead of 0-360 degrees
     
     ; TODO: if the wall is facing the player from its back, we dont have to consider drawing it at all, so that could be an easy out.
-    
-    stz NEGATE_SINE_FROM
-    stz NEGATE_COSINE_FROM
-    stz NEGATE_SINE_TO
-    stz NEGATE_COSINE_TO
     
     lda WALL_FACING_DIR
     cmp #3  ; west
@@ -1117,59 +1112,71 @@ to_ray_is_not_right_of_screen:
     ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
     ; Given these two distances, we can also determine the left and right wall heights.
 
+    ; ================ FROM DISTANCE ===============
+
+    ; First we calculate the *positive* distance along the looking direction due to DELTA_X and DELTA_Y accordingly
+
+    ; SPEED: copying this 16-bit value is slow
+    lda LOOKING_DIR_COSINE
+    sta MULTIPLIER
+    lda LOOKING_DIR_COSINE+1
+    sta MULTIPLIER+1
+
+    lda DELTA_X
+    sta MULTIPLICAND
+    lda DELTA_X+1
+    stz MULTIPLICAND+1
+
+    ; SPEED: this multiplier is SLOW
+    jsr multply_16bits
     
-    .if 0
-    
-; FIXME: implement this properly!
+; FIXME: is this correct?
+    lda PRODUCT+1
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda PRODUCT+2
+    sta DISTANCE_DUE_TO_DELTA_X+1
 
-
-    lda LOOKING_DIR_QUANDRANT
-    and #%00000010 ; we are quadrant q2 (code %00000011) so we if the horizontal bit (bit 1) is the same as where the looking quadrant
-    bne wall_facing_north_starting_west_negated_cosine  ; the looking quadrant is the same horizontally, so no need to negate COSINE
-    lda #1 
-    sta NEGATE_COSINE_FROM
-wall_facing_north_starting_west_negated_cosine:
-
-    lda LOOKING_DIR_QUANDRANT
-    and #%00000001 ; we are quadrant q2 (code %00000011) so we if the vertical bit (bit 1) is the same as where the looking quadrant
-    bne wall_facing_north_starting_west_negated_sine  ; the looking quadrant is the same vertically (zero), so no need to negate SINE
-    lda #1 
-    sta NEGATE_SINE_FROM
-wall_facing_north_starting_west_negated_sine:
-
-
-    lda LOOKING_DIR_QUANDRANT
-    and #%00000010 ; we are quadrant q1 (code %00000001) so we if the horizontal bit (bit 1) is the same as where the looking quadrant
-    beq wall_facing_north_starting_east_negated_cosine  ; the looking quadrant is the same horizontally, so no need to negate COSINE
-    lda #1 
-    sta NEGATE_COSINE_FROM
-wall_facing_north_starting_east_negated_cosine:
-
-    lda LOOKING_DIR_QUANDRANT
-    and #%00000001 ; we are quadrant q1 (code %00000001) so we if the vertical bit (bit 1) is the same as where the looking quadrant
-    bne wall_facing_north_starting_east_negated_sine  ; the looking quadrant is the same vertically (zero), so no need to negate SINE
-    lda #1 
-    sta NEGATE_SINE_FROM
-wall_facing_north_starting_east_negated_sine:
 
     
-    lda LOOKING_DIR_QUANDRANT
-    and #%00000010 ; we are quadrant q3 (code %00000010) so we if the horizontal bit (bit 1) is the same as where the looking quadrant
-    bne wall_facing_south_starting_west_negated_cosine  ; the looking quadrant is the same horizontally, so no need to negate COSINE
-    lda #1 
-    sta NEGATE_COSINE_FROM
-wall_facing_south_starting_west_negated_cosine:
+;    DISTANCE_DUE_TO_DELTA_Y
+    
+    ; Now we need to know whether to negate either of these DISTANCES
 
     lda LOOKING_DIR_QUANDRANT
-    and #%00000001 ; we are quadrant q3 (code %00000010) so we if the vertical bit (bit 1) is the same as where the looking quadrant
-    beq wall_facing_south_starting_west_negated_sine  ; the looking quadrant is the same vertically (zero), so no need to negate SINE
-    lda #1 
-    sta NEGATE_SINE_FROM
-wall_facing_south_starting_west_negated_sine:
+    eor FROM_QUADRANT             ; we XOR the bits with the FROM_QUADRANT. If bit 0 or 1 become a 1, this means there is a difference horizontally or vertically and we have to negate sine/cosine accordingly
+    sta TMP1
+
+from_check_vertical_difference:    
+    and #%00000001  ; check vertical
+    beq from_is_the_same_vertically
+from_is_not_the_same_vertically:
+    ; FIXME: we should negate the SINE result (after multiplication)
 
 
-    .endif
+from_is_the_same_vertically:
+    ; FIXME: add the sine result to the distance
+    
 
+
+from_check_horizontal_difference:
+    lda TMP1
+    
+    and #%00000010  ; check horizontal
+    beq from_is_the_same_horizontally
+from_is_not_the_same_horizontally:
+    ; FIXME: we should negate the COSINE result (after multiplication)
+
+
+from_is_the_same_horizontally:
+    ; FIXME: add the cosine result to the distance
+
+
+
+    ; ADD the DISTANCES!
+    ; ADD the DISTANCES!
+    ; ADD the DISTANCES!
+
+    ; ================ TO DISTANCE ===============
 
     
 ; FIXME!
@@ -1693,6 +1700,7 @@ got_tangent_left:
     lda NORMAL_DISTANCE_TO_WALL+1
     sta MULTIPLIER+1
 
+    ; SPEED: this multiplier is SLOW
     jsr multply_16bits
     lda PRODUCT+1
     lsr
@@ -1846,6 +1854,7 @@ got_tangent_right:
     lda NORMAL_DISTANCE_TO_WALL+1
     sta MULTIPLIER+1
 
+    ; SPEED: this multiplier is SLOW
     jsr multply_16bits
     lda PRODUCT+1
     lsr
