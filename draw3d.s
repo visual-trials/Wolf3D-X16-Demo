@@ -86,7 +86,7 @@ setup_player:
     ; looking direction of the player/view (0-1823)
 ;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-    lda #100
+    lda #0
 ;    lda #228
 ;    lda #<(1824-228)
     sta LOOKING_DIR
@@ -301,7 +301,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #2
+    cmp #1
 ;    cmp #3
     bne draw_next_wall
     
