@@ -80,6 +80,7 @@ setup_player:
     sta PLAYER_POS_Y
     lda #1
     sta PLAYER_POS_Ys+1
+    
     .endif
     
     ; looking direction of the player/view (0-1823)
@@ -1140,6 +1141,7 @@ wall_facing_east_calc_angle_for_end_of_wall:
     
 calculated_normal_distance_to_wall:
 
+    
 
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
@@ -1149,13 +1151,6 @@ calculated_normal_distance_to_wall:
     ; Check if start of wall is between the left and right of the screen
     ; To do this, we first need to know the ray number on the screen (FROM_RAY_INDEX - SCREEN_START_RAY)
     
-    ; Maybe: To do this, we first need to know the ray number on the screen: (FROM_RAY_INDEX + (1824 - SCREEN_START_RAY))%1824 > 0 and < 60
-    
-; FIXME: this is a BUG!!
-; FIXME: this is a BUG!!
-; FIXME: this is a BUG!!
-    stp
-    
     sec
     lda FROM_RAY_INDEX
     sbc SCREEN_START_RAY
@@ -1164,10 +1159,22 @@ calculated_normal_distance_to_wall:
     sbc SCREEN_START_RAY+1
     sta TESTING_RAY_INDEX+1
     
-; FIXME: HACK!!
+    bpl from_testing_ray_is_positive
+    
+    ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
+    clc
+    lda TESTING_RAY_INDEX
+    adc #<(1824)
+    sta TESTING_RAY_INDEX
+    lda TESTING_RAY_INDEX+1
+    adc #>(1824)
+    sta TESTING_RAY_INDEX+1
+    
+from_testing_ray_is_positive:
+    ; FIXME: We should check if its within 0 and 304 rays (first check left, then right)
+    ; FIXME: hack
     cmp #5
     bcc from_ray_is_not_left_of_screen   
-;    bpl from_ray_is_not_left_of_screen
     
 from_ray_is_left_of_screen:
     ; Cut off left part of wall to the beginning of the screen
@@ -1192,6 +1199,19 @@ from_ray_is_not_left_of_screen:
     sbc SCREEN_START_RAY+1
     sta TESTING_RAY_INDEX+1
     
+    bpl to_testing_ray_is_positive
+    
+    ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
+    clc
+    lda TESTING_RAY_INDEX
+    adc #<(1824)
+    sta TESTING_RAY_INDEX
+    lda TESTING_RAY_INDEX+1
+    adc #>(1824)
+    sta TESTING_RAY_INDEX+1
+    
+to_testing_ray_is_positive:
+    
     ; Check if to ray > 60 degrees
     cmp #>(304)
     bcc to_ray_is_not_right_of_screen
@@ -1211,7 +1231,6 @@ from_ray_is_not_left_of_screen:
     ; FIXME: only do this IF the wall is not COMPLETELY right of the screen!
     
 to_ray_is_not_right_of_screen:
-    
     
     stp
     lda SCREEN_START_RAY
