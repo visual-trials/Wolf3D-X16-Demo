@@ -86,7 +86,7 @@ setup_player:
     ; looking direction of the player/view (0-1823)
 ;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-    lda #152
+    lda #100
 ;    lda #228
 ;    lda #<(1824-228)
     sta LOOKING_DIR
@@ -1214,10 +1214,12 @@ to_testing_ray_is_positive:
     ; Check if to ray > 60 degrees
     cmp #>(304)
     bcc to_ray_is_not_right_of_screen
+    bne to_ray_is_on_right_of_screen
     lda TESTING_RAY_INDEX
     cmp #<(304)
     bcc to_ray_is_not_right_of_screen
     
+to_ray_is_on_right_of_screen:
     ; Set to-ray to screen start ray + 60 degrees (right column of the screen)
     clc
     lda SCREEN_START_RAY
@@ -1476,7 +1478,6 @@ from_ray_in_q0:
 from_ray_info_updated:
 
 
-
     ; ============ TO RAY ==========
     
     ; -- Re-calculate TO_DELTA_X **OR** TO_DELTA_Y using tangent(TO_RAY_INDEX) --
@@ -1715,26 +1716,41 @@ to_ray_info_updated:
 ;    stp
     lda SCREEN_START_RAY
     lda SCREEN_START_RAY+1
+    
+    nop
+    
     lda FROM_RAY_INDEX
     lda FROM_RAY_INDEX+1
+    
+    nop
+    
     lda TO_RAY_INDEX
     lda TO_RAY_INDEX+1
 
-    
+    nop
+    nop
 ; FIXME:
     lda LOOKING_DIR_QUANDRANT
     lda FROM_QUADRANT
     lda TO_QUADRANT
     
+    nop
+    
     lda FROM_DELTA_X
     lda FROM_DELTA_X+1
+    
+    nop
     
     lda FROM_DELTA_Y
     lda FROM_DELTA_Y+1
     
+    nop
+    
     lda TO_DELTA_X
     lda TO_DELTA_X+1
     
+    nop
+
     lda TO_DELTA_Y
     lda TO_DELTA_Y+1
     
