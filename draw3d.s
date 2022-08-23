@@ -274,8 +274,8 @@ draw_3d_view:
 
 draw_walls:
 
-;    lda #0
-    lda #1
+    lda #0
+;    lda #1
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
@@ -1304,18 +1304,18 @@ got_tangent_from_ray:
 
 from_ray_on_vertical_wall:
 
-    lda PRODUCT+2
+    lda PRODUCT+1
     sta FROM_DELTA_Y
-    lda PRODUCT+3
+    lda PRODUCT+2
     sta FROM_DELTA_Y+1
     
     bra done_from_delta_calc
     
 from_ray_on_horizontal_wall:
     
-    lda PRODUCT+2
+    lda PRODUCT+1
     sta FROM_DELTA_X
-    lda PRODUCT+3
+    lda PRODUCT+2
     sta FROM_DELTA_X+1
     
 done_from_delta_calc:
@@ -1477,21 +1477,242 @@ from_ray_info_updated:
 
 
 
+    ; ============ TO RAY ==========
+    
+    ; -- Re-calculate TO_DELTA_X **OR** TO_DELTA_Y using tangent(TO_RAY_INDEX) --
+    
+    ; Check if TO_RAY_INDEX is 'negative' (between 270 degrees and 360)
+    lda TO_RAY_INDEX+1
+    ; FIXME: hack!
+    cmp #4
+    bcc to_ray_is_already_between_0_and_90_degrees
+    
+    sec
+    lda #<(1824)
+    sbc TO_RAY_INDEX
+    sta RAY_INDEX
+    lda #>(1824)
+    sbc TO_RAY_INDEX+1
+    sta RAY_INDEX+1
+    
+    bra to_ray_is_now_between_0_and_90_degrees
 
-    ; FIXME: also implement for TO_RAY info!!
-    ; FIXME: also implement for TO_RAY info!!
-    ; FIXME: also implement for TO_RAY info!!
-    ; FIXME: also implement for TO_RAY info!!
-    ; FIXME: also implement for TO_RAY info!!
+to_ray_is_already_between_0_and_90_degrees:
+    lda TO_RAY_INDEX
+    sta RAY_INDEX
+    lda TO_RAY_INDEX+1
+    sta RAY_INDEX+1
 
+to_ray_is_now_between_0_and_90_degrees:
 
+    ; SPEED: no need to do this lda
+    lda RAY_INDEX+1
+    bne is_high_positive_to_ray_index
+is_low_positive_to_ray_index:
+    ldy RAY_INDEX
+    lda TANGENT_LOW,y             ; When the ray index >= 256, we retrieve to 256 positions further
+    sta MULTIPLIER
+    lda TANGENT_HIGH,y             ; When the ray index >= 256, we retrieve to 256 positions further
+    sta MULTIPLIER+1
+    bra got_tangent_to_ray
+is_high_positive_to_ray_index:
+    ldy RAY_INDEX
+    lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve to 256 positions further
+    sta MULTIPLIER
+    lda TANGENT_HIGH+256,y         ; When the ray index >= 256, we retrieve to 256 positions further
+    sta MULTIPLIER+1
+got_tangent_to_ray:
+
+    lda NORMAL_DISTANCE_TO_WALL
+    sta MULTIPLICAND
+    lda NORMAL_DISTANCE_TO_WALL+1
+    sta MULTIPLICAND+1
+
+    jsr multply_16bits
+    
+    lda WALL_FACING_DIR
+    lsr
+    bcc to_ray_on_horizontal_wall ; no carry (facing south or norht), so we its a horizontal wall
+
+to_ray_on_vertical_wall:
+
+    lda PRODUCT+1
+    sta TO_DELTA_Y
+    lda PRODUCT+2
+    sta TO_DELTA_Y+1
+    
+    bra done_to_delta_calc
+    
+to_ray_on_horizontal_wall:
+    
+    lda PRODUCT+1
+    sta TO_DELTA_X
+    lda PRODUCT+2
+    sta TO_DELTA_X+1
+    
+done_to_delta_calc:
+    
+
+    ; -- Re-calculate TO_QUADRANT using TO_RAY_INDEX --
+
+    ; FIXME: we first need to get the *absolute* angle for TO_RAY_INDEX
+    ;        right now we do this by "unnormalizing" it and checking the WALL_FACING_DIR
+    ;        but there is probably a better way to do this (earlier).
+
+    lda WALL_FACING_DIR
+    cmp #3  ; west
+    beq to_ray_calc_wall_facing_west
+    cmp #2  ; south
+    beq to_ray_calc_wall_facing_south
+    cmp #1  ; east
+    beq to_ray_calc_wall_facing_east
+    cmp #0  ; north
+    beq to_ray_calc_wall_facing_north
+
+to_ray_calc_wall_facing_east:
+    ; The wall is facing north so we are turned 270. We need to subtract 90 degrees
+    sec
+    lda TO_RAY_INDEX
+    sbc #<(1*456)
+    sta RAY_INDEX
+    lda TO_RAY_INDEX+1
+    sbc #>(1*456)
+    sta RAY_INDEX+1
+    bra unnormalized_to_ray
+
+to_ray_calc_wall_facing_north:
+    ; The wall is facing north so we are turned 180. We need to subtract 180 degrees
+    sec
+    lda TO_RAY_INDEX
+    sbc #<(2*456)
+    sta RAY_INDEX
+    lda TO_RAY_INDEX+1
+    sbc #>(2*456)
+    sta RAY_INDEX+1
+    bra unnormalized_to_ray
+    
+to_ray_calc_wall_facing_west:
+    ; The wall is facing west so we are turned 90. We need to subtract 270 degrees
+    sec
+    lda TO_RAY_INDEX
+    sbc #<(3*456)
+    sta RAY_INDEX
+    lda TO_RAY_INDEX+1
+    sbc #>(3*456)
+    sta RAY_INDEX+1
+    bra unnormalized_to_ray
+    
+to_ray_calc_wall_facing_south:
+    ; The wall is facing south so we are turned 0. No need to subtract anything.
+
+unnormalized_to_ray:
+
+    ; Checking if RAY_INDEX is below 0, if so add 1824
+    bpl unnormalized_to_ray_is_positive
+    
+    clc 
+    lda RAY_INDEX
+    adc #<(4*456)
+    lda RAY_INDEX
+    lda RAY_INDEX+1
+    adc #>(4*456)
+    lda RAY_INDEX+1
+
+unnormalized_to_ray_is_positive:
+    
+    lda RAY_INDEX+1
+    cmp #>(456*1)
+    bcc to_ray_in_q0
+    bne to_ray_in_not_in_q0
+    lda RAY_INDEX
+    cmp #<(456*1)
+    bcc to_ray_in_q0
+    
+to_ray_in_not_in_q0:
+    lda RAY_INDEX+1
+    cmp #>(456*2)
+    bcc to_ray_in_q1
+    bne to_ray_in_not_in_q1
+    lda RAY_INDEX
+    cmp #<(456*2)
+    bcc to_ray_in_q1
+    
+to_ray_in_not_in_q1:
+    lda RAY_INDEX+1
+    cmp #>(456*3)
+    bcc to_ray_in_q2
+    bne to_ray_in_q3
+    lda RAY_INDEX
+    cmp #<(456*3)
+    bcc to_ray_in_q2
+    
+to_ray_in_q3:
+    ; Normalize angle (360 degrees - q3angle = q0angle)
+    sec
+    lda #<(456*4)
+    sbc RAY_INDEX
+    sta RAY_INDEX
+    lda #>(456*4)
+    sbc RAY_INDEX+1
+    sta RAY_INDEX+1
+
+    ; Mark as q3
+    lda #%00000010
+    sta TO_QUADRANT
+    
+    bra to_ray_info_updated
+    
+to_ray_in_q2:
+    ; Normalize angle (q2angle - 180 degrees = q0angle)
+    sec
+    lda RAY_INDEX
+    sbc #<(456*2)
+    sta RAY_INDEX
+    lda RAY_INDEX+1
+    sbc #>(456*2)
+    sta RAY_INDEX+1
+    
+    ; Mark as q2
+    lda #%00000011
+    sta TO_QUADRANT
+    
+    bra to_ray_info_updated
+    
+to_ray_in_q1:
+    ; Normalize angle (180 degrees - q1angle = q0angle)
+    sec
+    lda #<(456*2)
+    sbc RAY_INDEX
+    sta RAY_INDEX
+    lda #>(456*2)
+    sbc RAY_INDEX+1
+    sta RAY_INDEX+1
+    
+    ; Mark as q1
+    lda #%00000001
+    sta TO_QUADRANT
+    
+    bra to_ray_info_updated
+    
+to_ray_in_q0:
+
+    lda RAY_INDEX
+    sta RAY_INDEX
+    lda RAY_INDEX+1
+    sta RAY_INDEX+1
+    
+    ; Mark as q0
+    lda #%00000000
+    sta TO_QUADRANT
+
+to_ray_info_updated:
 
 
 
 
 
 ; FIXME
-    stp
+;    stp
     lda SCREEN_START_RAY
     lda SCREEN_START_RAY+1
     lda FROM_RAY_INDEX
@@ -1503,12 +1724,19 @@ from_ray_info_updated:
 ; FIXME:
     lda LOOKING_DIR_QUANDRANT
     lda FROM_QUADRANT
+    lda TO_QUADRANT
     
     lda FROM_DELTA_X
     lda FROM_DELTA_X+1
     
     lda FROM_DELTA_Y
     lda FROM_DELTA_Y+1
+    
+    lda TO_DELTA_X
+    lda TO_DELTA_X+1
+    
+    lda TO_DELTA_Y
+    lda TO_DELTA_Y+1
     
     lda LOOKING_DIR_COSINE
     lda LOOKING_DIR_COSINE+1
