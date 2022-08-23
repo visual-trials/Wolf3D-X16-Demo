@@ -204,11 +204,13 @@ reset:
     
     
 turn_around:
-    inc LOOKING_DIR
     jsr update_viewpoint
     jsr draw_3d_view
+    inc LOOKING_DIR
     lda LOOKING_DIR
     bne turn_around
+stop_turning:
+    jmp stop_turning
     
     ; jmp vsync_measurement
     
