@@ -86,7 +86,7 @@ setup_player:
     ; looking direction of the player/view (0-1823)
 ;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-    lda #100
+    lda #152
 ;    lda #228
 ;    lda #<(1824-228)
     sta LOOKING_DIR
@@ -158,10 +158,10 @@ looking_dir_in_not_in_q1:
 looking_dir_in_q3:
     ; Normalize angle (360 degrees - q3angle = q0angle)
     sec
-    lda #<(452*4)
+    lda #<(456*4)
     sbc LOOKING_DIR
     sta RAY_INDEX
-    lda #>(452*4)
+    lda #>(456*4)
     sbc LOOKING_DIR+1
     sta RAY_INDEX+1
 
@@ -175,10 +175,10 @@ looking_dir_in_q2:
     ; Normalize angle (q2angle - 180 degrees = q0angle)
     sec
     lda LOOKING_DIR
-    sbc #<(452*2)
+    sbc #<(456*2)
     sta RAY_INDEX
     lda LOOKING_DIR+1
-    sbc #>(452*2)
+    sbc #>(456*2)
     sta RAY_INDEX+1
     
     ; Mark as q2
@@ -190,10 +190,10 @@ looking_dir_in_q2:
 looking_dir_in_q1:
     ; Normalize angle (180 degrees - q1angle = q0angle)
     sec
-    lda #<(452*2)
+    lda #<(456*2)
     sbc LOOKING_DIR
     sta RAY_INDEX
-    lda #>(452*2)
+    lda #>(456*2)
     sbc LOOKING_DIR+1
     sta RAY_INDEX+1
     
@@ -274,8 +274,8 @@ draw_3d_view:
 
 draw_walls:
 
-    lda #0
-;    lda #2
+;    lda #0
+    lda #1
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
@@ -301,7 +301,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #1
+    cmp #2
 ;    cmp #3
     bne draw_next_wall
     
@@ -1232,18 +1232,6 @@ to_testing_ray_is_positive:
 to_ray_is_not_right_of_screen:
 
 
-
-; FIXME
-;    stp
-    lda SCREEN_START_RAY
-    lda SCREEN_START_RAY+1
-    lda FROM_RAY_INDEX
-    lda FROM_RAY_INDEX+1
-    lda TO_RAY_INDEX
-    lda TO_RAY_INDEX+1
-
-
-
     ; ========== Recalculate FROM_RAY and TO_RAY INFO ===========
     
     ; Note that the FROM_RAY_INDEX is an angle that is relative to the normal line of the wall
@@ -1334,41 +1322,106 @@ done_from_delta_calc:
     
 
     ; -- Re-calculate FROM_QUADRANT using FROM_RAY_INDEX --
-    
+
+    ; FIXME: we first need to get the *absolute* angle for FROM_RAY_INDEX
+    ;        right now we do this by "unnormalizing" it and checking the WALL_FACING_DIR
+    ;        but there is probably a better way to do this (earlier).
+
+    lda WALL_FACING_DIR
+    cmp #3  ; west
+    beq from_ray_calc_wall_facing_west
+    cmp #2  ; south
+    beq from_ray_calc_wall_facing_south
+    cmp #1  ; east
+    beq from_ray_calc_wall_facing_east
+    cmp #0  ; north
+    beq from_ray_calc_wall_facing_north
+
+from_ray_calc_wall_facing_east:
+    ; The wall is facing north so we are turned 270. We need to subtract 90 degrees
+    sec
+    lda FROM_RAY_INDEX
+    sbc #<(1*456)
+    sta RAY_INDEX
     lda FROM_RAY_INDEX+1
+    sbc #>(1*456)
+    sta RAY_INDEX+1
+    bra unnormalized_from_ray
+
+from_ray_calc_wall_facing_north:
+    ; The wall is facing north so we are turned 180. We need to subtract 180 degrees
+    sec
+    lda FROM_RAY_INDEX
+    sbc #<(2*456)
+    sta RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    sbc #>(2*456)
+    sta RAY_INDEX+1
+    bra unnormalized_from_ray
+    
+from_ray_calc_wall_facing_west:
+    ; The wall is facing west so we are turned 90. We need to subtract 270 degrees
+    sec
+    lda FROM_RAY_INDEX
+    sbc #<(3*456)
+    sta RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    sbc #>(3*456)
+    sta RAY_INDEX+1
+    bra unnormalized_from_ray
+    
+from_ray_calc_wall_facing_south:
+    ; The wall is facing south so we are turned 0. No need to subtract anything.
+
+unnormalized_from_ray:
+
+    ; Checking if RAY_INDEX is below 0, if so add 1824
+    bpl unnormalized_from_ray_is_positive
+    
+    clc 
+    lda RAY_INDEX
+    adc #<(4*456)
+    lda RAY_INDEX
+    lda RAY_INDEX+1
+    adc #>(4*456)
+    lda RAY_INDEX+1
+
+unnormalized_from_ray_is_positive:
+    
+    lda RAY_INDEX+1
     cmp #>(456*1)
     bcc from_ray_in_q0
     bne from_ray_in_not_in_q0
-    lda FROM_RAY_INDEX
+    lda RAY_INDEX
     cmp #<(456*1)
     bcc from_ray_in_q0
     
 from_ray_in_not_in_q0:
-    lda FROM_RAY_INDEX+1
+    lda RAY_INDEX+1
     cmp #>(456*2)
     bcc from_ray_in_q1
     bne from_ray_in_not_in_q1
-    lda FROM_RAY_INDEX
+    lda RAY_INDEX
     cmp #<(456*2)
     bcc from_ray_in_q1
     
 from_ray_in_not_in_q1:
-    lda FROM_RAY_INDEX+1
+    lda RAY_INDEX+1
     cmp #>(456*3)
     bcc from_ray_in_q2
     bne from_ray_in_q3
-    lda FROM_RAY_INDEX
+    lda RAY_INDEX
     cmp #<(456*3)
     bcc from_ray_in_q2
     
 from_ray_in_q3:
     ; Normalize angle (360 degrees - q3angle = q0angle)
     sec
-    lda #<(452*4)
-    sbc FROM_RAY_INDEX
+    lda #<(456*4)
+    sbc RAY_INDEX
     sta RAY_INDEX
-    lda #>(452*4)
-    sbc FROM_RAY_INDEX+1
+    lda #>(456*4)
+    sbc RAY_INDEX+1
     sta RAY_INDEX+1
 
     ; Mark as q3
@@ -1380,11 +1433,11 @@ from_ray_in_q3:
 from_ray_in_q2:
     ; Normalize angle (q2angle - 180 degrees = q0angle)
     sec
-    lda FROM_RAY_INDEX
-    sbc #<(452*2)
+    lda RAY_INDEX
+    sbc #<(456*2)
     sta RAY_INDEX
-    lda FROM_RAY_INDEX+1
-    sbc #>(452*2)
+    lda RAY_INDEX+1
+    sbc #>(456*2)
     sta RAY_INDEX+1
     
     ; Mark as q2
@@ -1396,11 +1449,11 @@ from_ray_in_q2:
 from_ray_in_q1:
     ; Normalize angle (180 degrees - q1angle = q0angle)
     sec
-    lda #<(452*2)
-    sbc FROM_RAY_INDEX
+    lda #<(456*2)
+    sbc RAY_INDEX
     sta RAY_INDEX
-    lda #>(452*2)
-    sbc FROM_RAY_INDEX+1
+    lda #>(456*2)
+    sbc RAY_INDEX+1
     sta RAY_INDEX+1
     
     ; Mark as q1
@@ -1411,9 +1464,9 @@ from_ray_in_q1:
     
 from_ray_in_q0:
 
-    lda FROM_RAY_INDEX
+    lda RAY_INDEX
     sta RAY_INDEX
-    lda FROM_RAY_INDEX+1
+    lda RAY_INDEX+1
     sta RAY_INDEX+1
     
     ; Mark as q0
@@ -1436,6 +1489,15 @@ from_ray_info_updated:
 
 
 
+
+; FIXME
+    stp
+    lda SCREEN_START_RAY
+    lda SCREEN_START_RAY+1
+    lda FROM_RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    lda TO_RAY_INDEX
+    lda TO_RAY_INDEX+1
 
     
 ; FIXME:
