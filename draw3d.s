@@ -104,16 +104,17 @@ update_viewpoint:
     ; TODO: this is now hardcoded, but this should to taken from a map
 
     ; x-position of the viewpoint (8.8 bits)
-    lda #0
+    lda #40
     sta VIEWPOINT_X 
-;    lda #1
-    lda #2
+    lda #1
+;    lda #2
     sta VIEWPOINT_X+1
     
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta VIEWPOINT_Y
-    lda #1
+    lda #0
+;    lda #1
     sta VIEWPOINT_Y+1
 
 
@@ -274,8 +275,8 @@ draw_3d_view:
 
 draw_walls:
 
-    lda #0
-;    lda #1
+;    lda #0
+    lda #2
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
