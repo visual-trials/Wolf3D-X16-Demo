@@ -3,7 +3,7 @@
 ; FIXME: this is temporary data to get some wall information into the engine
 
 wall_0_info:
-    .byte 2, 3 ; start x, y
+    .byte 0, 3 ; start x, y
     .byte 3, 3 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
@@ -86,7 +86,7 @@ setup_player:
     ; looking direction of the player/view (0-1823)
 ;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-    lda #151
+    lda #100
 ;    lda #228
 ;    lda #<(1824-228)
     sta LOOKING_DIR
@@ -1188,7 +1188,6 @@ from_ray_is_left_of_screen:
     
 from_ray_is_not_left_of_screen:
 
-
     ; Check if end of wall is between the left and right of the screen
     ; To do this, we first need to know the ray number on the screen (TO_RAY_INDEX - SCREEN_START_RAY)
     sec
@@ -1232,6 +1231,8 @@ to_testing_ray_is_positive:
     
 to_ray_is_not_right_of_screen:
 
+
+
 ; FIXME
 ;    stp
     lda SCREEN_START_RAY
@@ -1240,6 +1241,201 @@ to_ray_is_not_right_of_screen:
     lda FROM_RAY_INDEX+1
     lda TO_RAY_INDEX
     lda TO_RAY_INDEX+1
+
+
+
+    ; ========== Recalculate FROM_RAY and TO_RAY INFO ===========
+    
+    ; Note that the FROM_RAY_INDEX is an angle that is relative to the normal line of the wall
+    ; This means that it has to be between 270 and 90 degrees. In order to get the tangent(FROM_RAY_INDEX) we
+    ; have to negate FROM_RAY_INDEX if it is 'negative'. Note that we do *not* need to negate the result of tangent
+    ; since we also determine the quadrant in which the from way lies (and the cosine/sine use that)s
+    
+    ; Also: the tangent is the ratio of: distance-*over*-the-wall / normal-distance-*to*-the-wall
+    ; We want to know the distance-*over*-the-wall. But this can be either FROM_DELTA_X or FROM_DELTA_Y
+    ; In order for us to know this one we have to overwrite we look at the direction of the wall: 
+    ;   is it horizontal? then we have to recalculate the FROM_DELTA_X
+    ;   is it vertical? then we have to recalculate the FROM_DELTA_X
+    ; To check whether a wall is horizontal, we simply check the lowest bit of WALL_FACING_DIR.
+    
+    
+    ; -- Re-calculate FROM_DELTA_X **OR** FROM_DELTA_Y using tangent(FROM_RAY_INDEX) --
+    
+    ; Check if FROM_RAY_INDEX is 'negative' (between 270 degrees and 360)
+    lda FROM_RAY_INDEX+1
+    ; FIXME: hack!
+    cmp #4
+    bcc from_ray_is_already_between_0_and_90_degrees
+    
+    sec
+    lda #<(1824)
+    sbc FROM_RAY_INDEX
+    sta RAY_INDEX
+    lda #>(1824)
+    sbc FROM_RAY_INDEX+1
+    sta RAY_INDEX+1
+    
+    bra from_ray_is_now_between_0_and_90_degrees
+
+from_ray_is_already_between_0_and_90_degrees:
+    lda FROM_RAY_INDEX
+    sta RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    sta RAY_INDEX+1
+
+from_ray_is_now_between_0_and_90_degrees:
+
+    ; SPEED: no need to do this lda
+    lda RAY_INDEX+1
+    bne is_high_positive_from_ray_index
+is_low_positive_from_ray_index:
+    ldy RAY_INDEX
+    lda TANGENT_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLIER
+    lda TANGENT_HIGH,y             ; When the ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLIER+1
+    bra got_tangent_from_ray
+is_high_positive_from_ray_index:
+    ldy RAY_INDEX
+    lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLIER
+    lda TANGENT_HIGH+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLIER+1
+got_tangent_from_ray:
+
+    lda NORMAL_DISTANCE_TO_WALL
+    sta MULTIPLICAND
+    lda NORMAL_DISTANCE_TO_WALL+1
+    sta MULTIPLICAND+1
+
+    jsr multply_16bits
+    
+    lda WALL_FACING_DIR
+    lsr
+    bcc from_ray_on_horizontal_wall ; no carry (facing south or norht), so we its a horizontal wall
+
+from_ray_on_vertical_wall:
+
+    lda PRODUCT+2
+    sta FROM_DELTA_Y
+    lda PRODUCT+3
+    sta FROM_DELTA_Y+1
+    
+    bra done_from_delta_calc
+    
+from_ray_on_horizontal_wall:
+    
+    lda PRODUCT+2
+    sta FROM_DELTA_X
+    lda PRODUCT+3
+    sta FROM_DELTA_X+1
+    
+done_from_delta_calc:
+    
+
+    ; -- Re-calculate FROM_QUADRANT using FROM_RAY_INDEX --
+    
+    lda FROM_RAY_INDEX+1
+    cmp #>(456*1)
+    bcc from_ray_in_q0
+    bne from_ray_in_not_in_q0
+    lda FROM_RAY_INDEX
+    cmp #<(456*1)
+    bcc from_ray_in_q0
+    
+from_ray_in_not_in_q0:
+    lda FROM_RAY_INDEX+1
+    cmp #>(456*2)
+    bcc from_ray_in_q1
+    bne from_ray_in_not_in_q1
+    lda FROM_RAY_INDEX
+    cmp #<(456*2)
+    bcc from_ray_in_q1
+    
+from_ray_in_not_in_q1:
+    lda FROM_RAY_INDEX+1
+    cmp #>(456*3)
+    bcc from_ray_in_q2
+    bne from_ray_in_q3
+    lda FROM_RAY_INDEX
+    cmp #<(456*3)
+    bcc from_ray_in_q2
+    
+from_ray_in_q3:
+    ; Normalize angle (360 degrees - q3angle = q0angle)
+    sec
+    lda #<(452*4)
+    sbc FROM_RAY_INDEX
+    sta RAY_INDEX
+    lda #>(452*4)
+    sbc FROM_RAY_INDEX+1
+    sta RAY_INDEX+1
+
+    ; Mark as q3
+    lda #%00000010
+    sta FROM_QUADRANT
+    
+    bra from_ray_info_updated
+    
+from_ray_in_q2:
+    ; Normalize angle (q2angle - 180 degrees = q0angle)
+    sec
+    lda FROM_RAY_INDEX
+    sbc #<(452*2)
+    sta RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    sbc #>(452*2)
+    sta RAY_INDEX+1
+    
+    ; Mark as q2
+    lda #%00000011
+    sta FROM_QUADRANT
+    
+    bra from_ray_info_updated
+    
+from_ray_in_q1:
+    ; Normalize angle (180 degrees - q1angle = q0angle)
+    sec
+    lda #<(452*2)
+    sbc FROM_RAY_INDEX
+    sta RAY_INDEX
+    lda #>(452*2)
+    sbc FROM_RAY_INDEX+1
+    sta RAY_INDEX+1
+    
+    ; Mark as q1
+    lda #%00000001
+    sta FROM_QUADRANT
+    
+    bra from_ray_info_updated
+    
+from_ray_in_q0:
+
+    lda FROM_RAY_INDEX
+    sta RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    sta RAY_INDEX+1
+    
+    ; Mark as q0
+    lda #%00000000
+    sta FROM_QUADRANT
+
+from_ray_info_updated:
+
+
+
+
+    ; FIXME: also implement for TO_RAY info!!
+    ; FIXME: also implement for TO_RAY info!!
+    ; FIXME: also implement for TO_RAY info!!
+    ; FIXME: also implement for TO_RAY info!!
+    ; FIXME: also implement for TO_RAY info!!
+
+
+
+
+
+
 
     
 ; FIXME:
