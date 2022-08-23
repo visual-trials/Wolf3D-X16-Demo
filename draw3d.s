@@ -1229,6 +1229,29 @@ to_ray_is_on_right_of_screen:
     adc #>(304)
     sta TO_RAY_INDEX+1
     
+    ; FIXME: checking if > $720, isnt there a nicer way?
+    
+    lda TO_RAY_INDEX+1
+    cmp #>(1824)
+    bcc to_ray_is_within_bounds
+    bne to_ray_is_outside_bounds
+    lda TO_RAY_INDEX
+    cmp #<(1824)
+    bcc to_ray_is_within_bounds
+
+to_ray_is_outside_bounds:
+    ; TO_RAY_INDEX is more than $720, so we have to subtract $720
+    sec
+    lda TO_RAY_INDEX
+    sbc #<(1824)
+    sta TO_RAY_INDEX
+    lda TO_RAY_INDEX+1
+    sbc #>(1824)
+    sta TO_RAY_INDEX+1
+    
+to_ray_is_within_bounds:
+    
+    
     ; FIXME: only do this IF the wall is not COMPLETELY right of the screen!
     
 to_ray_is_not_right_of_screen:
