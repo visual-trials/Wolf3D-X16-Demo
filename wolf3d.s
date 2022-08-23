@@ -203,14 +203,14 @@ reset:
     jsr clear_3d_view_fast
     
     
-turn_around:
-    jsr update_viewpoint
-    jsr draw_3d_view
-    inc LOOKING_DIR
-    lda LOOKING_DIR
-    bne turn_around
-stop_turning:
-    jmp stop_turning
+;turn_around:
+;    jsr update_viewpoint
+;    jsr draw_3d_view
+;    inc LOOKING_DIR
+;    lda LOOKING_DIR
+;    bne turn_around
+;stop_turning:
+;    jmp stop_turning
     
     ; jmp vsync_measurement
     

@@ -86,12 +86,14 @@ setup_player:
     ; looking direction of the player/view (0-1823)
 ;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-    lda #0
+;    lda #0
 ;    lda #228
 ;    lda #<(1824-228)
+    lda #<(1824-152)
     sta LOOKING_DIR
-    lda #0
+;    lda #0
 ;    lda #>(1824-228)
+    lda #>(1824-152)
     sta LOOKING_DIR+1
     
     rts
@@ -106,8 +108,8 @@ update_viewpoint:
     ; x-position of the viewpoint (8.8 bits)
     lda #0
     sta VIEWPOINT_X 
-    lda #1
-;    lda #2
+;    lda #1
+    lda #2
     sta VIEWPOINT_X+1
     
     ; y-position of the viewpoint (8.8 bits)
@@ -1184,10 +1186,27 @@ from_ray_is_left_of_screen:
     lda SCREEN_START_RAY+1
     sta FROM_RAY_INDEX+1
     
-    ; FIXME: only do this IF the wall is not COMPLETELY left of the screen!
+    bra from_ray_is_within_the_screen
     
 from_ray_is_not_left_of_screen:
 
+    ; FIXME: only do this IF the wall is not COMPLETELY left of the screen!
+    
+    ; We also need to check if the from ray is to the *right* of the screen: check if its > 304
+    lda TESTING_RAY_INDEX+1
+    cmp #>(304)
+    bcc from_ray_is_within_the_screen
+    bne from_ray_is_right_of_screen
+    lda TESTING_RAY_INDEX
+    cmp #<(304)
+    bcc from_ray_is_within_the_screen
+
+from_ray_is_right_of_screen:
+    ; FIXME: we should in fact check if there is another wall part possible?
+    rts ; we are not drawing this wall, since its outside of the screen
+    
+    
+from_ray_is_within_the_screen:
     ; Check if end of wall is between the left and right of the screen
     ; To do this, we first need to know the ray number on the screen (TO_RAY_INDEX - SCREEN_START_RAY)
     sec
@@ -2031,13 +2050,6 @@ to_is_the_same_horizontally:
     sta TO_WALL_HEIGHT+1
 
     
-; FIXME!
-;    lda CURRENT_WALL_INDEX
-;    cmp #1
-;    beq HACK_wall_height_wall_1
-;    cmp #2
-;    beq HACK_wall_height_wall_2
-    
     ; We also have to determine whether the wall decreases (in height) from left to right, or the other way around and maybe do a different draw-wall-call accordingly
     
     lda #0
@@ -2061,79 +2073,6 @@ wall_height_incr_decr_determined:
     rts
 
 
-; FIXME: get rid of this if the above is dynamic
-    .if 0
-    
-    ; - 90 degrees = 1824-456 = 1368 = $558
-    lda #$58
-    sta SCREEN_START_RAY
-    lda #$5
-    sta SCREEN_START_RAY+1
-
-    ; 1824-228 = 1596 = $63C
-    lda #$3C   ; -45 degrees
-    sta FROM_RAY_INDEX
-    lda #$6
-    sta FROM_RAY_INDEX+1
-
-    ; - 30 degrees = 1824 - 152 = 1672 = $688
-    lda #$88
-    sta TO_RAY_INDEX
-    lda #$6
-    sta TO_RAY_INDEX+1
-
-
-; FIXME: get rid of this if the above is dynamic
-    .endif
-
-    .if 0
-; FIXME: remove this!
-; FIXME: remove this!
-; FIXME: remove this!
-HACK_wall_height_wall_1:    
-
-
-    lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
-    sta FROM_WALL_HEIGHT
-    lda #0
-    sta FROM_WALL_HEIGHT+1
-
-    ; FIXME: this value (180) is GUESSED!
-    lda #180
-    sta TO_WALL_HEIGHT
-    lda #0
-    sta TO_WALL_HEIGHT+1
-
-    lda #1
-    sta WALL_HEIGHT_INCREASES
-
-    jsr draw_wall_part
-
-    rts
-
-
-HACK_wall_height_wall_2:    
-
-
-    lda #200
-    sta FROM_WALL_HEIGHT
-    lda #0
-    sta FROM_WALL_HEIGHT+1
-
-    ; FIXME: this value (180) is GUESSED!
-    lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
-    sta TO_WALL_HEIGHT
-    lda #0
-    sta TO_WALL_HEIGHT+1
-
-    lda #0
-    sta WALL_HEIGHT_INCREASES
-
-    jsr draw_wall_part
-
-    rts
-    
-    .endif
     
 calc_angle_for_point:
 
