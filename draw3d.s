@@ -1231,8 +1231,9 @@ to_testing_ray_is_positive:
     ; FIXME: only do this IF the wall is not COMPLETELY right of the screen!
     
 to_ray_is_not_right_of_screen:
-    
-    stp
+
+; FIXME
+;    stp
     lda SCREEN_START_RAY
     lda SCREEN_START_RAY+1
     lda FROM_RAY_INDEX
@@ -1240,7 +1241,6 @@ to_ray_is_not_right_of_screen:
     lda TO_RAY_INDEX
     lda TO_RAY_INDEX+1
 
-    
     
 ; FIXME:
     lda LOOKING_DIR_QUANDRANT
@@ -1786,7 +1786,7 @@ draw_wall_part:
     ; We do the divide: WALL_HEIGHT_INCREMENT = ((TO_WALL_HEIGHT-FROM_WALL_HEIGHT) * 256 * 256) / ((TO_RAY_INDEX-FROM_RAY_INDEX) * 256);
     ; Note that the difference in wall height should be stored in DIVIDEND (to be used by the divider)
     ; Note: we will have a negative number when the wall height is decrementing
-    
+
     ; We are asuming there is no fraction in the wall height
     lda #0
     sta DIVIDEND+1
@@ -1936,6 +1936,20 @@ wall_height_increment_determined:
 	lda FROM_RAY_INDEX+1
 	sbc SCREEN_START_RAY+1
 	sta START_SCREEN_X+1
+    
+    bpl start_screen_is_positive
+    
+    ; If this becomes negative (highest bit is 1) we need to add 1824 to it
+    
+    clc
+    lda START_SCREEN_X
+    adc #<(1824)
+    sta START_SCREEN_X
+    lda START_SCREEN_X+1
+    adc #>(1824)
+    sta START_SCREEN_X+1
+    
+start_screen_is_positive:
     
     clc
 	lda START_SCREEN_X
