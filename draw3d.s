@@ -88,12 +88,10 @@ setup_player:
 ; FIXME
 ;    lda #0
 ;    lda #228
-;    lda #<(1824-228)
-    lda #<(1824-152)
+    lda #<(1824-228)
     sta LOOKING_DIR
 ;    lda #0
-;    lda #>(1824-228)
-    lda #>(1824-152)
+    lda #>(1824-228)
     sta LOOKING_DIR+1
     
     rts
@@ -303,7 +301,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #1
+    cmp #3
 ;    cmp #3
     bne draw_next_wall
     
@@ -1416,6 +1414,10 @@ from_ray_calc_wall_facing_west:
     
 from_ray_calc_wall_facing_south:
     ; The wall is facing south so we are turned 0. No need to subtract anything.
+    lda FROM_RAY_INDEX
+    sta RAY_INDEX
+    lda FROM_RAY_INDEX+1
+    sta RAY_INDEX+1
 
 unnormalized_from_ray:
 
@@ -1647,6 +1649,10 @@ to_ray_calc_wall_facing_west:
     
 to_ray_calc_wall_facing_south:
     ; The wall is facing south so we are turned 0. No need to subtract anything.
+    lda TO_RAY_INDEX
+    sta RAY_INDEX
+    lda TO_RAY_INDEX+1
+    sta RAY_INDEX+1
 
 unnormalized_to_ray:
 
