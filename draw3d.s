@@ -1507,31 +1507,30 @@ to_is_the_same_horizontally:
 
     
 ; FIXME!
-    lda CURRENT_WALL_INDEX
-    cmp #1
-    beq HACK_wall_height_wall_1
-    cmp #2
-    beq HACK_wall_height_wall_2
-    
-HACK_wall_height_wall_0:
-    ; FIXME: from wall height is now hardcoded to 128
-;    lda #128
-;    sta FROM_WALL_HEIGHT
-;    lda #0
-;    sta FROM_WALL_HEIGHT+1
-    
-;    lda #128-45 ; (45 pixels drop at 45 degrees drop when 30 degrees normal angle)
-;    sta TO_WALL_HEIGHT
-;    lda #0
-;    sta TO_WALL_HEIGHT+1
+;    lda CURRENT_WALL_INDEX
+;    cmp #1
+;    beq HACK_wall_height_wall_1
+;    cmp #2
+;    beq HACK_wall_height_wall_2
     
     ; We also have to determine whether the wall decreases (in height) from left to right, or the other way around and maybe do a different draw-wall-call accordingly
-    
-    ; FIXME: compare TO_WALL_HEIGHT with FROM_WALL_HEIGHT to determine WALL_HEIGHT_INCREASES!
     
     lda #0
     sta WALL_HEIGHT_INCREASES
     
+    ; FIXME: If wall heights are between 0 and 255 we dont have to compare 16 bit anymore
+    sec
+    lda FROM_WALL_HEIGHT
+    sbc TO_WALL_HEIGHT
+    lda FROM_WALL_HEIGHT+1
+    sbc TO_WALL_HEIGHT+1
+    bpl wall_height_incr_decr_determined
+
+    lda #1
+    sta WALL_HEIGHT_INCREASES
+    
+wall_height_incr_decr_determined:
+
     jsr draw_wall_part
     
     rts
@@ -1562,7 +1561,10 @@ HACK_wall_height_wall_0:
 ; FIXME: get rid of this if the above is dynamic
     .endif
 
-
+    .if 0
+; FIXME: remove this!
+; FIXME: remove this!
+; FIXME: remove this!
 HACK_wall_height_wall_1:    
 
 
@@ -1606,6 +1608,7 @@ HACK_wall_height_wall_2:
 
     rts
     
+    .endif
     
 calc_angle_for_point:
 
