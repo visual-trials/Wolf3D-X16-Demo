@@ -3,18 +3,18 @@
 ; FIXME: this is temporary data to get some wall information into the engine
 
 wall_0_info:
-    .byte 0, 3 ; start x, y
-    .byte 3, 3 ; end x, y
+    .byte 0, 4 ; start x, y
+    .byte 4, 4 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
 wall_1_info:
-    .byte 3, 3 ; start x, y
-    .byte 3, 0 ; end x, y
+    .byte 4, 4 ; start x, y
+    .byte 4, 0 ; end x, y
     .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
 
 wall_2_info:
     .byte 0, 0 ; start x, y
-    .byte 0, 3 ; end x, y
+    .byte 0, 4 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
 setup_wall_info:
@@ -104,17 +104,15 @@ update_viewpoint:
     ; TODO: this is now hardcoded, but this should to taken from a map
 
     ; x-position of the viewpoint (8.8 bits)
-    lda #40
+    lda #0
     sta VIEWPOINT_X 
-    lda #1
-;    lda #2
+    lda #2
     sta VIEWPOINT_X+1
     
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta VIEWPOINT_Y
-    lda #0
-;    lda #1
+    lda #2
     sta VIEWPOINT_Y+1
 
 
@@ -275,8 +273,8 @@ draw_3d_view:
 
 draw_walls:
 
-;    lda #0
-    lda #2
+    lda #0
+;    lda #2
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
