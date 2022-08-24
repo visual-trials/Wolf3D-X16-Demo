@@ -108,7 +108,7 @@ setup_player:
 ;    lda #<(1824-228)
     sta LOOKING_DIR
 ;    lda #0
-    lda #1
+    lda #0
 ;    lda #>(1824-228)
     sta LOOKING_DIR+1
     
@@ -319,7 +319,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #3
+    cmp #4
 ;    cmp #3
     bne draw_next_wall
     
@@ -393,10 +393,10 @@ wall_facing_north:
 
     sec
     lda LOOKING_DIR
-    sbc #<(152+456*0)
+    sbc #<(152+456*2)
     sta SCREEN_START_RAY
     lda LOOKING_DIR+1
-    sbc #>(152+456*0)
+    sbc #>(152+456*2)
     sta SCREEN_START_RAY+1
     
     bpl wall_facing_north_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
@@ -1158,8 +1158,6 @@ wall_facing_east_calc_angle_for_end_of_wall:
 
     
 calculated_normal_distance_to_wall:
-
-    
 
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!

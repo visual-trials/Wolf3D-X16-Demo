@@ -203,7 +203,7 @@ reset:
     
     jsr clear_3d_view_fast
     
-;    bra do_not_turn_around
+    ; bra do_not_turn_around
     
 turn_around:
     jsr update_viewpoint
@@ -213,11 +213,16 @@ turn_around:
     bne turn_around
 
     inc LOOKING_DIR+1
+    lda LOOKING_DIR+1
+    cmp #$7                ; $720 = 1824
+    bcc turn_around
+    
 turn_around2:    
     jsr update_viewpoint
     jsr draw_3d_view
     inc LOOKING_DIR
     lda LOOKING_DIR
+    cmp #$20
     bne turn_around2
 
 stop_turning:
