@@ -187,8 +187,6 @@ reset:
     
     jsr copy_palette_to_vram
     
-;    stp
-    
     ; Drawing 3D View
     
     jsr init_tangent
@@ -203,7 +201,12 @@ reset:
     
     jsr clear_3d_view_fast
     
-    ; bra do_not_turn_around
+    bra do_not_turn_around
+    
+keep_turning_around:  
+    lda #0
+    sta LOOKING_DIR
+    sta LOOKING_DIR+1
     
 turn_around:
     jsr update_viewpoint
@@ -224,6 +227,8 @@ turn_around2:
     lda LOOKING_DIR
     cmp #$20
     bne turn_around2
+    
+    bra keep_turning_around
 
 stop_turning:
     jmp stop_turning

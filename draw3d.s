@@ -4,9 +4,33 @@
 
 wall_0_info:
     .byte 0, 4 ; start x, y
-    .byte 4, 4 ; end x, y
+    .byte 3, 4 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
+wall_1_info:
+    .byte 3, 4 ; start x, y
+    .byte 3, 3 ; end x, y
+    .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+
+wall_2_info:
+    .byte 3, 3 ; start x, y
+    .byte 4, 3 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_3_info:
+    .byte 4, 3 ; start x, y
+    .byte 4, 0 ; end x, y
+    .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+
+; Square room
+    .if 0    
+    
+wall_0_info:
+    .byte 0, 4 ; start x, y
+    .byte 4, 4 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+
 wall_1_info:
     .byte 4, 4 ; start x, y
     .byte 4, 0 ; end x, y
@@ -16,11 +40,14 @@ wall_2_info:
     .byte 4, 0 ; start x, y
     .byte 0, 0 ; end x, y
     .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
-    
+
 wall_3_info:
     .byte 0, 0 ; start x, y
     .byte 0, 4 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+    .endif
+
     
 setup_wall_info:
 
@@ -104,7 +131,7 @@ setup_player:
     ; looking direction of the player/view (0-1823)
 ;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-    lda #0
+    lda #228
 ;    lda #<(1824-228)
     sta LOOKING_DIR
 ;    lda #0
@@ -124,13 +151,13 @@ update_viewpoint:
     ; x-position of the viewpoint (8.8 bits)
     lda #0
     sta VIEWPOINT_X 
-    lda #2
+    lda #1
     sta VIEWPOINT_X+1
     
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta VIEWPOINT_Y
-    lda #2
+    lda #1
     sta VIEWPOINT_Y+1
 
 
