@@ -13,6 +13,11 @@ wall_1_info:
     .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
 
 wall_2_info:
+    .byte 4, 0 ; start x, y
+    .byte 0, 0 ; end x, y
+    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_3_info:
     .byte 0, 0 ; start x, y
     .byte 0, 4 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
@@ -58,6 +63,19 @@ setup_wall_info:
     lda wall_2_info+4
     sta WALL_INFO_FACING_DIR, y
     
+    ldy #3
+
+    lda wall_3_info
+    sta WALL_INFO_START_X, y
+    lda wall_3_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_3_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_3_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_3_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
     rts
 
 setup_player:
@@ -89,7 +107,8 @@ setup_player:
     lda #0
 ;    lda #<(1824-228)
     sta LOOKING_DIR
-    lda #0
+;    lda #0
+    lda #1
 ;    lda #>(1824-228)
     sta LOOKING_DIR+1
     
@@ -154,12 +173,13 @@ looking_dir_in_not_in_q1:
     bcc looking_dir_in_q2
     
 looking_dir_in_q3:
-    ; Normalize angle (360 degrees - q3angle = q0angle)
+    ; FIXME, CHECK: we do -1 here, is this indeed the correct way?
+    ; Normalize angle (360-1 degrees - q3angle = q0angle)
     sec
-    lda #<(456*4)
+    lda #<(456*4-1)
     sbc LOOKING_DIR
     sta RAY_INDEX
-    lda #>(456*4)
+    lda #>(456*4-1)
     sbc LOOKING_DIR+1
     sta RAY_INDEX+1
 
@@ -186,12 +206,13 @@ looking_dir_in_q2:
     bra looking_dir_info_updated
     
 looking_dir_in_q1:
-    ; Normalize angle (180 degrees - q1angle = q0angle)
+    ; FIXME, CHECK: we do -1 here, is this indeed the correct way?
+    ; Normalize angle (180-1 degrees - q1angle = q0angle)
     sec
-    lda #<(456*2)
+    lda #<(456*2-1)
     sbc LOOKING_DIR
     sta RAY_INDEX
-    lda #>(456*2)
+    lda #>(456*2-1)
     sbc LOOKING_DIR+1
     sta RAY_INDEX+1
     
@@ -227,7 +248,7 @@ is_low_index_sine:
     sta LOOKING_DIR_SINE+1
     bra got_looking_dir_sine
 is_high_index_sine:
-    ldy LOOKING_DIR
+    ldy RAY_INDEX
     lda SINE_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
     sta LOOKING_DIR_SINE
     lda SINE_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
@@ -246,13 +267,12 @@ is_low_index_cosine:
     sta LOOKING_DIR_COSINE+1
     bra got_looking_dir_cosine
 is_high_index_cosine:
-    ldy LOOKING_DIR
+    ldy RAY_INDEX
     lda COSINE_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
     sta LOOKING_DIR_COSINE
     lda COSINE_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
     sta LOOKING_DIR_COSINE+1
 got_looking_dir_cosine:
-
 
     rts
     

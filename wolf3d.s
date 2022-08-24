@@ -203,6 +203,7 @@ reset:
     
     jsr clear_3d_view_fast
     
+;    bra do_not_turn_around
     
 turn_around:
     jsr update_viewpoint
@@ -221,7 +222,9 @@ turn_around2:
 
 stop_turning:
     jmp stop_turning
-    
+
+do_not_turn_around:
+
     ; jmp vsync_measurement
     
 loop2:
