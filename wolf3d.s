@@ -162,9 +162,6 @@ reset:
     jsr init_timer
     ; jsr init_elapsed_time_sprite
     
-    jsr setup_player
-    jsr setup_wall_info
-    
 
     ; Texture pixels
     lda #$00
@@ -190,6 +187,7 @@ reset:
     
     jsr copy_palette_to_vram
     
+;    stp
     
     ; Drawing 3D View
     
@@ -200,26 +198,29 @@ reset:
     jsr generate_clear_column_code
     jsr generate_draw_column_code
     
+    jsr setup_player
+    jsr setup_wall_info
+    
     jsr clear_3d_view_fast
     
     
-;turn_around:
-;    jsr update_viewpoint
-;    jsr draw_3d_view
-;    inc LOOKING_DIR
-;    lda LOOKING_DIR
-;    bne turn_around
+turn_around:
+    jsr update_viewpoint
+    jsr draw_3d_view
+    inc LOOKING_DIR
+    lda LOOKING_DIR
+    bne turn_around
 
-;    inc LOOKING_DIR+1
-;turn_around2:
-;    jsr update_viewpoint
-;    jsr draw_3d_view
-;    inc LOOKING_DIR
-;    lda LOOKING_DIR
-;    bne turn_around2
+    inc LOOKING_DIR+1
+turn_around2:    
+    jsr update_viewpoint
+    jsr draw_3d_view
+    inc LOOKING_DIR
+    lda LOOKING_DIR
+    bne turn_around2
 
-;stop_turning:
-;    jmp stop_turning
+stop_turning:
+    jmp stop_turning
     
     ; jmp vsync_measurement
     

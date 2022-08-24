@@ -86,14 +86,11 @@ setup_player:
     ; looking direction of the player/view (0-1823)
 ;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-;    lda #0
-;    lda #228
+    lda #0
 ;    lda #<(1824-228)
-    lda #<(1824-76)
     sta LOOKING_DIR
-;    lda #0
+    lda #0
 ;    lda #>(1824-228)
-    lda #>(1824-76)
     sta LOOKING_DIR+1
     
     rts
@@ -1216,6 +1213,18 @@ from_ray_is_within_the_screen:
     sbc SCREEN_START_RAY+1
     sta TESTING_RAY_INDEX+1
     
+    ; FIXME: because TO_RAY_INDEX now represents the ray+1 until we want to draw, we are here subscracting 1 for the TESTING_RAY_INDEX!
+    ;        We might consider TO_RAY_INDEX containing the ray (not +1) until we want to draw
+
+    ; SPEED: incremting TESTING_RAY_INDEX with 1 (this can probably be done quicker!)
+    sec
+    lda TESTING_RAY_INDEX
+    sbc #<(1)
+    sta TESTING_RAY_INDEX
+    lda TESTING_RAY_INDEX+1
+    sbc #>(1)
+    sta TESTING_RAY_INDEX+1
+    
     bpl to_testing_ray_is_positive
     
     ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
@@ -1239,6 +1248,9 @@ to_testing_ray_is_positive:
     rts 
 
 to_ray_is_not_left_of_screen:
+
+; FIXME: is this still correct? Since TESTING_RAY_INDEX was decremented by 1? Or is it NOW correct?
+
     ; Check if to ray > 60 degrees
     cmp #>(304)
     bcc to_ray_is_not_right_of_screen
@@ -1438,10 +1450,10 @@ unnormalized_from_ray:
     clc 
     lda RAY_INDEX
     adc #<(4*456)
-    lda RAY_INDEX
+    sta RAY_INDEX
     lda RAY_INDEX+1
     adc #>(4*456)
-    lda RAY_INDEX+1
+    sta RAY_INDEX+1
 
 unnormalized_from_ray_is_positive:
     
@@ -1673,10 +1685,10 @@ unnormalized_to_ray:
     clc 
     lda RAY_INDEX
     adc #<(4*456)
-    lda RAY_INDEX
+    sta RAY_INDEX
     lda RAY_INDEX+1
     adc #>(4*456)
-    lda RAY_INDEX+1
+    sta RAY_INDEX+1
 
 unnormalized_to_ray_is_positive:
     
@@ -2042,7 +2054,7 @@ to_is_the_same_horizontally:
     lda DISTANCE_DUE_TO_DELTA_Y+1
     adc DISTANCE_DUE_TO_DELTA_X+1
     sta TO_DISTANCE+1
-    
+
     ; FIXME: For now we do: 265.0*256/distance
     lda #0
     sta DIVIDEND
