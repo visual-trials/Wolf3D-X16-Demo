@@ -88,10 +88,12 @@ setup_player:
 ; FIXME
 ;    lda #0
 ;    lda #228
-    lda #<(1824-228)
+;    lda #<(1824-228)
+    lda #<(1824-76)
     sta LOOKING_DIR
 ;    lda #0
-    lda #>(1824-228)
+;    lda #>(1824-228)
+    lda #>(1824-76)
     sta LOOKING_DIR+1
     
     rts
@@ -1176,6 +1178,8 @@ from_testing_ray_is_positive:
     bcc from_ray_is_not_left_of_screen   
     
 from_ray_is_left_of_screen:
+    ; FIXME: only do this IF the wall is not COMPLETELY left of the screen! -> so check if the end of the wall is ALSO to the left of the screen!
+    
     ; Cut off left part of wall to the beginning of the screen
     
     lda SCREEN_START_RAY
@@ -1187,8 +1191,6 @@ from_ray_is_left_of_screen:
     
 from_ray_is_not_left_of_screen:
 
-    ; FIXME: only do this IF the wall is not COMPLETELY left of the screen!
-    
     ; We also need to check if the from ray is to the *right* of the screen: check if its > 304
     lda TESTING_RAY_INDEX+1
     cmp #>(304)
@@ -1226,7 +1228,17 @@ from_ray_is_within_the_screen:
     sta TESTING_RAY_INDEX+1
     
 to_testing_ray_is_positive:
+
+    ; We check if the to-ray is not to the left of the screen
+    ; FIXME: hack
+    cmp #5
+    bcc to_ray_is_not_left_of_screen
     
+    ; If the to-ray is left of the screen, we should not draw the wall
+    ; FIXME: we should in fact check if there is another wall part possible?
+    rts 
+
+to_ray_is_not_left_of_screen:
     ; Check if to ray > 60 degrees
     cmp #>(304)
     bcc to_ray_is_not_right_of_screen
