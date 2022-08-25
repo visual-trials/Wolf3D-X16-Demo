@@ -2,25 +2,47 @@
 
 ; FIXME: this is temporary data to get some wall information into the engine
 
+; Starting room of Wolf3D (sort of)
+
 wall_0_info:
+    .byte 0, 0 ; start x, y
+    .byte 0, 4 ; end x, y
+    .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_1_info:
     .byte 0, 4 ; start x, y
+    .byte 1, 4 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+
+wall_2_info:
+    .byte 1, 4 ; start x, y
+    .byte 1, 5 ; end x, y
+    .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_3_info:
+    .byte 1, 5 ; start x, y
+    .byte 2, 5 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_4_info:
+    .byte 2, 5 ; start x, y
+    .byte 2, 4 ; end x, y
+    .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_5_info:
+    .byte 2, 4 ; start x, y
     .byte 3, 4 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
-wall_1_info:
+wall_6_info:
     .byte 3, 4 ; start x, y
-    .byte 3, 3 ; end x, y
+    .byte 3, 0 ; end x, y
     .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
-
-wall_2_info:
-    .byte 3, 3 ; start x, y
-    .byte 4, 3 ; end x, y
-    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
-wall_3_info:
-    .byte 4, 3 ; start x, y
-    .byte 4, 0 ; end x, y
-    .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+wall_7_info:
+    .byte 3, 0 ; start x, y
+    .byte 0, 0 ; end x, y
+    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     
 
 ; Square room
@@ -103,6 +125,58 @@ setup_wall_info:
     lda wall_3_info+4
     sta WALL_INFO_FACING_DIR, y
     
+    ldy #4
+
+    lda wall_4_info
+    sta WALL_INFO_START_X, y
+    lda wall_4_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_4_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_4_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_4_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #5
+
+    lda wall_5_info
+    sta WALL_INFO_START_X, y
+    lda wall_5_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_5_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_5_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_5_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #6
+
+    lda wall_6_info
+    sta WALL_INFO_START_X, y
+    lda wall_6_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_6_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_6_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_6_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #7
+
+    lda wall_7_info
+    sta WALL_INFO_START_X, y
+    lda wall_7_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_7_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_7_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_7_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
     rts
 
 setup_player:
@@ -131,10 +205,10 @@ setup_player:
     ; looking direction of the player/view (0-1823)
 ;    lda #152              ; 30 degrees from facing straight north
 ; FIXME
-    lda #228
+;    lda #228
+    lda #0
 ;    lda #<(1824-228)
     sta LOOKING_DIR
-;    lda #0
     lda #0
 ;    lda #>(1824-228)
     sta LOOKING_DIR+1
@@ -149,7 +223,7 @@ update_viewpoint:
     ; TODO: this is now hardcoded, but this should to taken from a map
 
     ; x-position of the viewpoint (8.8 bits)
-    lda #0
+    lda #128
     sta VIEWPOINT_X 
     lda #1
     sta VIEWPOINT_X+1
@@ -346,7 +420,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #4
+    cmp #8
 ;    cmp #3
     bne draw_next_wall
     
