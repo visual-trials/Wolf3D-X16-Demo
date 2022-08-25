@@ -217,6 +217,12 @@ setup_player:
 
 update_viewpoint:
 
+    ; FIXME: <BUG> Right now when we look right (at the 1.5,2 position) we see that the textures dont line up.
+    
+    ; FIXME: <BUG> When we look straight, the wall left in front is not properly sized in height (and possibly not drawn until the end of it)
+
+
+
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR (every frame)
     ;        The viewpoint position is around 0.34 tiles "behind" the player position.
 
@@ -231,7 +237,7 @@ update_viewpoint:
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta VIEWPOINT_Y
-    lda #1
+    lda #2
     sta VIEWPOINT_Y+1
 
 
