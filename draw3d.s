@@ -317,12 +317,10 @@ wall_facing_north_screen_start_ray_calculated:
     lda #0                      ; Walls always start on .0
     sbc VIEWPOINT_X
     sta DELTA_X
-    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
     lda WALL_START_X
     sbc VIEWPOINT_X+1
     sta DELTA_X+1
-    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
-    
+
     ; Check if DELTA_X is negative: if so, this means it starts to the west of the player, if not, it starts to the east
     bpl wall_facing_north_starting_east
     
@@ -344,9 +342,11 @@ wall_facing_north_starting_west:
     lda #0
     sbc DELTA_X
     sta DELTA_X
+    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
     lda #0
     sbc DELTA_X+1
     sta DELTA_X+1
+    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
     
     bra wall_facing_north_calc_angle_for_start_of_wall
     
@@ -362,6 +362,15 @@ wall_facing_north_starting_east:
     
     lda #%00000001      ; we are quadrant q1 (code %00000001)
     sta FROM_QUADRANT
+    
+    ; negating DELTA_X (but only for TEXTURE_COLUMN_OFFSET and TEXTURE_INDEX_OFFSET)
+    sec
+    lda #0
+    sbc DELTA_X
+    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
+    lda #0
+    sbc DELTA_X+1
+    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
     
     bra wall_facing_north_calc_angle_for_start_of_wall
     
@@ -513,11 +522,9 @@ wall_facing_west_screen_start_ray_calculated:
     lda #0                      ; Walls always start on .0
     sbc VIEWPOINT_Y
     sta DELTA_Y
-    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
     lda WALL_START_Y
     sbc VIEWPOINT_Y+1
     sta DELTA_Y+1
-    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
     
     ; Check if DELTA_Y is negative: if so, this means it starts to the south of the player, if not, it starts to the north
     bpl wall_facing_west_starting_north
@@ -540,9 +547,11 @@ wall_facing_west_starting_south:
     lda #0
     sbc DELTA_Y
     sta DELTA_Y
+    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
     lda #0
     sbc DELTA_Y+1
     sta DELTA_Y+1
+    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
     
     bra wall_facing_west_calc_angle_for_start_of_wall
     
@@ -558,6 +567,15 @@ wall_facing_west_starting_north:
     
     lda #%00000000      ; we are quadrant q0 (code %00000000)
     sta FROM_QUADRANT
+    
+    ; negating DELTA_Y (but only for TEXTURE_COLUMN_OFFSET and TEXTURE_INDEX_OFFSET)
+    sec
+    lda #0
+    sbc DELTA_Y
+    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
+    lda #0
+    sbc DELTA_Y+1
+    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
     
     bra wall_facing_west_calc_angle_for_start_of_wall
     
