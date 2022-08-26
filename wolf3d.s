@@ -325,6 +325,9 @@ irq:
 blue_stone_1_texture:
     .binary "assets/BLUESTONE1_OLD.BIN"
     
+blue_stone_2_texture:
+    .binary "assets/BLUESTONE2_OLD.BIN"
+    
 closed_door_texture:
     .binary "assets/CLOSEDDOOR_OLD.BIN"
     

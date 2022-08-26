@@ -326,6 +326,28 @@ load_textures_into_vram:
     
     jsr COPY_PALLETE_TO_VRAM
     
+
+    ; Texture pixels
+    lda #<($C000+2+blue_stone_2_texture)
+    sta LOAD_ADDRESS
+    lda #>($C000+2+blue_stone_2_texture)
+    sta LOAD_ADDRESS+1
+    
+    lda #<(TEXTURE_DATA+4096)
+    sta VRAM_ADDRESS
+    lda #>(TEXTURE_DATA+4096)
+    sta VRAM_ADDRESS+1
+    
+    jsr COPY_TEXTURE_TO_VRAM
+    
+    ; Texture palette
+    lda #<($C000+2+blue_stone_2_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
+    sta LOAD_ADDRESS
+    lda #>($C000+2+blue_stone_2_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
+    sta LOAD_ADDRESS+1
+    
+    jsr COPY_PALLETE_TO_VRAM
+
     
     ; Texture pixels
     lda #<($C000+2+closed_door_texture)
@@ -333,9 +355,9 @@ load_textures_into_vram:
     lda #>($C000+2+closed_door_texture)
     sta LOAD_ADDRESS+1
     
-    lda #<(TEXTURE_DATA+4096)
+    lda #<(TEXTURE_DATA+4096*2)
     sta VRAM_ADDRESS
-    lda #>(TEXTURE_DATA+4096)
+    lda #>(TEXTURE_DATA+4096*2)
     sta VRAM_ADDRESS+1
     
     jsr COPY_TEXTURE_TO_VRAM
