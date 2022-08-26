@@ -16,6 +16,7 @@ wall_0_info:
     .byte 0, 0 ; start x, y
     .byte 0, 4 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte 0, 2, 0, 0   ; 0 = blue_stone1_light, 1 = blue_stone1_dark, 2 = blue_stone2_light, 3 = blue_stone2_dark, 
     
 wall_1_info:
     .byte 0, 4 ; start x, y
