@@ -4,8 +4,42 @@ BACKGROUND_COLOR_3D_VIEW = 2
 CEILING_COLOR            = 19
 FLOOR_COLOR              = 22
     
+; FIXME: we are now using ROM banks to contain textures. We need to copy those textures to vram, but have to run that copy-code in RAM. This is all deprecated once we use the SD card!
     
+copy_vram_copiers_to_ram:
+
+    ; Copying copy_texture_to_vram -> COPY_TEXTURE_TO_VRAM
+    
+    ldy #0
+copy_texture_to_vram_byte:
+    lda copy_texture_to_vram, y
+    sta COPY_TEXTURE_TO_VRAM, y
+    iny 
+    cpy #(end_of_copy_texture_to_vram-copy_texture_to_vram)
+    bne copy_texture_to_vram_byte
+
+    ; Copying copy_palette_to_vram -> COPY_PALLETE_TO_VRAM
+    
+    ldy #0
+copy_pallete_to_vram_byte:
+    lda copy_palette_to_vram, y
+    sta COPY_PALLETE_TO_VRAM, y
+    iny 
+    cpy #(end_of_copy_palette_to_vram-copy_palette_to_vram)
+    bne copy_pallete_to_vram_byte
+
+    rts
+
+    
+; FIXME: this is UGLY!
 copy_texture_to_vram:
+
+    ; Switching ROM BANK
+    ; FIXME: HARDCODED!
+    lda #$01
+    sta ROM_BANK
+; FIXME: remove nop!
+    nop
 
     ; We copy 4kb to (high) vram
     
@@ -24,7 +58,7 @@ next_block_to_copy_to_vram:
 next_byte_to_copy_to_vram:
     lda (LOAD_ADDRESS), y
     clc
-    adc #128                  ; FIXME: we now add 128 to the color value, since we have our custom palette there, but this only works if we have ONE texture!
+    adc PALETTE_COLOR_OFFSET
     sta VERA_DATA0
     iny
     bne next_byte_to_copy_to_vram
@@ -33,21 +67,58 @@ next_byte_to_copy_to_vram:
     inx
     cpx #16              ; 16 * 256 = 4096 bytes
     bne next_block_to_copy_to_vram
+
+
+    ; Switching back to ROM bank 0
+    lda #$00
+    sta ROM_BANK
+; FIXME: remove nop!
+    nop
    
     rts
+end_of_copy_texture_to_vram:
 
-; FIXME: this only works for ONE texture palette!
+
+
+
+; FIXME: this is UGLY!
 copy_palette_to_vram:
+
+    ; Switching ROM BANK
+    ; FIXME: HARDCODED!
+    lda #$01
+    sta ROM_BANK
+; FIXME: remove nop!
+    nop
+
     ldy #0
+
+    lda (LOAD_ADDRESS), y            ; this is the byte containing the number of palette bytes
+    sta NR_OF_PALETTE_BYTES
+    
+    inc LOAD_ADDRESS            ; our new base address should be one higher, since the first byte contained the nr of colors
+    bne palette_load_address_ok
+    inc LOAD_ADDRESS+1
+palette_load_address_ok:
 
     ; TODO: this assumes ADDRSEL is 0!
     
     lda #%00010001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 1
     sta VERA_ADDR_BANK
-    lda #>(VERA_PALETTE+128*2)   ; FIXME: we now add 128 to the palette index, since we place our custom palette there, but this only works if we have ONE texture!
+    lda #>(VERA_PALETTE)
     sta VERA_ADDR_HIGH
-    lda #<(VERA_PALETTE+128*2)   ; FIXME: we now add 128 to the palette index, since we place our custom palette there, but this only works if we have ONE texture!
+    lda #<(VERA_PALETTE)
     sta VERA_ADDR_LOW
+
+    ; FIXME: this is dumb, but we move the VERA address towards the correct palette entry by ITERATING to it...
+    ;        this also doesnt work if PALETTE_COLOR_OFFSET = 0 (but we assume it never is)
+    ldx #0
+go_to_next_palette_entry:
+    lda VERA_DATA0  ; this increments the VERA address
+    lda VERA_DATA0  ; this increments the VERA address
+    inx
+    cpx PALETTE_COLOR_OFFSET
+    bne go_to_next_palette_entry
     
 next_palette_color_to_copy:
 
@@ -82,7 +153,18 @@ next_palette_color_to_copy:
     cpy NR_OF_PALETTE_BYTES
     bne next_palette_color_to_copy
 
+
+    ; FIXME: increment PALETTE_COLOR_OFFSET
+
+
+    ; Switching back to ROM bank 0
+    lda #$00
+    sta ROM_BANK
+; FIXME: remove nop!
+    nop
+   
     rts
+end_of_copy_palette_to_vram:
     
     
 generate_draw_column_code:

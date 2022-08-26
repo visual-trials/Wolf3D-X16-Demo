@@ -55,6 +55,8 @@ COLUMN_WALL_HEIGHT        = $38 ; 39 ; 3A
 RAY_INDEX                 = $3B ; 3C
 RAY_INDEX_NEGATED         = $3D ; 3E
 
+PALETTE_COLOR_OFFSET      = $3F       ; TODO: Only used during palette loading
+
 NORMAL_DISTANCE_TO_WALL   = $40 ; 41  ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
 FROM_RAY_INDEX            = $42 ; 43  ; the ray index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
 TO_RAY_INDEX              = $44 ; 45  ; the ray index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
@@ -134,6 +136,9 @@ WALL_INFO_END_X          = $6200    ; 256 bytes (x-coordinate of end of wall)
 WALL_INFO_END_Y          = $6300    ; 256 bytes (y-coordinate of end of wall)
 WALL_INFO_FACING_DIR     = $6400    ; 256 bytes (facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
 
+COPY_TEXTURE_TO_VRAM     = $6500    ; routine that must be run in RAM, because it switches the ROM bank
+COPY_PALLETE_TO_VRAM     = $6600    ; routine that must be run in RAM, because it switches the ROM bank
+
 
 
     ; Info on Wolfenstein3D engine: https://fabiensanglard.net/gebbwolf3d.pdf
@@ -161,12 +166,21 @@ reset:
     
     jsr init_timer
     ; jsr init_elapsed_time_sprite
+
+
+    ; FIXME: this loading from ROM banks wont work for more than 16kb since we would have to switch the ROM bank for that!
     
+    ; FIXME: this is deprecated once we run from the SD and run inside the kernal!
+    jsr copy_vram_copiers_to_ram
+
+    ; TODO: we can choose a much low palette color offset!
+    lda #128   ; we start at this palette color offset
+    sta PALETTE_COLOR_OFFSET
 
     ; Texture pixels
-    lda #$00
+    lda #<($C000+2+blue_stone_1_texture)
     sta LOAD_ADDRESS
-    lda #$E6
+    lda #>($C000+2+blue_stone_1_texture)
     sta LOAD_ADDRESS+1
     
     lda #<TEXTURE_DATA
@@ -174,18 +188,18 @@ reset:
     lda #>TEXTURE_DATA
     sta VRAM_ADDRESS+1
     
-    jsr copy_texture_to_vram
+    ; jsr copy_texture_to_vram
+    jsr COPY_TEXTURE_TO_VRAM
     
     ; Texture palette
-    lda #$01             ; palette starts at 4096 + 1 bytes from texture data
+    lda #<($C000+2+blue_stone_1_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
     sta LOAD_ADDRESS
-    lda #$F6             ; palette starts at 4096 + 1 bytes from texture data
+    lda #>($C000+2+blue_stone_1_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
     sta LOAD_ADDRESS+1
     
-    lda $F600            ; this is the byte containing the number of palette bytes
-    sta NR_OF_PALETTE_BYTES
+    ; jsr copy_palette_to_vram
+    jsr COPY_PALLETE_TO_VRAM
     
-    jsr copy_palette_to_vram
     
     ; Drawing 3D View
     
@@ -314,8 +328,8 @@ wait_for_vsync:
     
     ; FIXME: this uses an old file (with 2 extra bytes in front and with specific palette bytes). 
     ; Starting at E5FE because we want it to begin at E600, but we ignore the 2 extra bytes.
-    .org $E5FE
-    .binary "assets/BLUESTONE1_OLD.BIN"
+ ;   .org $E5FE
+ ;   .binary "assets/BLUESTONE1_OLD.BIN"
   
     ; ======== PETSCII CHARSET =======
 
@@ -337,3 +351,10 @@ irq:
     .word nmi
     .word reset
     .word irq
+
+blue_stone_1_texture:
+    .binary "assets/BLUESTONE1_OLD.BIN"
+    
+closed_door_texture:
+    .binary "assets/CLOSEDDOOR_OLD.BIN"
+    
