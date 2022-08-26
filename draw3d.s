@@ -229,6 +229,7 @@ update_viewpoint:
     
     ; FIXME: <BUG> When we look straight, the wall left in front is not properly sized in height (and possibly not drawn until the end of it)
 
+    ; FIXME: <BUG> When from/to delta_x/y are re-calculated you now get "1.02" and "3.0F" issues: this is because the delta_x/y are calculated from an (impresice) angle and multiplied! This probably gives some "rounding" errors...
 
 
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR (every frame)
@@ -245,7 +246,7 @@ update_viewpoint:
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta VIEWPOINT_Y
-    lda #2
+    lda #1
     sta VIEWPOINT_Y+1
 
 
@@ -407,7 +408,7 @@ draw_3d_view:
 
 draw_walls:
 
-    lda #2
+    lda #0
 ;    lda #2
     sta CURRENT_WALL_INDEX
 
@@ -434,7 +435,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #3
+    cmp #8
 ;    cmp #3
     bne draw_next_wall
     
@@ -2091,8 +2092,6 @@ from_is_the_same_horizontally:
 
     ; ================ TO DISTANCE ===============
     
-    
-    
     ; First we calculate the *positive* distance along the looking direction due to DELTA_X and DELTA_Y accordingly
 
     ; -- TO: DISTANCE_DUE_TO_DELTA_X --
@@ -2531,11 +2530,11 @@ wall_width_determined_decreasing_height:
     sta WALL_HEIGHT_INCREMENT+1
     lda #0
     sbc WALL_HEIGHT_INCREMENT+2
-    sta WALL_HEIGHT_INCREMENT+1
+    sta WALL_HEIGHT_INCREMENT+2
     
 
 wall_height_increment_determined:
-    
+
     ; We store the from wall height into the column wall height (FROM_WALL_HEIGHT * 256)
     lda FROM_WALL_HEIGHT+1
     sta COLUMN_WALL_HEIGHT+2
