@@ -202,6 +202,12 @@ draw_next_wall:
     lda WALL_INFO_FACING_DIR, y   ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
     sta WALL_FACING_DIR
     
+    lda WALL_INFO_TEXTURE_LOW,y
+    sta WALL_INFO_TEXTURE_INDEXES
+    
+    lda WALL_INFO_TEXTURE_HIGH,y
+    sta WALL_INFO_TEXTURE_INDEXES+1
+    
     jsr draw_wall
     
     inc CURRENT_WALL_INDEX
@@ -2493,6 +2499,11 @@ got_tangent_left:
     ; SPEED: this sta is not needed!
     sta PRODUCT+2
     
+    tay
+    
+    lda (WALL_INFO_TEXTURE_INDEXES),y
+    
+    .if 0
     ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
     and #01
     bne odd_texture_left
@@ -2502,6 +2513,8 @@ even_texture_left:
 odd_texture_left:
     lda #>(TEXTURE_DATA+4096)
 texture_index_known_left:
+    .endif
+
     sta VERA_ADDR_HIGH
     
     lda PRODUCT+1
@@ -2592,9 +2605,6 @@ draw_next_column_right:
     sta VERA_CTRL
     lda #%01110001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 64 bytes (=7=%0111)
     sta VERA_ADDR_BANK
-    ; FIXME: we should not use only ONE texture! -> use (high) result of tangent to determine which cell of the wall you are in!
-    lda #>TEXTURE_DATA
-    sta VERA_ADDR_HIGH
     
     lda RAY_INDEX+1
     cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
@@ -2683,6 +2693,11 @@ got_tangent_right:
     ; FIXME: this sta is not needed
     sta PRODUCT+2
     
+    tay
+    
+    lda (WALL_INFO_TEXTURE_INDEXES),y
+    
+    .if 0
     ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
     and #01
     bne odd_texture_right
@@ -2692,6 +2707,8 @@ even_texture_right:
 odd_texture_right:
     lda #>(TEXTURE_DATA+4096)
 texture_index_known_right:
+    .endif
+
     sta VERA_ADDR_HIGH
     
     lda PRODUCT+1

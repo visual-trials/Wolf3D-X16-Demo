@@ -85,6 +85,7 @@ WALL_START_Y              = $62       ; y-coordinate of start of wall)
 WALL_END_X                = $63       ; x-coordinate of end of wall)
 WALL_END_Y                = $64       ; y-coordinate of end of wall)
 WALL_FACING_DIR           = $65       ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+WALL_INFO_TEXTURE_INDEXES = $66 ; 67  ; address of the place containing the texture indexes of a wall)
 
 QUADRANT_CORRECTION       = $68
 FLIP_TAN_ANGLE            = $69
@@ -138,9 +139,11 @@ WALL_INFO_START_Y        = $6100    ; 256 bytes (y-coordinate of start of wall)
 WALL_INFO_END_X          = $6200    ; 256 bytes (x-coordinate of end of wall)
 WALL_INFO_END_Y          = $6300    ; 256 bytes (y-coordinate of end of wall)
 WALL_INFO_FACING_DIR     = $6400    ; 256 bytes (facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+WALL_INFO_TEXTURE_LOW    = $6500    ; 256 bytes (low byte of the addres containing the texture indexes)
+WALL_INFO_TEXTURE_HIGH   = $6600    ; 256 bytes (low byte of the addres containing the texture indexes)
 
-COPY_TEXTURE_TO_VRAM     = $6500    ; routine that must be run in RAM, because it switches the ROM bank
-COPY_PALLETE_TO_VRAM     = $6600    ; routine that must be run in RAM, because it switches the ROM bank
+COPY_TEXTURE_TO_VRAM     = $6700    ; routine that must be run in RAM, because it switches the ROM bank
+COPY_PALLETE_TO_VRAM     = $6800    ; routine that must be run in RAM, because it switches the ROM bank
 
 
 

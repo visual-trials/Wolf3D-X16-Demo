@@ -3,6 +3,11 @@ BACKGROUND_COLOR_3D_VIEW = 2
 CEILING_COLOR            = 19
 FLOOR_COLOR              = 22
 
+; FIXME: this assumes TEXTURE_DATA = $13000 which might change!
+BS1 = $00+$30 ; blue stone 1
+BS2 = $10+$30 ; blue stone 2
+CLD = $20+$30 ; closed door
+
 ; FIXME: this is temporary data to get some wall information into the engine
 
 ; Starting room of Wolf3D (sort of)
@@ -19,42 +24,49 @@ wall_0_info:
     .byte 0, 0 ; start x, y
     .byte 0, 4 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
-    .byte 0, 1, 0, 0   ; 0 = blue_stone1, 1 = blue_stone2, 2 = closed_door 
+    .byte BS1, BS2, BS1, BS1
     
 wall_1_info:
     .byte 0, 4 ; start x, y
     .byte 1, 4 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1
 
 wall_2_info:
     .byte 1, 4 ; start x, y
     .byte 1, 5 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1
     
 wall_3_info:
     .byte 1, 5 ; start x, y
     .byte 2, 5 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte CLD
     
 wall_4_info:
     .byte 2, 5 ; start x, y
     .byte 2, 4 ; end x, y
     .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1
     
 wall_5_info:
     .byte 2, 4 ; start x, y
     .byte 3, 4 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1
     
 wall_6_info:
     .byte 3, 4 ; start x, y
     .byte 3, 0 ; end x, y
     .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1, BS1, BS2, BS2
     
 wall_7_info:
     .byte 3, 0 ; start x, y
     .byte 0, 0 ; end x, y
     .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1, BS2, BS1
     
 
 ; Square room
@@ -122,6 +134,10 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_0_info+4
     sta WALL_INFO_FACING_DIR, y
+    lda #<(wall_0_info+5)
+    sta WALL_INFO_TEXTURE_LOW,y
+    lda #>(wall_0_info+5)
+    sta WALL_INFO_TEXTURE_HIGH,y
 
     ldy #1
 
@@ -135,6 +151,10 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_1_info+4
     sta WALL_INFO_FACING_DIR, y
+    lda #<(wall_1_info+5)
+    sta WALL_INFO_TEXTURE_LOW,y
+    lda #>(wall_1_info+5)
+    sta WALL_INFO_TEXTURE_HIGH,y
     
     ldy #2
 
@@ -148,6 +168,10 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_2_info+4
     sta WALL_INFO_FACING_DIR, y
+    lda #<(wall_2_info+5)
+    sta WALL_INFO_TEXTURE_LOW,y
+    lda #>(wall_2_info+5)
+    sta WALL_INFO_TEXTURE_HIGH,y
     
     ldy #3
 
@@ -161,6 +185,10 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_3_info+4
     sta WALL_INFO_FACING_DIR, y
+    lda #<(wall_3_info+5)
+    sta WALL_INFO_TEXTURE_LOW,y
+    lda #>(wall_3_info+5)
+    sta WALL_INFO_TEXTURE_HIGH,y
     
     ldy #4
 
@@ -174,6 +202,10 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_4_info+4
     sta WALL_INFO_FACING_DIR, y
+    lda #<(wall_4_info+5)
+    sta WALL_INFO_TEXTURE_LOW,y
+    lda #>(wall_4_info+5)
+    sta WALL_INFO_TEXTURE_HIGH,y
     
     ldy #5
 
@@ -187,6 +219,10 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_5_info+4
     sta WALL_INFO_FACING_DIR, y
+    lda #<(wall_5_info+5)
+    sta WALL_INFO_TEXTURE_LOW,y
+    lda #>(wall_5_info+5)
+    sta WALL_INFO_TEXTURE_HIGH,y
     
     ldy #6
 
@@ -200,6 +236,10 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_6_info+4
     sta WALL_INFO_FACING_DIR, y
+    lda #<(wall_6_info+5)
+    sta WALL_INFO_TEXTURE_LOW,y
+    lda #>(wall_6_info+5)
+    sta WALL_INFO_TEXTURE_HIGH,y
     
     ldy #7
 
@@ -213,6 +253,10 @@ setup_wall_info:
     sta WALL_INFO_END_Y, y
     lda wall_7_info+4
     sta WALL_INFO_FACING_DIR, y
+    lda #<(wall_7_info+5)
+    sta WALL_INFO_TEXTURE_LOW,y
+    lda #>(wall_7_info+5)
+    sta WALL_INFO_TEXTURE_HIGH,y
     
     rts
 
