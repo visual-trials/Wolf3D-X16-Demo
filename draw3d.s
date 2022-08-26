@@ -2675,11 +2675,17 @@ got_tangent_left:
     ; SPEED: this multiplier is SLOW
     jsr multply_16bits
     lda PRODUCT+1
+    
+    ; FIXME: we need to add the VIEWPOINT_X/Y low byte to this!
+    
     lsr
     lsr
     
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
+
+    ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
+    
 
     ; FIXME: we now use only one byte of the wall height, but we also need to check the high byte (unless we only use 256 *EVEN* wall heights)
     lda COLUMN_WALL_HEIGHT+1
@@ -2830,11 +2836,17 @@ got_tangent_right:
     ; SPEED: this multiplier is SLOW
     jsr multply_16bits
     lda PRODUCT+1
+    
+    ; FIXME: we need to add the VIEWPOINT_X/Y low byte to this!
+    
     lsr
     lsr
     
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
+    
+    ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
+    
 
     ; FIXME: we now use only one byte of the wall height, but we also need to check the high byte (unless we only use 256 *EVEN* wall heights)
     lda COLUMN_WALL_HEIGHT+1
