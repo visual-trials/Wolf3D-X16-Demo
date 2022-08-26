@@ -2611,7 +2611,6 @@ draw_next_column_left:
     lda #>TEXTURE_DATA
     sta VERA_ADDR_HIGH
     
-    ; FIXME: also get TANGENT_HIGH!
     lda RAY_INDEX+1
     cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
     bcs is_negative_left
@@ -2620,11 +2619,17 @@ draw_next_column_left:
     bne is_high_positive_ray_index_left
 is_low_positive_ray_index_left:
     ldy RAY_INDEX
-    lda TANGENT_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_HIGH,y
+    sta MULTIPLICAND+1
+    lda TANGENT_LOW,y
+    sta MULTIPLICAND
     bra got_tangent_left
 is_high_positive_ray_index_left:
     ldy RAY_INDEX
+    lda TANGENT_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND+1
     lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND
     bra got_tangent_left
 
 is_negative_left:
@@ -2642,11 +2647,17 @@ is_negative_left:
     bne is_high_negative_ray_index_left
 is_low_negative_ray_index_left:
     ldy RAY_INDEX_NEGATED
-    lda TANGENT_LOW,y             ; When the negated ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_HIGH,y
+    sta MULTIPLICAND+1
+    lda TANGENT_LOW,y
+    sta MULTIPLICAND
     bra got_negative_tangent_left
 is_high_negative_ray_index_left:
     ldy RAY_INDEX_NEGATED
+    lda TANGENT_HIGH+256,y        ; When the negated ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND+1
     lda TANGENT_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND
 
 got_negative_tangent_left:
     ; We negate the tangent result
@@ -2662,9 +2673,6 @@ got_tangent_left:
     ;        note that this needs to run in RAM in order for the 'cache' to work.
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
-    sta MULTIPLICAND
-    lda #0               ; FIXME: we should get the tangent_HIGH instead!!
-    sta MULTIPLICAND+1   
     
     ; SPEED: copying this 16-bit value is slow
     lda NORMAL_DISTANCE_TO_WALL
@@ -2772,7 +2780,6 @@ draw_next_column_right:
     lda #>TEXTURE_DATA
     sta VERA_ADDR_HIGH
     
-    ; FIXME: also get TANGENT_HIGH!
     lda RAY_INDEX+1
     cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
     bcs is_negative_right
@@ -2781,11 +2788,17 @@ draw_next_column_right:
     bne is_high_positive_ray_index_right
 is_low_positive_ray_index_right:
     ldy RAY_INDEX
-    lda TANGENT_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_HIGH,y
+    sta MULTIPLICAND+1
+    lda TANGENT_LOW,y
+    sta MULTIPLICAND
     bra got_tangent_right
 is_high_positive_ray_index_right:
     ldy RAY_INDEX
+    lda TANGENT_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND+1
     lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND
     
     bra got_tangent_right
 
@@ -2804,11 +2817,17 @@ is_negative_right:
     bne is_high_negative_ray_index_right
 is_low_negative_ray_index_right:
     ldy RAY_INDEX_NEGATED
-    lda TANGENT_LOW,y             ; When the negated ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_HIGH,y
+    sta MULTIPLICAND+1
+    lda TANGENT_LOW,y
+    sta MULTIPLICAND
     bra got_negative_tangent_right
 is_high_negative_ray_index_right:
     ldy RAY_INDEX_NEGATED
+    lda TANGENT_HIGH+256,y        ; When the negated ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND+1
     lda TANGENT_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND
 
 got_negative_tangent_right:
     ; We negate the tangent result
@@ -2823,9 +2842,6 @@ got_tangent_right:
     ;        note that this needs to run in RAM in order for the 'cache' to work.
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
-    sta MULTIPLICAND
-    lda #0               ; FIXME: we should get the tangent_HIGH instead!!
-    sta MULTIPLICAND+1   
     
     ; SPEED: copying this 16-bit value is slow
     lda NORMAL_DISTANCE_TO_WALL
