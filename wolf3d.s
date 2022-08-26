@@ -282,7 +282,6 @@ wait_for_vsync:
     
     ; no jsr needed here
     
-
     
     ; === Included files ===
     
@@ -292,12 +291,6 @@ wait_for_vsync:
     .include utils/setup_vera_for_bitmap_and_tilemap.s
     .include init3d.s
     .include draw3d.s
-  
-    ; === Texture files ===
-    
-    ; Starting at E5FE because we want it to begin at E600, but we ignore the 2 extra bytes.
- ;   .org $E5FE
- ;   .binary "assets/BLUESTONE1_OLD.BIN"
   
     ; ======== PETSCII CHARSET =======
 
@@ -320,6 +313,8 @@ irq:
     .word reset
     .word irq
 
+    ; === Texture files ===
+    
     ; FIXME: these texture file use an old type of file (with 2 extra bytes in front and with specific palette bytes). 
 
     ; ROM Bank 1
