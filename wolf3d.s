@@ -167,39 +167,8 @@ reset:
     jsr init_timer
     ; jsr init_elapsed_time_sprite
 
-
     ; FIXME: this loading from ROM banks wont work for more than 16kb since we would have to switch the ROM bank for that!
-    
-    ; FIXME: this is deprecated once we run from the SD and run inside the kernal!
-    jsr copy_vram_copiers_to_ram
-
-    ; TODO: we can choose a much low palette color offset!
-    lda #128   ; we start at this palette color offset
-    sta PALETTE_COLOR_OFFSET
-
-    ; Texture pixels
-    lda #<($C000+2+blue_stone_1_texture)
-    sta LOAD_ADDRESS
-    lda #>($C000+2+blue_stone_1_texture)
-    sta LOAD_ADDRESS+1
-    
-    lda #<TEXTURE_DATA
-    sta VRAM_ADDRESS
-    lda #>TEXTURE_DATA
-    sta VRAM_ADDRESS+1
-    
-    ; jsr copy_texture_to_vram
-    jsr COPY_TEXTURE_TO_VRAM
-    
-    ; Texture palette
-    lda #<($C000+2+blue_stone_1_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
-    sta LOAD_ADDRESS
-    lda #>($C000+2+blue_stone_1_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
-    sta LOAD_ADDRESS+1
-    
-    ; jsr copy_palette_to_vram
-    jsr COPY_PALLETE_TO_VRAM
-    
+    jsr load_textures_into_vram
     
     ; Drawing 3D View
     

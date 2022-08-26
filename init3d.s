@@ -81,6 +81,65 @@ end_of_copy_texture_to_vram:
 
 
 
+load_textures_into_vram:
+
+    ; FIXME: this is deprecated once we run from the SD and run inside the kernal!
+    jsr copy_vram_copiers_to_ram
+
+    ; TODO: we can choose a much low palette color offset!
+    lda #128   ; we start at this palette color offset
+    sta PALETTE_COLOR_OFFSET
+
+
+
+    ; Texture pixels
+    lda #<($C000+2+blue_stone_1_texture)
+    sta LOAD_ADDRESS
+    lda #>($C000+2+blue_stone_1_texture)
+    sta LOAD_ADDRESS+1
+    
+    lda #<TEXTURE_DATA
+    sta VRAM_ADDRESS
+    lda #>TEXTURE_DATA
+    sta VRAM_ADDRESS+1
+    
+    jsr COPY_TEXTURE_TO_VRAM
+    
+    ; Texture palette
+    lda #<($C000+2+blue_stone_1_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
+    sta LOAD_ADDRESS
+    lda #>($C000+2+blue_stone_1_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
+    sta LOAD_ADDRESS+1
+    
+    jsr COPY_PALLETE_TO_VRAM
+    
+    
+    ; Texture pixels
+    lda #<($C000+2+closed_door_texture)
+    sta LOAD_ADDRESS
+    lda #>($C000+2+closed_door_texture)
+    sta LOAD_ADDRESS+1
+    
+    lda #<(TEXTURE_DATA+4096)
+    sta VRAM_ADDRESS
+    lda #>(TEXTURE_DATA+4096)
+    sta VRAM_ADDRESS+1
+    
+    jsr COPY_TEXTURE_TO_VRAM
+    
+    ; Texture palette
+    lda #<($C000+2+closed_door_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
+    sta LOAD_ADDRESS
+    lda #>($C000+2+closed_door_texture+4096)  ; palette starts at 4096 (first byte contains nr of colors)
+    sta LOAD_ADDRESS+1
+    
+    jsr COPY_PALLETE_TO_VRAM
+    
+    
+    rts
+    
+
+
 ; FIXME: this is UGLY!
 copy_palette_to_vram:
 
@@ -150,11 +209,10 @@ next_palette_color_to_copy:
     
     sta VERA_DATA0
 
+    inc PALETTE_COLOR_OFFSET
+
     cpy NR_OF_PALETTE_BYTES
     bne next_palette_color_to_copy
-
-
-    ; FIXME: increment PALETTE_COLOR_OFFSET
 
 
     ; Switching back to ROM bank 0
