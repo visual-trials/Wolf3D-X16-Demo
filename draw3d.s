@@ -4,6 +4,14 @@
 
 ; Starting room of Wolf3D (sort of)
 
+;    3_
+; 12_| |_45
+;   |   |
+;  0|   |6
+;   |   |
+;   |___|
+;     7
+
 wall_0_info:
     .byte 0, 0 ; start x, y
     .byte 0, 4 ; end x, y
@@ -399,7 +407,7 @@ draw_3d_view:
 
 draw_walls:
 
-    lda #0
+    lda #2
 ;    lda #2
     sta CURRENT_WALL_INDEX
 
@@ -426,7 +434,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #8
+    cmp #3
 ;    cmp #3
     bne draw_next_wall
     
