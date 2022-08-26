@@ -1,9 +1,220 @@
-
 ; FIXME: use a different background color, or none!
 BACKGROUND_COLOR_3D_VIEW = 2
 CEILING_COLOR            = 19
 FLOOR_COLOR              = 22
+
+; FIXME: this is temporary data to get some wall information into the engine
+
+; Starting room of Wolf3D (sort of)
+
+;    3_
+; 12_| |_45
+;   |   |
+;  0|   |6
+;   |   |
+;   |___|
+;     7
+
+wall_0_info:
+    .byte 0, 0 ; start x, y
+    .byte 0, 4 ; end x, y
+    .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte 0, 2, 0, 0   ; 0 = blue_stone1_light, 1 = blue_stone1_dark, 2 = blue_stone2_light, 3 = blue_stone2_dark, 
     
+wall_1_info:
+    .byte 0, 4 ; start x, y
+    .byte 1, 4 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+
+wall_2_info:
+    .byte 1, 4 ; start x, y
+    .byte 1, 5 ; end x, y
+    .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_3_info:
+    .byte 1, 5 ; start x, y
+    .byte 2, 5 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_4_info:
+    .byte 2, 5 ; start x, y
+    .byte 2, 4 ; end x, y
+    .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_5_info:
+    .byte 2, 4 ; start x, y
+    .byte 3, 4 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_6_info:
+    .byte 3, 4 ; start x, y
+    .byte 3, 0 ; end x, y
+    .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+wall_7_info:
+    .byte 3, 0 ; start x, y
+    .byte 0, 0 ; end x, y
+    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+
+; Square room
+    .if 0    
+    
+wall_0_info:
+    .byte 0, 4 ; start x, y
+    .byte 4, 4 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+
+wall_1_info:
+    .byte 4, 4 ; start x, y
+    .byte 4, 0 ; end x, y
+    .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+
+wall_2_info:
+    .byte 4, 0 ; start x, y
+    .byte 0, 0 ; end x, y
+    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+
+wall_3_info:
+    .byte 0, 0 ; start x, y
+    .byte 0, 4 ; end x, y
+    .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    
+    .endif
+
+setup_player:
+
+    ; TODO: this is now hardcoded, but this should to taken from a map
+
+    ; x-position of the viewpoint (8.8 bits)
+    lda #128
+    sta PLAYER_POS_X 
+    lda #1
+    sta PLAYER_POS_X+1
+    
+    ; y-position of the viewpoint (8.8 bits)
+    lda #0
+    sta PLAYER_POS_Y
+    lda #1
+    sta PLAYER_POS_Y+1
+    
+    ; looking direction of the player/view (0-1823)
+    lda #0
+    sta LOOKING_DIR
+    lda #0
+    sta LOOKING_DIR+1
+    
+    rts
+    
+setup_wall_info:
+
+    ldy #0
+    
+    lda wall_0_info
+    sta WALL_INFO_START_X, y
+    lda wall_0_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_0_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_0_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_0_info+4
+    sta WALL_INFO_FACING_DIR, y
+
+    ldy #1
+
+    lda wall_1_info
+    sta WALL_INFO_START_X, y
+    lda wall_1_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_1_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_1_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_1_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #2
+
+    lda wall_2_info
+    sta WALL_INFO_START_X, y
+    lda wall_2_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_2_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_2_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_2_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #3
+
+    lda wall_3_info
+    sta WALL_INFO_START_X, y
+    lda wall_3_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_3_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_3_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_3_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #4
+
+    lda wall_4_info
+    sta WALL_INFO_START_X, y
+    lda wall_4_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_4_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_4_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_4_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #5
+
+    lda wall_5_info
+    sta WALL_INFO_START_X, y
+    lda wall_5_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_5_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_5_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_5_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #6
+
+    lda wall_6_info
+    sta WALL_INFO_START_X, y
+    lda wall_6_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_6_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_6_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_6_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    ldy #7
+
+    lda wall_7_info
+    sta WALL_INFO_START_X, y
+    lda wall_7_info+1
+    sta WALL_INFO_START_Y, y
+    lda wall_7_info+2
+    sta WALL_INFO_END_X, y
+    lda wall_7_info+3
+    sta WALL_INFO_END_Y, y
+    lda wall_7_info+4
+    sta WALL_INFO_FACING_DIR, y
+    
+    rts
+
+
 ; FIXME: we are now using ROM banks to contain textures. We need to copy those textures to vram, but have to run that copy-code in RAM. This is all deprecated once we use the SD card!
     
 copy_vram_copiers_to_ram:

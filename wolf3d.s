@@ -295,7 +295,6 @@ wait_for_vsync:
   
     ; === Texture files ===
     
-    ; FIXME: this uses an old file (with 2 extra bytes in front and with specific palette bytes). 
     ; Starting at E5FE because we want it to begin at E600, but we ignore the 2 extra bytes.
  ;   .org $E5FE
  ;   .binary "assets/BLUESTONE1_OLD.BIN"
@@ -320,6 +319,8 @@ irq:
     .word nmi
     .word reset
     .word irq
+
+    ; FIXME: these texture file use an old type of file (with 2 extra bytes in front and with specific palette bytes). 
 
     ; ROM Bank 1
     .align 14        ; This is to make sure the data wont covert two ROM banks
