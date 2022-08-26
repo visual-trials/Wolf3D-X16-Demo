@@ -3,9 +3,9 @@ update_viewpoint:
 
     ; FIXME: <BUG> Right now when we look right (at the 1.5,2 position) we see that the textures dont line up.
     
-    ; FIXME: <BUG> When we look straight, the wall left in front is not properly sized in height (and possibly not drawn until the end of it)
-
     ; FIXME: <BUG> When from/to delta_x/y are re-calculated you now get "1.02" and "3.0F" issues: this is because the delta_x/y are calculated from an (impresice) angle and multiplied! This probably gives some "rounding" errors...
+    
+    ; FIXME: <BUG> Right in the corners you can sometimes see a single column of the wrong texture.
 
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR (every frame)
     ;        The viewpoint position is around 0.34 tiles "behind" the player position.

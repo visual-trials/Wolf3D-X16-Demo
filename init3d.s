@@ -99,8 +99,10 @@ setup_player:
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
+    ;lda #0
     lda #<(1824/2)
     sta LOOKING_DIR
+    ;lda #0
     lda #>(1824/2)
     sta LOOKING_DIR+1
     
