@@ -2412,6 +2412,10 @@ draw_next_column_left:
     lda #%01110001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 64 bytes (=7=%0111)
     sta VERA_ADDR_BANK
     
+; FIXME: HACK!
+    lda #0  ; default = no need to negate the result
+    sta TMP2
+    
     lda RAY_INDEX+1
     cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
     bcs is_negative_left
@@ -2464,14 +2468,18 @@ got_negative_tangent_left:
 
     ; FIXME: shouldnt we do this AFTER the multiplication?
 
+; FIXME: HACK!
+    lda #1  ; we need to negate the result
+    sta TMP2
+    
     ; We negate the tangent result
-    sec
-    lda #0
-    sbc MULTIPLICAND
-    sta MULTIPLICAND
-    lda #0
-    sbc MULTIPLICAND+1
-    sta MULTIPLICAND+1
+;    sec
+;    lda #0
+;    sbc MULTIPLICAND
+;    sta MULTIPLICAND
+;    lda #0
+;    sbc MULTIPLICAND+1
+;    sta MULTIPLICAND+1
 
 got_tangent_left:
     
@@ -2479,6 +2487,8 @@ got_tangent_left:
     ;        note that this needs to run in RAM in order for the 'cache' to work.
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
+    
+;    stp
     
     ; SPEED: copying this 16-bit value is slow
     lda NORMAL_DISTANCE_TO_WALL
@@ -2489,6 +2499,26 @@ got_tangent_left:
     ; SPEED: this multiplier is SLOW
     jsr multply_16bits
     
+    ; FIXME: shouldnt we do this AFTER the multiplication?
+; FIXME: HACK!
+    lda TMP2
+    beq product_ok_left
+    
+    ; We negate the tangent result
+    sec
+    lda #0
+    sbc PRODUCT
+    sta PRODUCT
+    lda #0
+    sbc PRODUCT+1
+    sta PRODUCT+1
+    lda #0
+    sbc PRODUCT+2
+    sta PRODUCT+2
+    ; No need to do PRODUCT+3
+    
+product_ok_left:
+
     ; We need to subtract the TEXTURE_COLUMN/INDEX_OFFSET
     sec
     lda PRODUCT+1
@@ -2606,6 +2636,10 @@ draw_next_column_right:
     lda #%01110001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 64 bytes (=7=%0111)
     sta VERA_ADDR_BANK
     
+; FIXME: HACK!
+    lda #0  ; default = no need to negate the result
+    sta TMP2
+    
     lda RAY_INDEX+1
     cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
     bcs is_negative_right
@@ -2659,14 +2693,18 @@ got_negative_tangent_right:
 
     ; FIXME: shouldnt we do this AFTER the multiplication?
 
+; FIXME: HACK!
+    lda #1  ; we need to negate the result
+    sta TMP2
+    
     ; We negate the tangent result
-    sec
-    lda #0
-    sbc MULTIPLICAND
-    sta MULTIPLICAND
-    lda #0
-    sbc MULTIPLICAND+1
-    sta MULTIPLICAND+1
+;    sec
+;    lda #0
+;    sbc MULTIPLICAND
+;    sta MULTIPLICAND
+;    lda #0
+;    sbc MULTIPLICAND+1
+;    sta MULTIPLICAND+1
     
 got_tangent_right:
     ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
@@ -2683,6 +2721,25 @@ got_tangent_right:
     ; SPEED: this multiplier is SLOW
     jsr multply_16bits
     
+; FIXME: HACK!
+    lda TMP2
+    beq product_ok_right
+    
+    ; We negate the tangent result
+    sec
+    lda #0
+    sbc PRODUCT
+    sta PRODUCT
+    lda #0
+    sbc PRODUCT+1
+    sta PRODUCT+1
+    lda #0
+    sbc PRODUCT+2
+    sta PRODUCT+2
+    ; No need to do PRODUCT+3
+    
+product_ok_right:
+
     ; We need to subtract the TEXTURE_COLUMN/INDEX_OFFSET
     sec
     lda PRODUCT+1

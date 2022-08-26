@@ -107,15 +107,15 @@ setup_player:
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_Y
-    lda #2
+    lda #1
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
     lda #0
-    ;lda #<(1824/2)
+    ;lda #<(1824/4-100)
     sta LOOKING_DIR
     lda #0
-    ;lda #>(1824/2)
+    ;lda #>(1824/4-100)
     sta LOOKING_DIR+1
     
     rts
