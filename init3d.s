@@ -19,7 +19,7 @@ wall_0_info:
     .byte 0, 0 ; start x, y
     .byte 0, 4 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
-    .byte 0, 2, 0, 0   ; 0 = blue_stone1_light, 1 = blue_stone1_dark, 2 = blue_stone2_light, 3 = blue_stone2_dark, 
+    .byte 0, 1, 0, 0   ; 0 = blue_stone1, 1 = blue_stone2, 2 = closed_door 
     
 wall_1_info:
     .byte 0, 4 ; start x, y
@@ -95,13 +95,13 @@ setup_player:
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_Y
-    lda #1
+    lda #2
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
-    lda #0
+    lda #<(1824/2)
     sta LOOKING_DIR
-    lda #0
+    lda #>(1824/2)
     sta LOOKING_DIR+1
     
     rts

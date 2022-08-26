@@ -66,6 +66,9 @@ TO_WALL_HEIGHT            = $4A ; 4B  ; the height of the right side of the wall
 WALL_HEIGHT_INCREASES     = $4C       ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
 START_SCREEN_X            = $4D ; 4E  ; the x-position of the wall starting on screen
 
+TEXTURE_COLUMN_OFFSET     = $4F
+TEXTURE_INDEX_OFFSET      = $50
+
 ; FIXME: *use* PLAYER_POS_X/Y
 PLAYER_POS_X              = $51 ; 52  ; x-position of the player (8.8 bits)
 PLAYER_POS_Y              = $53 ; 54  ; y-position of the player (8.8 bits)

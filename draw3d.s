@@ -22,7 +22,6 @@ update_viewpoint:
     lda PLAYER_POS_Y+1
     sta VIEWPOINT_Y+1
 
-
     ; When calculating the distance to the wall (from the viewing-plane) we need the sine and cosine of the player direction
     ; But since we have the *absolute* values of DELTA_X and DELTA_Y, we also need the positive values of sine and cosine.
     ; Therefore we normalize the viewing angle first to the positive quadrants of both sine and cosine (which lies between 0 and 90 degrees)
@@ -318,9 +317,11 @@ wall_facing_north_screen_start_ray_calculated:
     lda #0                      ; Walls always start on .0
     sbc VIEWPOINT_X
     sta DELTA_X
+    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
     lda WALL_START_X
     sbc VIEWPOINT_X+1
     sta DELTA_X+1
+    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
     
     ; Check if DELTA_X is negative: if so, this means it starts to the west of the player, if not, it starts to the east
     bpl wall_facing_north_starting_east
@@ -512,9 +513,11 @@ wall_facing_west_screen_start_ray_calculated:
     lda #0                      ; Walls always start on .0
     sbc VIEWPOINT_Y
     sta DELTA_Y
+    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
     lda WALL_START_Y
     sbc VIEWPOINT_Y+1
     sta DELTA_Y+1
+    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
     
     ; Check if DELTA_Y is negative: if so, this means it starts to the south of the player, if not, it starts to the north
     bpl wall_facing_west_starting_north
@@ -705,10 +708,12 @@ wall_facing_south_screen_start_ray_calculated:
     lda #0                      ; Walls always start on .0
     sbc VIEWPOINT_X
     sta DELTA_X
+    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
     lda WALL_START_X
     sbc VIEWPOINT_X+1
     sta DELTA_X+1
-    
+    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
+
     ; Check if DELTA_X is negative: if so, this means it starts to the west of the player, if not, it starts to the east
     bpl wall_facing_south_starting_east
     
@@ -899,10 +904,12 @@ wall_facing_east_screen_start_ray_calculated:
     lda #0                      ; Walls always start on .0
     sbc VIEWPOINT_Y
     sta DELTA_Y
+    sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
     lda WALL_START_Y
     sbc VIEWPOINT_Y+1
     sta DELTA_Y+1
-    
+    sta TEXTURE_INDEX_OFFSET    ; In order to determine which texture needs to be drawn, this offset has to be subtracted
+
     ; Check if DELTA_Y is negative: if so, this means it starts to the south of the player, if not, it starts to the north
     bpl wall_facing_east_starting_north
     
@@ -2380,9 +2387,6 @@ draw_next_column_left:
     sta VERA_CTRL
     lda #%01110001           ; Setting bit 16 of vram address to the highest bit (=1), setting auto-increment value to 64 bytes (=7=%0111)
     sta VERA_ADDR_BANK
-    ; FIXME: we should not use only ONE texture! -> use (high) result of tangent to determine which cell of the wall you are in!
-    lda #>TEXTURE_DATA
-    sta VERA_ADDR_HIGH
     
     lda RAY_INDEX+1
     cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
@@ -2460,18 +2464,34 @@ got_tangent_left:
 
     ; SPEED: this multiplier is SLOW
     jsr multply_16bits
+    
+    ; We need to subtract the TEXTURE_COLUMN/INDEX_OFFSET
+    sec
     lda PRODUCT+1
+    sbc TEXTURE_COLUMN_OFFSET
+    sta PRODUCT+1
+    lda PRODUCT+2
+    sbc TEXTURE_INDEX_OFFSET
+    ; SPEED: this sta is not needed!
+    sta PRODUCT+2
     
-    ; FIXME: we need to add the VIEWPOINT_X/Y low byte to this!
+    ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
+    and #01
+    bne odd_texture_left
+even_texture_left:
+    lda #>TEXTURE_DATA
+    bra texture_index_known_left
+odd_texture_left:
+    lda #>(TEXTURE_DATA+4096)
+texture_index_known_left:
+    sta VERA_ADDR_HIGH
     
+    lda PRODUCT+1
     lsr
     lsr
-    
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
 
-    ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
-    
 
     ; FIXME: we now use only one byte of the wall height, but we also need to check the high byte (unless we only use 256 *EVEN* wall heights)
     lda COLUMN_WALL_HEIGHT+1
@@ -2634,19 +2654,34 @@ got_tangent_right:
 
     ; SPEED: this multiplier is SLOW
     jsr multply_16bits
+    
+    ; We need to subtract the TEXTURE_COLUMN/INDEX_OFFSET
+    sec
     lda PRODUCT+1
+    sbc TEXTURE_COLUMN_OFFSET
+    sta PRODUCT+1
+    lda PRODUCT+2
+    sbc TEXTURE_INDEX_OFFSET
+    ; FIXME: this sta is not needed
+    sta PRODUCT+2
     
-    ; FIXME: we need to add the VIEWPOINT_X/Y low byte to this!
+    ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
+    and #01
+    bne odd_texture_right
+even_texture_right:
+    lda #>TEXTURE_DATA
+    bra texture_index_known_right
+odd_texture_right:
+    lda #>(TEXTURE_DATA+4096)
+texture_index_known_right:
+    sta VERA_ADDR_HIGH
     
+    lda PRODUCT+1
     lsr
     lsr
-    
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
     
-    ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
-    
-
     ; FIXME: we now use only one byte of the wall height, but we also need to check the high byte (unless we only use 256 *EVEN* wall heights)
     lda COLUMN_WALL_HEIGHT+1
     ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
