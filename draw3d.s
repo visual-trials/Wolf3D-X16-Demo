@@ -2660,13 +2660,18 @@ is_high_negative_ray_index_left:
     sta MULTIPLICAND
 
 got_negative_tangent_left:
+
+    ; FIXME: shouldnt we do this AFTER the multiplication?
+
     ; We negate the tangent result
-    ; SPEED: can this be done faster?
     sec
-    sta TMP1
     lda #0
-    sbc TMP1
-    
+    sbc MULTIPLICAND
+    sta MULTIPLICAND
+    lda #0
+    sbc MULTIPLICAND+1
+    sta MULTIPLICAND+1
+
 got_tangent_left:
     
     ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
@@ -2830,12 +2835,17 @@ is_high_negative_ray_index_right:
     sta MULTIPLICAND
 
 got_negative_tangent_right:
+
+    ; FIXME: shouldnt we do this AFTER the multiplication?
+
     ; We negate the tangent result
-    ; SPEED: can this be done faster?
     sec
-    sta TMP1
     lda #0
-    sbc TMP1
+    sbc MULTIPLICAND
+    sta MULTIPLICAND
+    lda #0
+    sbc MULTIPLICAND+1
+    sta MULTIPLICAND+1
     
 got_tangent_right:
     ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
