@@ -321,6 +321,8 @@ irq:
     .word reset
     .word irq
 
+    ; ROM Bank 1
+    .align 14        ; This is to make sure the data wont covert two ROM banks
 blue_stone_1_texture:
     .binary "assets/BLUESTONE1_OLD.BIN"
     
