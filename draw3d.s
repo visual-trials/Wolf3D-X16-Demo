@@ -1083,6 +1083,10 @@ calculated_normal_distance_to_wall:
 ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 
     ; For now we ONLY cut off walls if they do not fit into the screen
+        
+    lda #0
+    sta FROM_RAY_NEEDS_RECALC
+    sta TO_RAY_NEEDS_RECALC
     
     ; Check if start of wall is between the left and right of the screen
     ; To do this, we first need to know the ray number on the screen (FROM_RAY_INDEX - SCREEN_START_RAY)
@@ -1121,6 +1125,9 @@ from_ray_is_left_of_screen:
     sta FROM_RAY_INDEX
     lda SCREEN_START_RAY+1
     sta FROM_RAY_INDEX+1
+    
+    lda #1
+    sta FROM_RAY_NEEDS_RECALC
     
     bra from_ray_is_within_the_screen
     
@@ -1198,6 +1205,10 @@ to_ray_is_not_left_of_screen:
     bcc to_ray_is_not_right_of_screen
     
 to_ray_is_on_right_of_screen:
+
+    lda #1
+    sta TO_RAY_NEEDS_RECALC
+    
     ; Set to-ray to screen start ray + 60 degrees (right column of the screen)
     clc
     lda SCREEN_START_RAY
@@ -1250,6 +1261,15 @@ to_ray_is_not_right_of_screen:
     ; To check whether a wall is horizontal, we simply check the lowest bit of WALL_FACING_DIR.
     
     
+    
+    lda FROM_RAY_NEEDS_RECALC
+    bne recalculate_from_ray_info
+    
+    ; There is no need to recalculate the from_ray_info so jump over it
+    jmp from_ray_info_updated
+    
+    
+recalculate_from_ray_info:
     ; -- Re-calculate FROM_DELTA_X **OR** FROM_DELTA_Y using tangent(FROM_RAY_INDEX) --
     
     ; Check if FROM_RAY_INDEX is 'negative' (between 270 degrees and 360)
@@ -1485,6 +1505,13 @@ from_ray_info_updated:
 
     ; ============ TO RAY ==========
     
+    lda TO_RAY_NEEDS_RECALC
+    bne recalculate_to_ray_info
+    
+    ; There is no need to recalculate the to_ray_info so jump over it
+    jmp to_ray_info_updated
+    
+recalculate_to_ray_info:
     ; -- Re-calculate TO_DELTA_X **OR** TO_DELTA_Y using tangent(TO_RAY_INDEX) --
     
     ; Check if TO_RAY_INDEX is 'negative' (between 270 degrees and 360)
