@@ -6,6 +6,9 @@ update_viewpoint:
     ; FIXME: <BUG> When from/to delta_x/y are re-calculated you now get "1.02" and "3.0F" issues: this is because the delta_x/y are calculated from an (impresice) angle and multiplied! This probably gives some "rounding" errors...
     
     ; FIXME: <BUG> Right in the corners you can sometimes see a single column of the wrong texture.
+    ;              The problem here is that the tan() function (and the following multiply) is only so precise. But the result is that it ends up in the wrong TILE!
+    ;              An analysis is needed to determine how to prevent this. A workaround would be to check the bounds of the wall (from 0 and to 4, for example) on the HIGH byte
+    ;              and if out of bounds, both the LOW (=column within texture) and the HIGH (which tile of the wall) should be set to the max for that wall.
 
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR (every frame)
     ;        The viewpoint position is around 0.34 tiles "behind" the player position.
@@ -180,7 +183,7 @@ draw_3d_view:
 
 draw_walls:
 
-    lda #0
+    lda #4
 ;    lda #2
     sta CURRENT_WALL_INDEX
 
@@ -213,7 +216,7 @@ draw_next_wall:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
 ; FIXME: now limited to 1 wall
-    cmp #8
+    cmp #5
 ;    cmp #3
     bne draw_next_wall
     
@@ -2514,8 +2517,6 @@ got_tangent_left:
     ;        note that this needs to run in RAM in order for the 'cache' to work.
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
-    
-;    stp
     
     ; SPEED: copying this 16-bit value is slow
     lda NORMAL_DISTANCE_TO_WALL
