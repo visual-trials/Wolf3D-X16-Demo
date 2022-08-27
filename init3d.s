@@ -344,11 +344,10 @@ load_textures_into_vram:
     jsr copy_vram_copiers_to_ram
 
     ; TODO: we can choose a much low palette color offset!
-    lda #128   ; we start at this palette color offset
+    lda #64   ; we start at this palette color offset
     sta PALETTE_COLOR_OFFSET
 
-
-
+    
     ; Texture pixels
     lda #<($C000+2+blue_stone_1_texture)
     sta LOAD_ADDRESS
@@ -370,7 +369,6 @@ load_textures_into_vram:
     
     jsr COPY_PALLETE_TO_VRAM
     
-
     ; Texture pixels
     lda #<($C000+2+blue_stone_2_texture)
     sta LOAD_ADDRESS
@@ -392,7 +390,6 @@ load_textures_into_vram:
     
     jsr COPY_PALLETE_TO_VRAM
 
-    
     ; Texture pixels
     lda #<($C000+2+closed_door_texture)
     sta LOAD_ADDRESS
@@ -413,7 +410,6 @@ load_textures_into_vram:
     sta LOAD_ADDRESS+1
     
     jsr COPY_PALLETE_TO_VRAM
-    
     
     rts
     

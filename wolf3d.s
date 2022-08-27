@@ -190,7 +190,7 @@ reset:
     
     jsr clear_3d_view_fast
     
-    bra do_not_turn_around
+    ; bra do_not_turn_around
     
 keep_turning_around:  
     lda #0
@@ -201,7 +201,9 @@ turn_around:
     jsr update_viewpoint
     jsr draw_3d_view
     inc LOOKING_DIR
-    lda LOOKING_DIR
+    ;nop                      ; WEIRD FIXME!! if i have two nops here, its DOESNT work anymore on real HW! -> it it SOMETIMES draws a few columns!! (or 3 walls) -> if you try enough times, it starts to work?!!?
+    ;nop                      ; ALSO: if i remove loading one of the textures, it also work! 
+    ; lda LOOKING_DIR        ; WEIRD FIXME!! if I remove this the HW works, but if I leave the lda in place, it crashes? (stays red)
     bne turn_around
 
     inc LOOKING_DIR+1
