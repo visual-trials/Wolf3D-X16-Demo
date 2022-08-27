@@ -118,6 +118,8 @@ TO_DISTANCE               = $8C ; 8D
 FROM_RAY_NEEDS_RECALC     = $8E
 TO_RAY_NEEDS_RECALC       = $8F
 
+WALL_LENGTH               = $90
+
 ; === VRAM addresses ===
 
 TEXTURE_DATA             = $13000
@@ -193,7 +195,7 @@ reset:
     
     jsr clear_3d_view_fast
     
-    bra do_not_turn_around
+    ; bra do_not_turn_around
     
 keep_turning_around:  
     lda #0

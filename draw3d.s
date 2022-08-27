@@ -1,15 +1,6 @@
 
 update_viewpoint:
 
-    ; FIXME: <BUG> Right now when we look right (at the 1.5,2 position) we see that the textures dont line up.
-    
-    ; FIXME: <BUG> When from/to delta_x/y are re-calculated you now get "1.02" and "3.0F" issues: this is because the delta_x/y are calculated from an (impresice) angle and multiplied! This probably gives some "rounding" errors...
-    
-    ; FIXME: <BUG> Right in the corners you can sometimes see a single column of the wrong texture.
-    ;              The problem here is that the tan() function (and the following multiply) is only so precise. But the result is that it ends up in the wrong TILE!
-    ;              An analysis is needed to determine how to prevent this. A workaround would be to check the bounds of the wall (from 0 and to 4, for example) on the HIGH byte
-    ;              and if out of bounds, both the LOW (=column within texture) and the HIGH (which tile of the wall) should be set to the max for that wall.
-
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR (every frame)
     ;        The viewpoint position is around 0.34 tiles "behind" the player position.
 
@@ -183,8 +174,7 @@ draw_3d_view:
 
 draw_walls:
 
-    lda #4
-;    lda #2
+    lda #0
     sta CURRENT_WALL_INDEX
 
 draw_next_wall:
@@ -215,9 +205,7 @@ draw_next_wall:
     
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
-; FIXME: now limited to 1 wall
-    cmp #5
-;    cmp #3
+    cmp #8
     bne draw_next_wall
     
     rts
@@ -288,6 +276,15 @@ wall_facing_north_jmp:
 
 wall_facing_north:
 
+    ; First we determine the length of the wall
+    
+    sec
+    lda WALL_START_X
+    sbc WALL_END_X
+    sta WALL_LENGTH
+    
+    ; Then we calculate the screen start ray
+
     sec
     lda LOOKING_DIR
     sbc #<(152+456*2)
@@ -309,7 +306,7 @@ wall_facing_north:
 wall_facing_north_screen_start_ray_calculated:
     
     ; ============ START OF NORTH FACING WALL ===========
-
+    
     ; First determine the normal distance to the wall, in the y-direction (delta Y)
     sec
     lda VIEWPOINT_Y
@@ -386,13 +383,13 @@ wall_facing_north_starting_east:
 wall_facing_north_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
-    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to FROM_ variables. We want to get rid of this
     lda DELTA_X
     sta FROM_DELTA_X
     lda DELTA_X+1
     sta FROM_DELTA_X+1
     
-    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to FROM_ variables. We want to get rid of this
     lda DELTA_Y
     sta FROM_DELTA_Y
     lda DELTA_Y+1
@@ -463,13 +460,13 @@ wall_facing_north_ending_east:
 wall_facing_north_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
     
-    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to TO_ variables. We want to get rid of this
     lda DELTA_X
     sta TO_DELTA_X
     lda DELTA_X+1
     sta TO_DELTA_X+1
     
-    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to TO_ variables. We want to get rid of this
     lda DELTA_Y
     sta TO_DELTA_Y
     lda DELTA_Y+1
@@ -491,6 +488,15 @@ wall_facing_north_calc_angle_for_end_of_wall:
 ; #############################################################################################################
 
 wall_facing_west:
+
+    ; First we determine the length of the wall
+    
+    sec
+    lda WALL_END_Y
+    sbc WALL_START_Y
+    sta WALL_LENGTH
+    
+    ; Then we calculate the screen start ray
 
     sec
     lda LOOKING_DIR
@@ -591,13 +597,13 @@ wall_facing_west_starting_north:
 wall_facing_west_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
-    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to FROM_ variables. We want to get rid of this
     lda DELTA_X
     sta FROM_DELTA_X
     lda DELTA_X+1
     sta FROM_DELTA_X+1
     
-    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to FROM_ variables. We want to get rid of this
     lda DELTA_Y
     sta FROM_DELTA_Y
     lda DELTA_Y+1
@@ -668,13 +674,13 @@ wall_facing_west_ending_north:
 wall_facing_west_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
     
-    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to TO_ variables. We want to get rid of this
     lda DELTA_X
     sta TO_DELTA_X
     lda DELTA_X+1
     sta TO_DELTA_X+1
     
-    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to TO_ variables. We want to get rid of this
     lda DELTA_Y
     sta TO_DELTA_Y
     lda DELTA_Y+1
@@ -696,6 +702,15 @@ wall_facing_west_calc_angle_for_end_of_wall:
 ; #############################################################################################################
 
 wall_facing_south:
+
+    ; First we determine the length of the wall
+    
+    sec
+    lda WALL_END_X
+    sbc WALL_START_X
+    sta WALL_LENGTH
+    
+    ; Then we calculate the screen start ray
 
     sec
     lda LOOKING_DIR
@@ -786,13 +801,13 @@ wall_facing_south_starting_east:
 wall_facing_south_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
-    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to FROM_ variables. We want to get rid of this
     lda DELTA_X
     sta FROM_DELTA_X
     lda DELTA_X+1
     sta FROM_DELTA_X+1
     
-    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to FROM_ variables. We want to get rid of this
     lda DELTA_Y
     sta FROM_DELTA_Y
     lda DELTA_Y+1
@@ -863,13 +878,13 @@ wall_facing_south_ending_east:
 wall_facing_south_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
     
-    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to TO_ variables. We want to get rid of this
     lda DELTA_X
     sta TO_DELTA_X
     lda DELTA_X+1
     sta TO_DELTA_X+1
     
-    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to TO_ variables. We want to get rid of this
     lda DELTA_Y
     sta TO_DELTA_Y
     lda DELTA_Y+1
@@ -891,6 +906,15 @@ wall_facing_south_calc_angle_for_end_of_wall:
 ; #############################################################################################################
 
 wall_facing_east:
+
+    ; First we determine the length of the wall
+    
+    sec
+    lda WALL_START_Y
+    sbc WALL_END_Y
+    sta WALL_LENGTH
+    
+    ; Then we calculate the screen start ray
 
     sec
     lda LOOKING_DIR
@@ -982,13 +1006,13 @@ wall_facing_east_starting_north:
 wall_facing_east_calc_angle_for_start_of_wall:
     jsr calc_angle_for_point
     
-    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to FROM_ variables. We want to get rid of this
     lda DELTA_X
     sta FROM_DELTA_X
     lda DELTA_X+1
     sta FROM_DELTA_X+1
     
-    ; FIXME: right now we are copying the results to FROM_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to FROM_ variables. We want to get rid of this
     lda DELTA_Y
     sta FROM_DELTA_Y
     lda DELTA_Y+1
@@ -1059,13 +1083,13 @@ wall_facing_east_ending_north:
 wall_facing_east_calc_angle_for_end_of_wall:
     jsr calc_angle_for_point
     
-    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to TO_ variables. We want to get rid of this
     lda DELTA_X
     sta TO_DELTA_X
     lda DELTA_X+1
     sta TO_DELTA_X+1
     
-    ; FIXME: right now we are copying the results to TO_ variables. We want to get rid of this
+    ; SPEED: right now we are copying the results to TO_ variables. We want to get rid of this
     lda DELTA_Y
     sta TO_DELTA_Y
     lda DELTA_Y+1
@@ -1082,8 +1106,8 @@ wall_facing_east_calc_angle_for_end_of_wall:
     
 calculated_normal_distance_to_wall:
 
-; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
-; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
+    ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
+    ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 
     ; For now we ONLY cut off walls if they do not fit into the screen
         
@@ -1114,13 +1138,13 @@ calculated_normal_distance_to_wall:
     sta TESTING_RAY_INDEX+1
     
 from_testing_ray_is_positive:
-    ; FIXME: We should check if its within 0 and 304 rays (first check left, then right)
+    ; We check if its within 0 and 304 rays (first check left, then right)
     ; FIXME: hack
     cmp #5
     bcc from_ray_is_not_left_of_screen   
     
 from_ray_is_left_of_screen:
-    ; FIXME: only do this IF the wall is not COMPLETELY left of the screen! -> so check if the end of the wall is ALSO to the left of the screen!
+    ; SPEED: only do this IF the wall is not COMPLETELY left of the screen! -> so check if the end of the wall is ALSO to the left of the screen!D
     
     ; Cut off left part of wall to the beginning of the screen
     
@@ -1243,8 +1267,6 @@ to_ray_is_outside_bounds:
     
 to_ray_is_within_bounds:
     
-    
-    ; FIXME: only do this IF the wall is not COMPLETELY right of the screen!
     
 to_ray_is_not_right_of_screen:
 
@@ -1768,7 +1790,7 @@ to_ray_info_updated:
 
     nop
     nop
-; FIXME:
+
     lda LOOKING_DIR_QUANDRANT
     lda FROM_QUADRANT
     lda TO_QUADRANT
@@ -2496,21 +2518,10 @@ is_high_negative_ray_index_left:
 
 got_negative_tangent_left:
 
-    ; FIXME: shouldnt we do this AFTER the multiplication?
-
 ; FIXME: HACK!
-    lda #1  ; we need to negate the result
+    lda #1  ; we need to negate the result AFTER the multiplication
     sta TMP2
     
-    ; We negate the tangent result
-;    sec
-;    lda #0
-;    sbc MULTIPLICAND
-;    sta MULTIPLICAND
-;    lda #0
-;    sbc MULTIPLICAND+1
-;    sta MULTIPLICAND+1
-
 got_tangent_left:
     
     ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
@@ -2527,12 +2538,11 @@ got_tangent_left:
     ; SPEED: this multiplier is SLOW
     jsr multply_16bits
     
-    ; FIXME: shouldnt we do this AFTER the multiplication?
 ; FIXME: HACK!
     lda TMP2
     beq product_ok_left
     
-    ; We negate the tangent result
+    ; We negate the tangent result AFTER the multiplication
     sec
     lda #0
     sbc PRODUCT
@@ -2557,22 +2567,31 @@ product_ok_left:
     ; SPEED: this sta is not needed!
     sta PRODUCT+2
     
+    ; FIXME: we check if the index into the wall (tiles) is within bounds. Instead of doing that, we should instead 
+    ;        NOT do any tan+multiply calculation for the start and end ray.
+    bmi texture_start_index_not_ok_left ; Check if the index is negative
+    cmp WALL_LENGTH       ; Check if the index is beyond the length of the wall
+    bcc texture_index_ok_left
+    ; The index is too large. This means that it should be corrected to the length minus 1 (and the low byte to $FF)
+    lda #$FF
+    sta PRODUCT+1
+    bra texture_index_ok_left
+    lda WALL_LENGTH
+    dec
+    ; SPEED: this sta is not needed!
+    sta PRODUCT+2
+    
+texture_start_index_not_ok_left:  
+    ; The index is negative. This means that it should be corrected to 0 (also the low byte)
+    lda #0
+    sta PRODUCT+1
+    ; SPEED: this sta is not needed!
+    sta PRODUCT+2
+    
+texture_index_ok_left:
     tay
     
     lda (WALL_INFO_TEXTURE_INDEXES),y
-    
-    .if 0
-    ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
-    and #01
-    bne odd_texture_left
-even_texture_left:
-    lda #>TEXTURE_DATA
-    bra texture_index_known_left
-odd_texture_left:
-    lda #>(TEXTURE_DATA+4096)
-texture_index_known_left:
-    .endif
-
     sta VERA_ADDR_HIGH
     
     lda PRODUCT+1
@@ -2719,20 +2738,9 @@ is_high_negative_ray_index_right:
 
 got_negative_tangent_right:
 
-    ; FIXME: shouldnt we do this AFTER the multiplication?
-
 ; FIXME: HACK!
-    lda #1  ; we need to negate the result
+    lda #1  ; we need to negate the result AFTER multiplication
     sta TMP2
-    
-    ; We negate the tangent result
-;    sec
-;    lda #0
-;    sbc MULTIPLICAND
-;    sta MULTIPLICAND
-;    lda #0
-;    sbc MULTIPLICAND+1
-;    sta MULTIPLICAND+1
     
 got_tangent_right:
     ; SPEED: use a FAST mutlipler and 'cache' the NORMAL_DISTANCE_TO_WALL! ( https://codebase64.org/doku.php?id=base:seriously_fast_multiplication )
@@ -2753,7 +2761,7 @@ got_tangent_right:
     lda TMP2
     beq product_ok_right
     
-    ; We negate the tangent result
+    ; We negate the tangent result AFTER the multiplication
     sec
     lda #0
     sbc PRODUCT
@@ -2775,25 +2783,34 @@ product_ok_right:
     sta PRODUCT+1
     lda PRODUCT+2
     sbc TEXTURE_INDEX_OFFSET
-    ; FIXME: this sta is not needed
+    ; SPEED: this sta is not needed
     sta PRODUCT+2
     
+    ; FIXME: we check if the index into the wall (tiles) is within bounds. Instead of doing that, we should instead 
+    ;        NOT do any tan+multiply calculation for the start and end ray.
+    bmi texture_start_index_not_ok_right ; Check if the index is negative
+    cmp WALL_LENGTH       ; Check if the index is beyond the length of the wall
+    bcc texture_index_ok_right
+    ; The index is too large. This means that it should be corrected to the length minus 1 (and the low byte to $FF)
+    lda #$FF
+    sta PRODUCT+1
+    bra texture_index_ok_right
+    lda WALL_LENGTH
+    dec
+    ; SPEED: this sta is not needed!
+    sta PRODUCT+2
+    
+texture_start_index_not_ok_right:  
+    ; The index is negative. This means that it should be corrected to 0 (also the low byte)
+    lda #0
+    sta PRODUCT+1
+    ; SPEED: this sta is not needed!
+    sta PRODUCT+2
+    
+texture_index_ok_right:
     tay
     
     lda (WALL_INFO_TEXTURE_INDEXES),y
-    
-    .if 0
-    ; FIXME: use the high byte of the multiplication result to determine which texture to use! (possibly substract something from it to normalize it to start-at-0-index of the wall-pieces)
-    and #01
-    bne odd_texture_right
-even_texture_right:
-    lda #>TEXTURE_DATA
-    bra texture_index_known_right
-odd_texture_right:
-    lda #>(TEXTURE_DATA+4096)
-texture_index_known_right:
-    .endif
-
     sta VERA_ADDR_HIGH
     
     lda PRODUCT+1
