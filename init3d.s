@@ -1130,11 +1130,41 @@ done_tangent_last_part:
 
 
 
+; https://codebase64.org/doku.php?id=base:16bit_division_16-bit_result
 
+divide_16bits:
+    phx
+    phy
 
+    lda #0            ; preset REMAINDER to 0
+    sta REMAINDER
+    sta REMAINDER+1
+    ldx #16            ; repeat for each bit: ...
 
+div16loop:
+    asl DIVIDEND    ; DIVIDEND lb & hb*2, msb -> Carry
+    rol DIVIDEND+1    
+    rol REMAINDER    ; REMAINDER lb & hb * 2 + msb from carry
+    rol REMAINDER+1
+    lda REMAINDER
+    sec
+    sbc DIVISOR        ; substract DIVISOR to see if it fits in
+    tay                ; lb result -> Y, for we may need it later
+    lda REMAINDER+1
+    sbc DIVISOR+1
+    bcc div16skip     ; if carry=0 then DIVISOR didnt fit in yet
 
+    sta REMAINDER+1
+    sty REMAINDER    
+    inc DIVIDEND    ; and INCrement result cause DIVISOR fit in 1 times
 
+div16skip:
+    dex
+    bne div16loop    
+    
+    ply
+    plx
+    rts
 
     
 ; https://codebase64.org/doku.php?id=base:24bit_division_24-bit_result
@@ -1149,7 +1179,7 @@ divide_24bits:
     sta REMAINDER+2
     ldx #24            ; repeat for each bit: ...
 
-divloop:
+div24loop:
     asl DIVIDEND    ; DIVIDEND lb & hb*2, msb -> Carry
     rol DIVIDEND+1    
     rol DIVIDEND+2
@@ -1165,7 +1195,7 @@ divloop:
     sta TMP1
     lda REMAINDER+2
     sbc DIVISOR+2
-    bcc divskip     ; if carry=0 then DIVISOR didnt fit in yet
+    bcc div24skip     ; if carry=0 then DIVISOR didnt fit in yet
 
     sta REMAINDER+2 ; else save substraction result as new REMAINDER,
     lda TMP1
@@ -1173,9 +1203,9 @@ divloop:
     sty REMAINDER    
     inc DIVIDEND    ; and INCrement result cause DIVISOR fit in 1 times
 
-divskip:
+div24skip:
     dex
-    bne divloop    
+    bne div24loop    
     
     ply
     plx

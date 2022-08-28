@@ -4,9 +4,6 @@ update_viewpoint:
     ; FIXME: <BUG> at position 1.128, 2.200 we see (on the left side) a column been drawn with an incalid texture. So it looks like the texture lookup is not (entirely) correct yet.
 
     
-    ; FIXME: we can make FROM_HALF_WALL_HEIGHT / TO_HALF_WALL_HEIGHT / COLUMN_HALF_WALL_HEIGHT / HALF_WALL_HEIGHT_INCREMENT one byte *SMALLER*!!
-    
-    
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR (every frame)
     ;        The viewpoint position is around 0.34 tiles "behind" the player position.
 
@@ -1778,7 +1775,7 @@ to_ray_info_updated:
 
 
 
-
+    .if 0
 ; FIXME
 ;    stp
     lda SCREEN_START_RAY
@@ -1826,6 +1823,8 @@ to_ray_info_updated:
     
     lda LOOKING_DIR_SINE
     lda LOOKING_DIR_SINE+1
+    
+    .endif
     
     ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part:
     ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
@@ -1933,23 +1932,17 @@ from_is_the_same_horizontally:
     sta DIVIDEND
     lda #<(132)
     sta DIVIDEND+1
-    lda #>(132)
-    sta DIVIDEND+2
     
     lda FROM_DISTANCE
     sta DIVISOR
     lda FROM_DISTANCE+1
     sta DIVISOR+1
-    lda #0
-    sta DIVISOR+2
     
-    ; SPEED: we can speed this up using a lookup table: distance2height!
-    jsr divide_24bits
+    ; SPEED: we can speed this up using a lookup table: distance2halfheight!
+    jsr divide_16bits
     
     lda DIVIDEND
     sta FROM_HALF_WALL_HEIGHT
-    lda DIVIDEND+1
-    sta FROM_HALF_WALL_HEIGHT+1
     
 
     ; ================ TO DISTANCE ===============
@@ -2054,23 +2047,17 @@ to_is_the_same_horizontally:
     sta DIVIDEND
     lda #<(132)
     sta DIVIDEND+1
-    lda #>(132)
-    sta DIVIDEND+2
     
     lda TO_DISTANCE
     sta DIVISOR
     lda TO_DISTANCE+1
     sta DIVISOR+1
-    lda #0
-    sta DIVISOR+2
     
-    ; SPEED: we can speed this up using a lookup table: distance2height!
-    jsr divide_24bits
+    ; SPEED: we can speed this up using a lookup table: distance2halfheight!
+    jsr divide_16bits
     
     lda DIVIDEND
     sta TO_HALF_WALL_HEIGHT
-    lda DIVIDEND+1
-    sta TO_HALF_WALL_HEIGHT+1
 
     
     ; We also have to determine whether the wall decreases (in height) from left to right, or the other way around and maybe do a different draw-wall-call accordingly
@@ -2078,13 +2065,10 @@ to_is_the_same_horizontally:
     lda #0
     sta WALL_HEIGHT_INCREASES
     
-    ; FIXME: If wall heights are between 0 and 255 we dont have to compare 16 bit anymore
     sec
     lda FROM_HALF_WALL_HEIGHT
     sbc TO_HALF_WALL_HEIGHT
-    lda FROM_HALF_WALL_HEIGHT+1
-    sbc TO_HALF_WALL_HEIGHT+1
-    bpl wall_height_incr_decr_determined
+    bcs wall_height_incr_decr_determined
 
     lda #1
     sta WALL_HEIGHT_INCREASES
@@ -2270,7 +2254,7 @@ draw_wall_part:
     
     ; We first determine how much the wall height will decrease per drawn column
 
-    ; We do the divide: HALF_WALL_HEIGHT_INCREMENT = ((TO_HALF_WALL_HEIGHT-FROM_HALF_WALL_HEIGHT) * 256 * 256) / ((TO_RAY_INDEX-FROM_RAY_INDEX) * 256);
+    ; We do the divide: HALF_WALL_HEIGHT_INCREMENT = ((TO_HALF_WALL_HEIGHT-FROM_HALF_WALL_HEIGHT) * 256) / TO_RAY_INDEX-FROM_RAY_INDEX;
     ; Note that the difference in wall height should be stored in DIVIDEND (to be used by the divider)
     ; Note: we will have a negative number when the wall height is decrementing
 
@@ -2288,11 +2272,7 @@ wall_height_increases:
     sec
 	lda TO_HALF_WALL_HEIGHT
 	sbc FROM_HALF_WALL_HEIGHT
-	sta DIVIDEND+2
-; FIXME: the wall height difference can be > 256!! (so this wont fit, unless we use only 256 possible wall heights?)
-	; lda TO_HALF_WALL_HEIGHT+1
-	; sbc FROM_HALF_WALL_HEIGHT+1
-	; FIXME: sta DIVIDEND+3 ??
+	sta DIVIDEND+1
     
     ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_RAY_INDEX and TO_RAY_INDEX. We substract the two.
     ; If FROM_RAY_INDEX > TO_RAY_INDEX (possible if FROM_RAY_INDEX starts before index 0, for example 1792) we need to make sure this calculation still works
@@ -2306,27 +2286,25 @@ wall_height_increases:
     sec
 	lda TO_RAY_INDEX
 	sbc FROM_RAY_INDEX
-	sta DIVISOR+1
+	sta DIVISOR
 	lda TO_RAY_INDEX+1
 	sbc FROM_RAY_INDEX+1
-	sta DIVISOR+2
+	sta DIVISOR+1
     bpl wall_width_determined_increasing_height
     
     ; We have a negative result, so we add 1824 (= $720) to the result
     clc
-	lda DIVISOR+1
+	lda DIVISOR
 	adc #$20
-	sta DIVISOR+1
-	lda DIVISOR+2
+	sta DIVISOR
+	lda DIVISOR+1
 	adc #$7
-	sta DIVISOR+2   
+	sta DIVISOR+1   
 wall_width_determined_increasing_height:
 
+; FIXME: this can be a 16 bits divide!
     jsr divide_24bits
     
-    ; FIXME: is this mapping of +2, +1 correct? Should we shift something here?
-    lda DIVIDEND+2
-    sta HALF_WALL_HEIGHT_INCREMENT+2
     lda DIVIDEND+1
     sta HALF_WALL_HEIGHT_INCREMENT+1
     lda DIVIDEND
@@ -2338,11 +2316,7 @@ wall_height_decreases:
     sec
 	lda FROM_HALF_WALL_HEIGHT
 	sbc TO_HALF_WALL_HEIGHT
-	sta DIVIDEND+2
-; FIXME: the wall height difference can be > 256!! (so this wont fit, unless we use only 256 possible wall heights?)
-	; lda FROM_HALF_WALL_HEIGHT+1
-	; sbc TO_HALF_WALL_HEIGHT
-	; FIXME: sta DIVIDEND+3 ??
+	sta DIVIDEND+1
     
     ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_RAY_INDEX and TO_RAY_INDEX. We substract the two.
     ; If FROM_RAY_INDEX > TO_RAY_INDEX (possible if FROM_RAY_INDEX starts before index 0, for example 1792) we need to make sure this calculation still works
@@ -2356,27 +2330,26 @@ wall_height_decreases:
     sec
 	lda TO_RAY_INDEX
 	sbc FROM_RAY_INDEX
-	sta DIVISOR+1
+	sta DIVISOR
 	lda TO_RAY_INDEX+1
 	sbc FROM_RAY_INDEX+1
-	sta DIVISOR+2
+	sta DIVISOR+1
     bpl wall_width_determined_decreasing_height
     
     ; We have a negative result, so we add 1824 (= $720) to the result
     clc
-	lda DIVISOR+1
+	lda DIVISOR
 	adc #$20
-	sta DIVISOR+1
-	lda DIVISOR+2
+	sta DIVISOR
+	lda DIVISOR+1
 	adc #$7
-	sta DIVISOR+2   
+	sta DIVISOR+1   
 wall_width_determined_decreasing_height:
 
+; FIXME: this can be 16 bit divide!
     jsr divide_24bits
     
     ; FIXME: is this mapping of +2, +1 correct? Should we shift something here?
-    lda DIVIDEND+2
-    sta HALF_WALL_HEIGHT_INCREMENT+2
     lda DIVIDEND+1
     sta HALF_WALL_HEIGHT_INCREMENT+1
     lda DIVIDEND
@@ -2390,16 +2363,10 @@ wall_width_determined_decreasing_height:
     lda #0
     sbc HALF_WALL_HEIGHT_INCREMENT+1
     sta HALF_WALL_HEIGHT_INCREMENT+1
-    lda #0
-    sbc HALF_WALL_HEIGHT_INCREMENT+2
-    sta HALF_WALL_HEIGHT_INCREMENT+2
-    
 
 half_wall_height_increment_determined:
 
     ; We store the from wall height into the column wall height (FROM_HALF_WALL_HEIGHT * 256)
-    lda FROM_HALF_WALL_HEIGHT+1
-    sta COLUMN_HALF_WALL_HEIGHT+2
     lda FROM_HALF_WALL_HEIGHT
     sta COLUMN_HALF_WALL_HEIGHT+1
     lda #0
@@ -2607,12 +2574,7 @@ texture_index_ok_left:
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
 
 
-    ; FIXME: we now use only one byte of the wall height, but we also need to check the high byte (unless we only use 256 *EVEN* wall heights)
     lda COLUMN_HALF_WALL_HEIGHT+1
-; FIXME: instead of doing a divide by 2, store half of the wall height into COLUMN_WALL_HEIGHT (maybe call it COLUMN_HALF_WALL_HEIGHT?
-;    lsr
-    ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
-;    and #$FE ; make even
     sta RAM_BANK
     ; SPEED: remove this nop!
     nop
@@ -2626,9 +2588,6 @@ texture_index_ok_left:
 	lda COLUMN_HALF_WALL_HEIGHT+1
 	adc HALF_WALL_HEIGHT_INCREMENT+1
 	sta COLUMN_HALF_WALL_HEIGHT+1
-	lda COLUMN_HALF_WALL_HEIGHT+2
-	adc HALF_WALL_HEIGHT_INCREMENT+2
-	sta COLUMN_HALF_WALL_HEIGHT+2
 
     ; Incrmenting RAY_INDEX
     inc RAY_INDEX
@@ -2827,12 +2786,7 @@ texture_index_ok_right:
     and #$3F                ; we effectively do a 'mod 64'
     sta VERA_ADDR_LOW       ; We use x mod 64 as the texture-column number, so we set it as as the start byte of a column
     
-    ; FIXME: we now use only one byte of the wall height, but we also need to check the high byte (unless we only use 256 *EVEN* wall heights)
     lda COLUMN_HALF_WALL_HEIGHT+1
-; FIXME: instead of doing a divide by 2, store half of the wall height into COLUMN_WALL_HEIGHT (maybe call it COLUMN_HALF_WALL_HEIGHT?
-;    lsr
-    ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
-;    and #$FE ; make even
     sta RAM_BANK
     ; SPEED: remove this nop!
     nop
@@ -2846,9 +2800,6 @@ texture_index_ok_right:
 	lda COLUMN_HALF_WALL_HEIGHT+1
 	adc HALF_WALL_HEIGHT_INCREMENT+1
 	sta COLUMN_HALF_WALL_HEIGHT+1
-	lda COLUMN_HALF_WALL_HEIGHT+2
-	adc HALF_WALL_HEIGHT_INCREMENT+2
-	sta COLUMN_HALF_WALL_HEIGHT+2
     
     ; Incrmenting RAY_INDEX
     inc RAY_INDEX
