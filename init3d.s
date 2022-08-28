@@ -557,8 +557,11 @@ generate_draw_code_for_next_wall_height:
     sta CODE_ADDRESS+1
     
     ; We allow a wall height of up to 512, but store only the even ones
+    ; We store only the even wall heights, so we store at index: wall height / 2
+    lda CURRENT_WALL_HEIGHT+1
+    lsr
     lda CURRENT_WALL_HEIGHT
-    lsr                        ; We store only the even wall heights, so we store at index: wall height / 2
+    ror                        
     sta RAM_BANK
     ; FIXME: remove this nop!
     nop
@@ -818,20 +821,21 @@ done_drawing_bottom:
     
     inc CURRENT_WALL_HEIGHT
     inc CURRENT_WALL_HEIGHT
-    bne generate_draw_code_wall_height_incremented
+    bne keep_generating_draw_code
     ; We reach 256, so we have to increment the high byte
     inc CURRENT_WALL_HEIGHT+1
-generate_draw_code_wall_height_incremented:
-    lda CURRENT_WALL_HEIGHT
-    bne generate_draw_code_for_next_wall_height_jmp
+    lda CURRENT_WALL_HEIGHT+1
+    cmp #2
+    beq stop_generating_draw_code ; if we reached wall height 512 we stop
+
+keep_generating_draw_code:
+    jmp generate_draw_code_for_next_wall_height
+    
+stop_generating_draw_code:
+    
         
     rts
     
-generate_draw_code_for_next_wall_height_jmp:
-    jmp generate_draw_code_for_next_wall_height
-    
-    
-
 
 generate_clear_column_code:
 
