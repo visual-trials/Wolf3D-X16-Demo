@@ -144,7 +144,9 @@ WALL_INFO_TEXTURE_HIGH   = $6600    ; 256 bytes (low byte of the addres containi
 COPY_TEXTURE_TO_VRAM     = $6700    ; routine that must be run in RAM, because it switches the ROM bank
 COPY_PALLETE_TO_VRAM     = $6800    ; routine that must be run in RAM, because it switches the ROM bank
 GENERATE_MULT_TABLES     = $6900    ; routine that must be run in RAM: generate_multiplication_tables
-MULT_WITH_NORMAL_DISTANCE= $7000    ; routine that must be run in RAM: multply_with_normal_distance_16bits
+MULT_WITH_NORMAL_DISTANCE= $6A00    ; routine that must be run in RAM: multply_with_normal_distance_16bits
+MULT_WITH_LOOK_DIR_SINE  = $6B00    ; routine that must be run in RAM: multply_with_looking_dir_sine_16bits
+MULT_WITH_LOOK_DIR_COSINE= $6C00    ; routine that must be run in RAM: multply_with_looking_dir_cosine_16bits
 
 TANGENT_LOW              = $7200    ; 456 bytes (fraction)
 TANGENT_HIGH             = $7400    ; 456 bytes (whole number)

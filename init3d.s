@@ -1328,6 +1328,7 @@ mnd:
       sec
 mnd_sm1a: lda SQUARE1_LOW,x
 mnd_sm2a: sbc SQUARE2_LOW,x
+; SPEED: do we need PRODUCT+0?
       sta PRODUCT+0             
 mnd_sm3a: lda SQUARE1_HIGH,x          
 mnd_sm4a: sbc SQUARE2_HIGH,x          
@@ -1392,6 +1393,211 @@ mnd_dd:  lda #0
 end_of_multply_with_normal_distance_16bits:
 
 
+
+
+setup_multiply_with_looking_dir_sine_16bit:
+
+    lda LOOKING_DIR_SINE+0         
+    sta mls_sm1a+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm3a+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm5a+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm7a+1-mls+MULT_WITH_LOOK_DIR_SINE
+    eor #$ff         
+    sta mls_sm2a+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm4a+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm6a+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm8a+1-mls+MULT_WITH_LOOK_DIR_SINE
+    lda LOOKING_DIR_SINE+1         
+    sta mls_sm1b+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm3b+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm5b+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm7b+1-mls+MULT_WITH_LOOK_DIR_SINE
+    eor #$ff         
+    sta mls_sm2b+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm4b+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm6b+1-mls+MULT_WITH_LOOK_DIR_SINE
+    sta mls_sm8b+1-mls+MULT_WITH_LOOK_DIR_SINE
+    
+    rts
+  
+multply_with_looking_dir_sine_16bits:
+mls:
+; SPEED: can we avoid putting x on the stack?
+    phx
+    
+      ; Perform <T1 * <MULTIPLICAND = AAaa
+      ldx MULTIPLICAND+0
+      sec
+mls_sm1a: lda SQUARE1_LOW,x
+mls_sm2a: sbc SQUARE2_LOW,x
+; SPEED: do we need PRODUCT+0?
+      sta PRODUCT+0             
+mls_sm3a: lda SQUARE1_HIGH,x          
+mls_sm4a: sbc SQUARE2_HIGH,x          
+      sta mls_AA+1-mls+MULT_WITH_LOOK_DIR_SINE
+
+      ; Perform >T1_hi * <MULTIPLICAND = CCcc
+      sec                          
+mls_sm1b: lda SQUARE1_LOW,x             
+mls_sm2b: sbc SQUARE2_LOW,x             
+      sta mls_cc+1-mls+MULT_WITH_LOOK_DIR_SINE
+mls_sm3b: lda SQUARE1_HIGH,x             
+mls_sm4b: sbc SQUARE2_HIGH,x             
+      sta mls_CC+1-mls+MULT_WITH_LOOK_DIR_SINE
+
+      ; Perform <T1 * >MULTIPLICAND = BBbb
+      ldx MULTIPLICAND+1
+      sec                       
+mls_sm5a: lda SQUARE1_LOW,x          
+mls_sm6a: sbc SQUARE2_LOW,x          
+      sta mls_bb+1-mls+MULT_WITH_LOOK_DIR_SINE
+mls_sm7a: lda SQUARE1_HIGH,x          
+mls_sm8a: sbc SQUARE2_HIGH,x          
+      sta mls_BB+1-mls+MULT_WITH_LOOK_DIR_SINE
+
+      ; Perform >T1 * >MULTIPLICAND = DDdd
+      sec                       
+mls_sm5b: lda SQUARE1_LOW,x          
+mls_sm6b: sbc SQUARE2_LOW,x          
+      sta mls_dd+1-mls+MULT_WITH_LOOK_DIR_SINE
+mls_sm7b: lda SQUARE1_HIGH,x          
+mls_sm8b: sbc SQUARE2_HIGH,x          
+      sta PRODUCT+3             
+
+      ; Add the separate multiplications together
+      clc                                        
+mls_AA:  lda #0                                     
+mls_bb:  adc #0                                     
+      sta PRODUCT+1                              
+mls_BB:  lda #0                                     
+mls_CC:  adc #0                                     
+      sta PRODUCT+2                              
+;      bcc mls_skip_product3_first
+; SPEED: no need to do PRODUCT+3
+;      inc PRODUCT+3                          
+;      clc                                    
+;mls_skip_product3_first:                                          
+mls_cc:  lda #0                                     
+      adc PRODUCT+1                              
+      sta PRODUCT+1                              
+mls_dd:  lda #0                                     
+      adc PRODUCT+2                              
+      sta PRODUCT+2
+; SPEED: no need to do PRODUCT+3
+;      bcc mls_skip_product3_second
+;      inc PRODUCT+3                          
+;mls_skip_product3_second:
+
+; SPEED: can we avoid putting x on the stack?
+    plx
+
+      rts
+end_of_multply_with_looking_dir_sine_16bits:
+
+
+
+setup_multiply_with_looking_dir_cosine_16bit:
+
+    lda LOOKING_DIR_COSINE+0         
+    sta mlc_sm1a+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm3a+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm5a+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm7a+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    eor #$ff         
+    sta mlc_sm2a+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm4a+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm6a+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm8a+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    lda LOOKING_DIR_COSINE+1         
+    sta mlc_sm1b+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm3b+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm5b+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm7b+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    eor #$ff         
+    sta mlc_sm2b+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm4b+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm6b+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    sta mlc_sm8b+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+    
+    rts
+  
+multply_with_looking_dir_cosine_16bits:
+mlc:
+; SPEED: can we avoid putting x on the stack?
+    phx
+    
+      ; Perform <T1 * <MULTIPLICAND = AAaa
+      ldx MULTIPLICAND+0
+      sec
+mlc_sm1a: lda SQUARE1_LOW,x
+mlc_sm2a: sbc SQUARE2_LOW,x
+; SPEED: do we need PRODUCT+0?
+      sta PRODUCT+0             
+mlc_sm3a: lda SQUARE1_HIGH,x          
+mlc_sm4a: sbc SQUARE2_HIGH,x          
+      sta mlc_AA+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+
+      ; Perform >T1_hi * <MULTIPLICAND = CCcc
+      sec                          
+mlc_sm1b: lda SQUARE1_LOW,x             
+mlc_sm2b: sbc SQUARE2_LOW,x             
+      sta mlc_cc+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+mlc_sm3b: lda SQUARE1_HIGH,x             
+mlc_sm4b: sbc SQUARE2_HIGH,x             
+      sta mlc_CC+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+
+      ; Perform <T1 * >MULTIPLICAND = BBbb
+      ldx MULTIPLICAND+1
+      sec                       
+mlc_sm5a: lda SQUARE1_LOW,x          
+mlc_sm6a: sbc SQUARE2_LOW,x          
+      sta mlc_bb+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+mlc_sm7a: lda SQUARE1_HIGH,x          
+mlc_sm8a: sbc SQUARE2_HIGH,x          
+      sta mlc_BB+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+
+      ; Perform >T1 * >MULTIPLICAND = DDdd
+      sec                       
+mlc_sm5b: lda SQUARE1_LOW,x          
+mlc_sm6b: sbc SQUARE2_LOW,x          
+      sta mlc_dd+1-mlc+MULT_WITH_LOOK_DIR_COSINE
+mlc_sm7b: lda SQUARE1_HIGH,x          
+mlc_sm8b: sbc SQUARE2_HIGH,x          
+      sta PRODUCT+3             
+
+      ; Add the separate multiplications together
+      clc                                        
+mlc_AA:  lda #0                                     
+mlc_bb:  adc #0                                     
+      sta PRODUCT+1                              
+mlc_BB:  lda #0                                     
+mlc_CC:  adc #0                                     
+      sta PRODUCT+2                              
+;      bcc mlc_skip_product3_first
+; SPEED: no need to do PRODUCT+3
+;      inc PRODUCT+3                          
+;      clc                                    
+;mlc_skip_product3_first:                                          
+mlc_cc:  lda #0                                     
+      adc PRODUCT+1                              
+      sta PRODUCT+1                              
+mlc_dd:  lda #0                                     
+      adc PRODUCT+2                              
+      sta PRODUCT+2
+; SPEED: no need to do PRODUCT+3
+;      bcc mlc_skip_product3_second
+;      inc PRODUCT+3                          
+;mlc_skip_product3_second:
+
+; SPEED: can we avoid putting x on the stack?
+    plx
+
+      rts
+end_of_multply_with_looking_dir_cosine_16bits:
+
+
+
+
 copy_multipliers_to_ram:
 
     ; Copying generate_multiplication_tables -> GENERATE_MULT_TABLES
@@ -1413,5 +1619,25 @@ copy_multiply_with_normal_distance_to_ram_byte:
     iny 
     cpy #(end_of_multply_with_normal_distance_16bits-multply_with_normal_distance_16bits)
     bne copy_multiply_with_normal_distance_to_ram_byte
+    
+    ; Copying multply_with_looking_dir_sine_16bits -> MULT_WITH_LOOK_DIR_SINE
+    
+    ldy #0
+copy_multply_with_looking_dir_sine_to_ram_byte:
+    lda multply_with_looking_dir_sine_16bits, y
+    sta MULT_WITH_LOOK_DIR_SINE, y
+    iny 
+    cpy #(end_of_multply_with_looking_dir_sine_16bits-multply_with_looking_dir_sine_16bits)
+    bne copy_multply_with_looking_dir_sine_to_ram_byte
+    
+    ; Copying multply_with_looking_dir_cosine_16bits -> MULT_WITH_LOOK_DIR_COSINE
+    
+    ldy #0
+copy_multply_with_looking_dir_cosine_to_ram_byte:
+    lda multply_with_looking_dir_cosine_16bits, y
+    sta MULT_WITH_LOOK_DIR_COSINE, y
+    iny 
+    cpy #(end_of_multply_with_looking_dir_cosine_16bits-multply_with_looking_dir_cosine_16bits)
+    bne copy_multply_with_looking_dir_cosine_to_ram_byte
 
     rts
