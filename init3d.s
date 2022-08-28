@@ -1296,25 +1296,25 @@ end_of_generate_multiplication_tables:
 setup_multiply_with_normal_distance_16bit:
 
     lda NORMAL_DISTANCE_TO_WALL+0         
-    sta sm1a+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm3a+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm5a+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm7a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm1a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm3a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm5a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm7a+1-mnd+MULT_WITH_NORMAL_DISTANCE
     eor #$ff         
-    sta sm2a+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm4a+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm6a+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm8a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm2a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm4a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm6a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm8a+1-mnd+MULT_WITH_NORMAL_DISTANCE
     lda NORMAL_DISTANCE_TO_WALL+1         
-    sta sm1b+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm3b+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm5b+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm7b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm1b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm3b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm5b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm7b+1-mnd+MULT_WITH_NORMAL_DISTANCE
     eor #$ff         
-    sta sm2b+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm4b+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm6b+1-mnd+MULT_WITH_NORMAL_DISTANCE
-    sta sm8b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm2b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm4b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm6b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta mnd_sm8b+1-mnd+MULT_WITH_NORMAL_DISTANCE
     
     rts
   
@@ -1323,63 +1323,61 @@ mnd:
 ; SPEED: can we avoid putting x on the stack?
     phx
     
-; FIXME: add a "mnd_" prefix to the labels below
-
       ; Perform <T1 * <MULTIPLICAND = AAaa
       ldx MULTIPLICAND+0
       sec
-sm1a: lda SQUARE1_LOW,x
-sm2a: sbc SQUARE2_LOW,x
+mnd_sm1a: lda SQUARE1_LOW,x
+mnd_sm2a: sbc SQUARE2_LOW,x
       sta PRODUCT+0             
-sm3a: lda SQUARE1_HIGH,x          
-sm4a: sbc SQUARE2_HIGH,x          
-      sta _AA+1-mnd+MULT_WITH_NORMAL_DISTANCE
+mnd_sm3a: lda SQUARE1_HIGH,x          
+mnd_sm4a: sbc SQUARE2_HIGH,x          
+      sta mnd_AA+1-mnd+MULT_WITH_NORMAL_DISTANCE
 
       ; Perform >T1_hi * <MULTIPLICAND = CCcc
       sec                          
-sm1b: lda SQUARE1_LOW,x             
-sm2b: sbc SQUARE2_LOW,x             
-      sta _cc+1-mnd+MULT_WITH_NORMAL_DISTANCE
-sm3b: lda SQUARE1_HIGH,x             
-sm4b: sbc SQUARE2_HIGH,x             
-      sta _CC+1-mnd+MULT_WITH_NORMAL_DISTANCE
+mnd_sm1b: lda SQUARE1_LOW,x             
+mnd_sm2b: sbc SQUARE2_LOW,x             
+      sta mnd_cc+1-mnd+MULT_WITH_NORMAL_DISTANCE
+mnd_sm3b: lda SQUARE1_HIGH,x             
+mnd_sm4b: sbc SQUARE2_HIGH,x             
+      sta mnd_CC+1-mnd+MULT_WITH_NORMAL_DISTANCE
 
       ; Perform <T1 * >MULTIPLICAND = BBbb
       ldx MULTIPLICAND+1
       sec                       
-sm5a: lda SQUARE1_LOW,x          
-sm6a: sbc SQUARE2_LOW,x          
-      sta _bb+1-mnd+MULT_WITH_NORMAL_DISTANCE
-sm7a: lda SQUARE1_HIGH,x          
-sm8a: sbc SQUARE2_HIGH,x          
-      sta _BB+1-mnd+MULT_WITH_NORMAL_DISTANCE
+mnd_sm5a: lda SQUARE1_LOW,x          
+mnd_sm6a: sbc SQUARE2_LOW,x          
+      sta mnd_bb+1-mnd+MULT_WITH_NORMAL_DISTANCE
+mnd_sm7a: lda SQUARE1_HIGH,x          
+mnd_sm8a: sbc SQUARE2_HIGH,x          
+      sta mnd_BB+1-mnd+MULT_WITH_NORMAL_DISTANCE
 
       ; Perform >T1 * >MULTIPLICAND = DDdd
       sec                       
-sm5b: lda SQUARE1_LOW,x          
-sm6b: sbc SQUARE2_LOW,x          
-      sta _dd+1-mnd+MULT_WITH_NORMAL_DISTANCE
-sm7b: lda SQUARE1_HIGH,x          
-sm8b: sbc SQUARE2_HIGH,x          
+mnd_sm5b: lda SQUARE1_LOW,x          
+mnd_sm6b: sbc SQUARE2_LOW,x          
+      sta mnd_dd+1-mnd+MULT_WITH_NORMAL_DISTANCE
+mnd_sm7b: lda SQUARE1_HIGH,x          
+mnd_sm8b: sbc SQUARE2_HIGH,x          
       sta PRODUCT+3             
 
       ; Add the separate multiplications together
       clc                                        
-_AA:  lda #0                                     
-_bb:  adc #0                                     
+mnd_AA:  lda #0                                     
+mnd_bb:  adc #0                                     
       sta PRODUCT+1                              
-_BB:  lda #0                                     
-_CC:  adc #0                                     
+mnd_BB:  lda #0                                     
+mnd_CC:  adc #0                                     
       sta PRODUCT+2                              
 ;      bcc mnd_skip_product3_first
 ; SPEED: no need to do PRODUCT+3
 ;      inc PRODUCT+3                          
 ;      clc                                    
 ;mnd_skip_product3_first:                                          
-_cc:  lda #0                                     
+mnd_cc:  lda #0                                     
       adc PRODUCT+1                              
       sta PRODUCT+1                              
-_dd:  lda #0                                     
+mnd_dd:  lda #0                                     
       adc PRODUCT+2                              
       sta PRODUCT+2
 ; SPEED: no need to do PRODUCT+3
