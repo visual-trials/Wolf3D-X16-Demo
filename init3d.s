@@ -107,7 +107,7 @@ setup_player:
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_Y
-    lda #2
+    lda #1
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
@@ -541,14 +541,7 @@ generate_draw_column_code:
         ; We add floor pixels if needed.
         
         
-    ; NOTE: it is probably a good idea to first iterate over the wall heights 0-255 and then over the wall heights 256-511. Since we can then use a byte for CURRENT_WALL_HEIGHT
     
-    
-; FIXME: should we only store code for *EVEN* wall heights?
-; FIXME: should we only store code for *EVEN* wall heights?
-; FIXME: should we only store code for *EVEN* wall heights?
-    
-    ; FIXME: we should iterate over all possible wall heights
     lda #0
     sta CURRENT_WALL_HEIGHT+1
     lda #8                      ; TODO: we currenly start at wall height of 8. What is the minimal wall height?
@@ -563,8 +556,9 @@ generate_draw_code_for_next_wall_height:
     lda #>DRAW_COLUMN_CODE
     sta CODE_ADDRESS+1
     
-    ; FIXME: we currently allow only 256 wall height and store them inefficiently
+    ; We allow a wall height of up to 512, but store only the even ones
     lda CURRENT_WALL_HEIGHT
+    lsr                        ; We store only the even wall heights, so we store at index: wall height / 2
     sta RAM_BANK
     ; FIXME: remove this nop!
     nop
@@ -605,15 +599,11 @@ generate_draw_code_for_next_wall_height:
     
     ; We determine your start position on the "virtual screen": virtual_screen_cursor = 512/2 - wall_height/2
     
-    ; TODO: if wall height is an odd number, should we put the extra pixel at the top or at the bottom?
     lda CURRENT_WALL_HEIGHT+1
     lsr 
     lda CURRENT_WALL_HEIGHT
     ror                        ; wall_height/2
     sta TOP_HALF_WALL_HEIGHT
-    bcc bottom_wall_height_is_determined ; if there is no carry, the wall height was an even number, so the bottom half is the same as the top
-    inc                                  ; if there is a carry, the wall height was an add number, so add one to the bottom half
-bottom_wall_height_is_determined:
     sta BOTTOM_HALF_WALL_HEIGHT
 
     lda #0                     ; 512/2 = 0
@@ -826,8 +816,12 @@ done_drawing_bottom:
     lda #$60
     jsr add_code_byte
     
-    ; FIXME; enable iterating over wall heights (not just 256)
     inc CURRENT_WALL_HEIGHT
+    inc CURRENT_WALL_HEIGHT
+    bne generate_draw_code_wall_height_incremented
+    ; We reach 256, so we have to increment the high byte
+    inc CURRENT_WALL_HEIGHT+1
+generate_draw_code_wall_height_incremented:
     lda CURRENT_WALL_HEIGHT
     bne generate_draw_code_for_next_wall_height_jmp
         

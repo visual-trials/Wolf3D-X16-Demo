@@ -2603,8 +2603,10 @@ texture_index_ok_left:
 
     ; FIXME: we now use only one byte of the wall height, but we also need to check the high byte (unless we only use 256 *EVEN* wall heights)
     lda COLUMN_WALL_HEIGHT+1
+; FIXME: instead of doing a divide by 2, store half of the wall height into COLUMN_WALL_HEIGHT (maybe call it COLUMN_HALF_WALL_HEIGHT?
+    lsr
     ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
-    and #$FE ; make even
+;    and #$FE ; make even
     sta RAM_BANK
     ; SPEED: remove this nop!
     nop
@@ -2821,8 +2823,10 @@ texture_index_ok_right:
     
     ; FIXME: we now use only one byte of the wall height, but we also need to check the high byte (unless we only use 256 *EVEN* wall heights)
     lda COLUMN_WALL_HEIGHT+1
+; FIXME: instead of doing a divide by 2, store half of the wall height into COLUMN_WALL_HEIGHT (maybe call it COLUMN_HALF_WALL_HEIGHT?
+    lsr
     ; FIXME: ONLY USE *EVEN* WALL HEIGHTS??
-    and #$FE ; make even
+;    and #$FE ; make even
     sta RAM_BANK
     ; SPEED: remove this nop!
     nop

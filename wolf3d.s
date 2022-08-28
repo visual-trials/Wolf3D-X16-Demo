@@ -195,7 +195,7 @@ reset:
     
     jsr clear_3d_view_fast
     
-    ; bra do_not_turn_around
+    bra do_not_turn_around
     
 keep_turning_around:  
     lda #0
