@@ -2277,9 +2277,8 @@ wall_height_increases:
     ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_RAY_INDEX and TO_RAY_INDEX. We substract the two.
     ; If FROM_RAY_INDEX > TO_RAY_INDEX (possible if FROM_RAY_INDEX starts before index 0, for example 1792) we need to make sure this calculation still works
     ; so after subsctracting FROM_RAY_INDEX from TO_RAY_INDEX we add 4*456=1824 ($720) to the result. We can check if this is needed if the result was negative.
-    ; Note that the number below is * 256, because we get more precision with the divide_24bits that way.
     
-    ; SPEED: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_24bits)
+    ; SPEED: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_16bits)
     lda #0
     sta DIVISOR
     
@@ -2302,8 +2301,7 @@ wall_height_increases:
 	sta DIVISOR+1   
 wall_width_determined_increasing_height:
 
-; FIXME: this can be a 16 bits divide!
-    jsr divide_24bits
+    jsr divide_16bits
     
     lda DIVIDEND+1
     sta HALF_WALL_HEIGHT_INCREMENT+1
@@ -2321,9 +2319,8 @@ wall_height_decreases:
     ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_RAY_INDEX and TO_RAY_INDEX. We substract the two.
     ; If FROM_RAY_INDEX > TO_RAY_INDEX (possible if FROM_RAY_INDEX starts before index 0, for example 1792) we need to make sure this calculation still works
     ; so after subsctracting FROM_RAY_INDEX from TO_RAY_INDEX we add 4*456=1824 ($720) to the result. We can check if this is needed if the result was negative.
-    ; Note that the number below is * 256, because we get more precision with the divide_24bits that way.
     
-    ; SPEED: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_24bits)
+    ; SPEED: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_16bits)
     lda #0
     sta DIVISOR
     
@@ -2346,8 +2343,7 @@ wall_height_decreases:
 	sta DIVISOR+1   
 wall_width_determined_decreasing_height:
 
-; FIXME: this can be 16 bit divide!
-    jsr divide_24bits
+    jsr divide_16bits
     
     ; FIXME: is this mapping of +2, +1 correct? Should we shift something here?
     lda DIVIDEND+1
