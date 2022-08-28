@@ -133,16 +133,6 @@ ELAPSED_TIME_SPRITE_VRAM = $1F800   ; We put this sprite data in $1F800 (right a
 
 ; === RAM addresses ===
 
-TANGENT_LOW              = $7200    ; 456 bytes (fraction)
-TANGENT_HIGH             = $7400    ; 456 bytes (whole number)
-SINE_LOW                 = $7600    ; 456 bytes (fraction)
-SINE_HIGH                = $7800    ; 456 bytes (whole number)   ; FIXME: do we really need this (values goes to 256)
-COSINE_LOW               = $7A00    ; 456 bytes (fraction)
-COSINE_HIGH              = $7C00    ; 456 bytes (whole number)   ; FIXME: do we really need this (values goes to 256)
-
-CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
-DRAW_COLUMN_CODE         = $A000    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes for each wall height (512 wall heights)
-
 WALL_INFO_START_X        = $6000    ; 256 bytes (x-coordinate of start of wall)
 WALL_INFO_START_Y        = $6100    ; 256 bytes (y-coordinate of start of wall)
 WALL_INFO_END_X          = $6200    ; 256 bytes (x-coordinate of end of wall)
@@ -153,7 +143,24 @@ WALL_INFO_TEXTURE_HIGH   = $6600    ; 256 bytes (low byte of the addres containi
 
 COPY_TEXTURE_TO_VRAM     = $6700    ; routine that must be run in RAM, because it switches the ROM bank
 COPY_PALLETE_TO_VRAM     = $6800    ; routine that must be run in RAM, because it switches the ROM bank
+GENERATE_MULT_TABLES     = $6900    ; routine that must be run in RAM: generate_multiplication_tables
+MULT_WITH_NORMAL_DISTANCE= $7000    ; routine that must be run in RAM: multply_with_normal_distance_16bits
 
+TANGENT_LOW              = $7200    ; 456 bytes (fraction)
+TANGENT_HIGH             = $7400    ; 456 bytes (whole number)
+SINE_LOW                 = $7600    ; 456 bytes (fraction)
+SINE_HIGH                = $7800    ; 456 bytes (whole number)   ; FIXME: do we really need this (values goes to 256)
+COSINE_LOW               = $7A00    ; 456 bytes (fraction)
+COSINE_HIGH              = $7C00    ; 456 bytes (whole number)   ; FIXME: do we really need this (values goes to 256)
+
+CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
+
+SQUARE1_LOW              = $8000    ; 512 bytes
+SQUARE1_HIGH             = $8200    ; 512 bytes
+SQUARE2_LOW              = $8400    ; 512 bytes
+SQUARE2_HIGH             = $8600    ; 512 bytes
+
+DRAW_COLUMN_CODE         = $A000    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes for each wall height (512 wall heights)
 
 
     ; Info on Wolfenstein3D engine: https://fabiensanglard.net/gebbwolf3d.pdf
@@ -190,6 +197,9 @@ reset:
     jsr init_tangent
     jsr init_sine
     jsr init_cosine
+    
+    jsr copy_multipliers_to_ram   ; this must be run *before* GENERATE_MULT_TABLES!
+    jsr GENERATE_MULT_TABLES
     
     jsr generate_clear_column_code
     jsr generate_draw_column_code

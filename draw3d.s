@@ -1109,6 +1109,9 @@ wall_facing_east_calc_angle_for_end_of_wall:
     
 calculated_normal_distance_to_wall:
 
+    ; Since the NORMAL_DISTANCE_TO_WALL has now been determined, we can prepare the multiplier that uses it
+    jsr setup_multiply_with_normal_distance_16bit
+
     ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
     ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 
@@ -1330,24 +1333,19 @@ from_ray_is_now_between_0_and_90_degrees:
 is_low_positive_from_ray_index:
     ldy RAY_INDEX
     lda TANGENT_LOW,y             ; When the ray index >= 256, we retrieve from 256 positions further
-    sta MULTIPLIER
+    sta MULTIPLICAND
     lda TANGENT_HIGH,y             ; When the ray index >= 256, we retrieve from 256 positions further
-    sta MULTIPLIER+1
+    sta MULTIPLICAND+1
     bra got_tangent_from_ray
 is_high_positive_from_ray_index:
     ldy RAY_INDEX
     lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
-    sta MULTIPLIER
+    sta MULTIPLICAND
     lda TANGENT_HIGH+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
-    sta MULTIPLIER+1
+    sta MULTIPLICAND+1
 got_tangent_from_ray:
 
-    lda NORMAL_DISTANCE_TO_WALL
-    sta MULTIPLICAND
-    lda NORMAL_DISTANCE_TO_WALL+1
-    sta MULTIPLICAND+1
-
-    jsr multply_16bits
+    jsr MULT_WITH_NORMAL_DISTANCE
     
     lda WALL_FACING_DIR
     lsr
@@ -1572,24 +1570,19 @@ to_ray_is_now_between_0_and_90_degrees:
 is_low_positive_to_ray_index:
     ldy RAY_INDEX
     lda TANGENT_LOW,y             ; When the ray index >= 256, we retrieve to 256 positions further
-    sta MULTIPLIER
+    sta MULTIPLICAND
     lda TANGENT_HIGH,y             ; When the ray index >= 256, we retrieve to 256 positions further
-    sta MULTIPLIER+1
+    sta MULTIPLICAND+1
     bra got_tangent_to_ray
 is_high_positive_to_ray_index:
     ldy RAY_INDEX
     lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve to 256 positions further
-    sta MULTIPLIER
+    sta MULTIPLICAND
     lda TANGENT_HIGH+256,y         ; When the ray index >= 256, we retrieve to 256 positions further
-    sta MULTIPLIER+1
+    sta MULTIPLICAND+1
 got_tangent_to_ray:
 
-    lda NORMAL_DISTANCE_TO_WALL
-    sta MULTIPLICAND
-    lda NORMAL_DISTANCE_TO_WALL+1
-    sta MULTIPLICAND+1
-
-    jsr multply_16bits
+    jsr MULT_WITH_NORMAL_DISTANCE
     
     lda WALL_FACING_DIR
     lsr
@@ -2498,14 +2491,8 @@ got_tangent_left:
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
     
-    ; SPEED: copying this 16-bit value is slow
-    lda NORMAL_DISTANCE_TO_WALL
-    sta MULTIPLIER
-    lda NORMAL_DISTANCE_TO_WALL+1
-    sta MULTIPLIER+1
-
-    ; SPEED: this multiplier is SLOW
-    jsr multply_16bits
+; SPEED: this is putting x on the stack!
+    jsr MULT_WITH_NORMAL_DISTANCE
     
 ; FIXME: HACK!
     lda TMP2
@@ -2711,14 +2698,8 @@ got_tangent_right:
 
     ; We do a * NORMAL_DISTANCE_TO_WALL, then a divide by 4 (256 positions in a cell, so to go to 64 we need to divide by 4). 
     
-    ; SPEED: copying this 16-bit value is slow
-    lda NORMAL_DISTANCE_TO_WALL
-    sta MULTIPLIER
-    lda NORMAL_DISTANCE_TO_WALL+1
-    sta MULTIPLIER+1
-
-    ; SPEED: this multiplier is SLOW
-    jsr multply_16bits
+; SPEED: this is putting x on the stack!
+    jsr MULT_WITH_NORMAL_DISTANCE
     
 ; FIXME: HACK!
     lda TMP2

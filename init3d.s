@@ -286,7 +286,6 @@ copy_pallete_to_vram_byte:
     bne copy_pallete_to_vram_byte
 
     rts
-
     
 ; FIXME: this is UGLY!
 copy_texture_to_vram:
@@ -1242,4 +1241,179 @@ rotate_r:
     plx
     
     rts
+
+
+; Here we create square-tables for fast multiplication
     
+; This is from here: https://codebase64.org/doku.php?id=base:seriously_fast_multiplication
+; More explation can be found here: https://llx.com/Neil/a2/mult.html
+    
+generate_multiplication_tables:
+gmt:
+
+      ; Create first square table (I*I)/4
+      ldx #$00
+      txa
+      .byte $c9   ; CMP #immediate - skip TYA and clear carry flag
+lb1:  tya
+      adc #$00
+ml1:  sta SQUARE1_HIGH,x
+      tay
+      cmp #$40
+      txa
+      ror
+ml9:  adc #$00
+      sta ml9+1-gmt+GENERATE_MULT_TABLES
+      inx
+ml0:  sta SQUARE1_LOW,x
+      bne lb1
+      inc ml0+2-gmt+GENERATE_MULT_TABLES
+      inc ml1+2-gmt+GENERATE_MULT_TABLES
+      clc
+      iny
+      bne lb1
+
+      ; Create second square table ((I-255)*(I-255))/4
+      ldx #$00
+      ldy #$FF
+next_square_entry:
+      lda SQUARE1_HIGH+1,x
+      sta SQUARE2_HIGH+$100,x
+      lda SQUARE1_HIGH,x
+      sta SQUARE2_HIGH,y
+      lda SQUARE1_LOW+1,x
+      sta SQUARE2_LOW+$100,x
+      lda SQUARE1_LOW,x
+      sta SQUARE2_LOW,y
+      dey
+      inx
+      bne next_square_entry
+      
+      rts
+end_of_generate_multiplication_tables:
+      
+
+setup_multiply_with_normal_distance_16bit:
+
+    lda NORMAL_DISTANCE_TO_WALL+0         
+    sta sm1a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm3a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm5a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm7a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    eor #$ff         
+    sta sm2a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm4a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm6a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm8a+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    lda NORMAL_DISTANCE_TO_WALL+1         
+    sta sm1b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm3b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm5b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm7b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    eor #$ff         
+    sta sm2b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm4b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm6b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    sta sm8b+1-mnd+MULT_WITH_NORMAL_DISTANCE
+    
+    rts
+  
+multply_with_normal_distance_16bits:
+mnd:
+; SPEED: can we avoid putting x on the stack?
+    phx
+    
+; FIXME: add a "mnd_" prefix to the labels below
+
+      ; Perform <T1 * <MULTIPLICAND = AAaa
+      ldx MULTIPLICAND+0
+      sec
+sm1a: lda SQUARE1_LOW,x
+sm2a: sbc SQUARE2_LOW,x
+      sta PRODUCT+0             
+sm3a: lda SQUARE1_HIGH,x          
+sm4a: sbc SQUARE2_HIGH,x          
+      sta _AA+1-mnd+MULT_WITH_NORMAL_DISTANCE
+
+      ; Perform >T1_hi * <MULTIPLICAND = CCcc
+      sec                          
+sm1b: lda SQUARE1_LOW,x             
+sm2b: sbc SQUARE2_LOW,x             
+      sta _cc+1-mnd+MULT_WITH_NORMAL_DISTANCE
+sm3b: lda SQUARE1_HIGH,x             
+sm4b: sbc SQUARE2_HIGH,x             
+      sta _CC+1-mnd+MULT_WITH_NORMAL_DISTANCE
+
+      ; Perform <T1 * >MULTIPLICAND = BBbb
+      ldx MULTIPLICAND+1
+      sec                       
+sm5a: lda SQUARE1_LOW,x          
+sm6a: sbc SQUARE2_LOW,x          
+      sta _bb+1-mnd+MULT_WITH_NORMAL_DISTANCE
+sm7a: lda SQUARE1_HIGH,x          
+sm8a: sbc SQUARE2_HIGH,x          
+      sta _BB+1-mnd+MULT_WITH_NORMAL_DISTANCE
+
+      ; Perform >T1 * >MULTIPLICAND = DDdd
+      sec                       
+sm5b: lda SQUARE1_LOW,x          
+sm6b: sbc SQUARE2_LOW,x          
+      sta _dd+1-mnd+MULT_WITH_NORMAL_DISTANCE
+sm7b: lda SQUARE1_HIGH,x          
+sm8b: sbc SQUARE2_HIGH,x          
+      sta PRODUCT+3             
+
+      ; Add the separate multiplications together
+      clc                                        
+_AA:  lda #0                                     
+_bb:  adc #0                                     
+      sta PRODUCT+1                              
+_BB:  lda #0                                     
+_CC:  adc #0                                     
+      sta PRODUCT+2                              
+;      bcc mnd_skip_product3_first
+; SPEED: no need to do PRODUCT+3
+;      inc PRODUCT+3                          
+;      clc                                    
+;mnd_skip_product3_first:                                          
+_cc:  lda #0                                     
+      adc PRODUCT+1                              
+      sta PRODUCT+1                              
+_dd:  lda #0                                     
+      adc PRODUCT+2                              
+      sta PRODUCT+2
+; SPEED: no need to do PRODUCT+3
+;      bcc mnd_skip_product3_second
+;      inc PRODUCT+3                          
+;mnd_skip_product3_second:
+
+; SPEED: can we avoid putting x on the stack?
+    plx
+
+      rts
+end_of_multply_with_normal_distance_16bits:
+
+
+copy_multipliers_to_ram:
+
+    ; Copying generate_multiplication_tables -> GENERATE_MULT_TABLES
+    
+    ldy #0
+copy_generate_multiplication_tables_to_ram_byte:
+    lda generate_multiplication_tables, y
+    sta GENERATE_MULT_TABLES, y
+    iny 
+    cpy #(end_of_generate_multiplication_tables-generate_multiplication_tables)
+    bne copy_generate_multiplication_tables_to_ram_byte
+
+    ; Copying multply_with_normal_distance_16bits -> MULT_WITH_NORMAL_DISTANCE
+    
+    ldy #0
+copy_multiply_with_normal_distance_to_ram_byte:
+    lda multply_with_normal_distance_16bits, y
+    sta MULT_WITH_NORMAL_DISTANCE, y
+    iny 
+    cpy #(end_of_multply_with_normal_distance_16bits-multply_with_normal_distance_16bits)
+    bne copy_multiply_with_normal_distance_to_ram_byte
+
+    rts
