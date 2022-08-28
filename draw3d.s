@@ -3,6 +3,10 @@ update_viewpoint:
 
     ; FIXME: <BUG> at position 1.128, 2.200 we see (on the left side) a column been drawn with an incalid texture. So it looks like the texture lookup is not (entirely) correct yet.
 
+    
+    ; FIXME: we can make FROM_HALF_WALL_HEIGHT / TO_HALF_WALL_HEIGHT / COLUMN_HALF_WALL_HEIGHT / HALF_WALL_HEIGHT_INCREMENT one byte *SMALLER*!!
+    
+    
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR (every frame)
     ;        The viewpoint position is around 0.34 tiles "behind" the player position.
 
