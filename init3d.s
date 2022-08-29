@@ -900,6 +900,9 @@ done_adding_code_byte:
 ; FIXME: shouldnt there be a +0.5 here somewhere?
 ; [int(math.atan(j/ampl)/(math.pi*2.0)*cycle) for j in range(ampl)]
 
+; log2: (to be used for atan calculation:
+; [math.floor(256*math.log2(((i+1)/16)))/256 for i in range(16*256)]
+
 ; Also see: https://csdb.dk/forums/?roomid=11&topicid=26608&firstpost=2
 
 
