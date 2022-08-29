@@ -912,8 +912,7 @@ done_adding_code_byte:
 ; log2(x) = math.floor(256*math.log2(((256)/256)))/256 = 0.0 = 0*256
 ; log2(y) - log2(x) = -1 - 0 = -1
 
-; table index -1 contains: 1824/2*math.atan(2**((-1*256)/256))/math.pi = 134.59625929719513
-
+; table index -1 contains: 1824/2*math.atan(2**((-1*256)/256))/math.pi = 134.59625929719513 --> OK
 
 ; Let y = 0.4 (0*256+102) and x = 1.3 (1*256+77)
 ; What we want to see: 1824/2*math.atan(0.4/1.3)/math.pi = 86.65382677653201
@@ -921,7 +920,16 @@ done_adding_code_byte:
 ; log2(x) = math.floor(256*math.log2(((1*256+77)/256)))/256 = 0.37890625 = 0*256+97
 ; log2(y) - log2(x) = (-1*256-84) - (0*256+97) = -437 = -(1*256+181)
 
-; table index -(1*256+181) contains: 1824/2*math.atan(2**(-(1*256+181)/256))/math.pi = 86.28171992564408
+; table index -(1*256+181) contains: 1824/2*math.atan(2**(-(1*256+181)/256))/math.pi = 86.28171992564408 --> OK
+
+
+; Let y = 12.4 (12*256+102) and x = 1.3 (1*256+77)
+; What we want to see: 1824/2*math.atan(12.4/1.3)/math.pi = 425.6762416034153
+; log2(y) = math.floor(256*math.log2(((12*256+102)/256)))/256 = 3.62890625 = 3*256+161
+; log2(x) = math.floor(256*math.log2(((1*256+77)/256)))/256 = 0.37890625 = 0*256+97
+; log2(y) - log2(x) = (3*256+161) - (0*256+97) = 832 = 3*256+64
+
+; table index 3*256+64 contains: 1824/2*math.atan(2**((3*256+64)/256))/math.pi = 425.5977556350432 --> OK
 
 
 ; Also see: https://csdb.dk/forums/?roomid=11&topicid=26608&firstpost=2
