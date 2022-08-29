@@ -1837,20 +1837,11 @@ to_ray_info_updated:
 
     ; -- FROM: DISTANCE_DUE_TO_DELTA_X --
 
-    ; SPEED: copying this 16-bit value is slow
-; FIXME: remove this
-;    lda LOOKING_DIR_SINE
-;    sta MULTIPLIER
-;    lda LOOKING_DIR_SINE+1
-;    sta MULTIPLIER+1
-
     lda FROM_DELTA_X
     sta MULTIPLICAND
     lda FROM_DELTA_X+1
     sta MULTIPLICAND+1
 
-    ; SPEED: this multiplier is SLOW
-;    jsr multply_16bits
     jsr MULT_WITH_LOOK_DIR_SINE
     
     lda PRODUCT+1
@@ -1860,20 +1851,11 @@ to_ray_info_updated:
 
     ; -- FROM: DISTANCE_DUE_TO_DELTA_Y --
     
-    ; SPEED: copying this 16-bit value is slow
-; FIXME: remove this
-;    lda LOOKING_DIR_COSINE
-;    sta MULTIPLIER
-;    lda LOOKING_DIR_COSINE+1
-;    sta MULTIPLIER+1
-
     lda FROM_DELTA_Y
     sta MULTIPLICAND
     lda FROM_DELTA_Y+1
     sta MULTIPLICAND+1
 
-    ; SPEED: this multiplier is SLOW
-;    jsr multply_16bits
     jsr MULT_WITH_LOOK_DIR_COSINE
     
     lda PRODUCT+1
@@ -1956,20 +1938,11 @@ from_is_the_same_horizontally:
 
     ; -- TO: DISTANCE_DUE_TO_DELTA_X --
 
-    ; SPEED: copying this 16-bit value is slow
-; FIXME: remove this
-;    lda LOOKING_DIR_SINE
-;    sta MULTIPLIER
-;    lda LOOKING_DIR_SINE+1
-;    sta MULTIPLIER+1
-
     lda TO_DELTA_X
     sta MULTIPLICAND
     lda TO_DELTA_X+1
     sta MULTIPLICAND+1
 
-    ; SPEED: this multiplier is SLOW
-;    jsr multply_16bits
     jsr MULT_WITH_LOOK_DIR_SINE
     
     lda PRODUCT+1
@@ -1979,20 +1952,11 @@ from_is_the_same_horizontally:
 
     ; -- TO: DISTANCE_DUE_TO_DELTA_Y --
     
-    ; SPEED: copying this 16-bit value is slow
-; FIXME: remove this
-;    lda LOOKING_DIR_COSINE
-;    sta MULTIPLIER
-;    lda LOOKING_DIR_COSINE+1
-;    sta MULTIPLIER+1
-
     lda TO_DELTA_Y
     sta MULTIPLICAND
     lda TO_DELTA_Y+1
     sta MULTIPLICAND+1
 
-    ; SPEED: this multiplier is SLOW
-;    jsr multply_16bits
     jsr MULT_WITH_LOOK_DIR_COSINE
     
     lda PRODUCT+1

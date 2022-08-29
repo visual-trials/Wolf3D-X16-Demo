@@ -903,6 +903,27 @@ done_adding_code_byte:
 ; log2: (to be used for atan calculation: (does NOT contain 0!)
 ; [math.floor(256*math.log2(((i)/16)))/256 for i in range(1, 16*256)]
 
+; Testing:
+
+
+; Let y = 0.5 (0.128) and x = 1.0 (1.0)
+; What we want to see: 1824/2*math.atan(0.5/1.0)/math.pi = 134.59625929719513
+; log2(y) = math.floor(256*math.log2(((128)/256)))/256 = -1 = -1*256
+; log2(x) = math.floor(256*math.log2(((256)/256)))/256 = 0.0 = 0*256
+; log2(y) - log2(x) = -1 - 0 = -1
+
+; table index -1 contains: 1824/2*math.atan(2**((-1*256)/256))/math.pi = 134.59625929719513
+
+
+; Let y = 0.4 (0*256+102) and x = 1.3 (1*256+77)
+; What we want to see: 1824/2*math.atan(0.4/1.3)/math.pi = 86.65382677653201
+; log2(y) = math.floor(256*math.log2(((0*256+102)/256)))/256 = -1.328125 = -1*256-84
+; log2(x) = math.floor(256*math.log2(((1*256+77)/256)))/256 = 0.37890625 = 0*256+97
+; log2(y) - log2(x) = (-1*256-84) - (0*256+97) = -437 = -(1*256+181)
+
+; table index -(1*256+181) contains: 1824/2*math.atan(2**(-(1*256+181)/256))/math.pi = 86.28171992564408
+
+
 ; Also see: https://csdb.dk/forums/?roomid=11&topicid=26608&firstpost=2
 
 
