@@ -12,8 +12,8 @@ CLD = $20+$30 ; closed door
 
 ; Starting room of Wolf3D (sort of)
 
-;    3_
-; 12_| |_45
+;     2           ; Note: this door is rendered *before* the walls beside it! (it is also position at y = 4, not y = 5)
+; 13_|_|_45
 ;   |   |
 ;  0|   |6
 ;   |   |
@@ -34,15 +34,15 @@ wall_1_info:
 
 wall_2_info:
     .byte 1, 4 ; start x, y
+    .byte 2, 4 ; end x, y
+    .byte (2 | 4)   ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west  (bit 2 = 1 means this is a door)
+    .byte CLD
+    
+wall_3_info:
+    .byte 1, 4 ; start x, y
     .byte 1, 5 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     .byte BS1
-    
-wall_3_info:
-    .byte 1, 5 ; start x, y
-    .byte 2, 5 ; end x, y
-    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
-    .byte CLD
     
 wall_4_info:
     .byte 2, 5 ; start x, y
@@ -107,7 +107,7 @@ setup_player:
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_Y
-    lda #1
+    lda #2
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)

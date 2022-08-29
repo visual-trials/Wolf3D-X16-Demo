@@ -64,31 +64,31 @@ FROM_RAY_INDEX            = $42 ; 43  ; the ray index of the left side of the wa
 TO_RAY_INDEX              = $44 ; 45  ; the ray index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
 SCREEN_START_RAY          = $46 ; 47  ; the ray index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
 FROM_HALF_WALL_HEIGHT     = $48       ; the height of the left side of the wall 
-; $49 is free
-TO_HALF_WALL_HEIGHT       = $4A       ; the height of the right side of the wall
-; $4B is free
-WALL_HEIGHT_INCREASES     = $4C       ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
-START_SCREEN_X            = $4D ; 4E  ; the x-position of the wall starting on screen
+TO_HALF_WALL_HEIGHT       = $49       ; the height of the right side of the wall
+WALL_HEIGHT_INCREASES     = $4A       ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
+START_SCREEN_X            = $4B ; 4C  ; the x-position of the wall starting on screen
 
-TEXTURE_COLUMN_OFFSET     = $4F
-TEXTURE_INDEX_OFFSET      = $50
+TEXTURE_COLUMN_OFFSET     = $4D
+TEXTURE_INDEX_OFFSET      = $4E
 
-; FIXME: *use* PLAYER_POS_X/Y
-PLAYER_POS_X              = $51 ; 52  ; x-position of the player (8.8 bits)
-PLAYER_POS_Y              = $53 ; 54  ; y-position of the player (8.8 bits)
-VIEWPOINT_X               = $55 ; 56  ; x-position of the player (8.8 bits)
-VIEWPOINT_Y               = $57 ; 58  ; y-position of the player (8.8 bits)
-LOOKING_DIR               = $59 ; 5A  ; looking direction of the player (0-1823)
-LOOKING_DIR_QUANDRANT     = $5B       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) -> this way you can easely check if something is in a different quadrant horizontally or vertically
-LOOKING_DIR_SINE          = $5C ; 5D
-LOOKING_DIR_COSINE        = $5E ; 5F
+; $4F is free
 
-CURRENT_WALL_INDEX        = $60
-WALL_START_X              = $61       ; x-coordinate of start of wall
-WALL_START_Y              = $62       ; y-coordinate of start of wall)
-WALL_END_X                = $63       ; x-coordinate of end of wall)
-WALL_END_Y                = $64       ; y-coordinate of end of wall)
-WALL_FACING_DIR           = $65       ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+PLAYER_POS_X              = $50 ; 51  ; x-position of the player (8.8 bits)
+PLAYER_POS_Y              = $52 ; 53  ; y-position of the player (8.8 bits)
+VIEWPOINT_X               = $54 ; 55  ; x-position of the player (8.8 bits)
+VIEWPOINT_Y               = $56 ; 57  ; y-position of the player (8.8 bits)
+LOOKING_DIR               = $58 ; 59  ; looking direction of the player (0-1823)
+LOOKING_DIR_QUANDRANT     = $5A       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) -> this way you can easely check if something is in a different quadrant horizontally or vertically
+LOOKING_DIR_SINE          = $5B ; 5C
+LOOKING_DIR_COSINE        = $5D ; 5E
+
+CURRENT_WALL_INDEX        = $5F
+WALL_START_X              = $60       ; x-coordinate of start of wall
+WALL_START_Y              = $61       ; y-coordinate of start of wall)
+WALL_END_X                = $62       ; x-coordinate of end of wall)
+WALL_END_Y                = $63       ; y-coordinate of end of wall)
+WALL_FACING_DIR           = $64       ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+WALL_POSITION_IN_TILE     = $65       ; 128 for a door, 0 is normal wall
 WALL_INFO_TEXTURE_INDEXES = $66 ; 67  ; address of the place containing the texture indexes of a wall)
 
 QUADRANT_CORRECTION       = $68
@@ -137,7 +137,7 @@ WALL_INFO_START_X        = $6000    ; 256 bytes (x-coordinate of start of wall)
 WALL_INFO_START_Y        = $6100    ; 256 bytes (y-coordinate of start of wall)
 WALL_INFO_END_X          = $6200    ; 256 bytes (x-coordinate of end of wall)
 WALL_INFO_END_Y          = $6300    ; 256 bytes (y-coordinate of end of wall)
-WALL_INFO_FACING_DIR     = $6400    ; 256 bytes (facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+WALL_INFO_FACING_DIR     = $6400    ; 256 bytes (facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west (bit 2 = 1 means this is a door)
 WALL_INFO_TEXTURE_LOW    = $6500    ; 256 bytes (low byte of the addres containing the texture indexes)
 WALL_INFO_TEXTURE_HIGH   = $6600    ; 256 bytes (low byte of the addres containing the texture indexes)
 

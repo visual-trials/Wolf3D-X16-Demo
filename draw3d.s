@@ -203,8 +203,25 @@ draw_next_wall:
     lda WALL_INFO_END_Y, y   ; y-coordinate of end of wall
     sta WALL_END_Y
     
-    lda WALL_INFO_FACING_DIR, y   ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west
+    lda WALL_INFO_FACING_DIR, y   ; facing direction of the wall: 0 = north, 1 = east, 2 = south, 3 = west  (bit 2 = 1 means this is a door)
+    and #%00000100                ; checking for bit 2
+    beq wall_is_not_a_door
+    
+    lda WALL_INFO_FACING_DIR, y
+    and #%11111011                ; unsetting bit 2
     sta WALL_FACING_DIR
+    
+    lda #128
+    sta WALL_POSITION_IN_TILE
+    bra wall_doorness_determined
+    
+wall_is_not_a_door:
+    lda WALL_INFO_FACING_DIR, y
+    sta WALL_FACING_DIR
+    lda #0
+    sta WALL_POSITION_IN_TILE
+    
+wall_doorness_determined:
     
     lda WALL_INFO_TEXTURE_LOW,y
     sta WALL_INFO_TEXTURE_INDEXES
@@ -321,7 +338,7 @@ wall_facing_north_screen_start_ray_calculated:
     ; First determine the normal distance to the wall, in the y-direction (delta Y)
     sec
     lda VIEWPOINT_Y
-    sbc #0                      ; Walls are always on .0
+    sbc WALL_POSITION_IN_TILE   ; = 128 if wall is a door, 0 if wall is not a door
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_Y
     lda VIEWPOINT_Y+1
@@ -532,9 +549,9 @@ wall_facing_west_screen_start_ray_calculated:
     ; ============ START OF WEST FACING WALL ===========
 
     ; First determine the normal distance to the wall, in the x-direction (delta X)
-    
+
     sec
-    lda #0                      ; Walls are always on .0
+    lda WALL_POSITION_IN_TILE   ; = 128 if wall is a door, 0 if wall is not a door
     sbc VIEWPOINT_X
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_X
@@ -745,9 +762,10 @@ wall_facing_south_screen_start_ray_calculated:
     
     ; ============ START OF SOUTH FACING WALL ===========
 
+    
     ; First determine the normal distance to the wall, in the y-direction (delta Y)
     sec
-    lda #0                      ; Walls are always on .0
+    lda WALL_POSITION_IN_TILE   ; = 128 if wall is a door, 0 if wall is not a door
     sbc VIEWPOINT_Y
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_Y
@@ -953,7 +971,7 @@ wall_facing_east_screen_start_ray_calculated:
     
     sec
     lda VIEWPOINT_X
-    sbc #0                      ; Walls are always on .0
+    sbc WALL_POSITION_IN_TILE   ; = 128 if wall is a door, 0 if wall is not a door
     sta NORMAL_DISTANCE_TO_WALL
     sta DELTA_X
     lda VIEWPOINT_X+1
