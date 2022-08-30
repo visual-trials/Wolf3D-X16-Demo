@@ -54,15 +54,15 @@ HALF_WALL_HEIGHT_INCREMENT= $35 ; 36
 ; $37 is free
 COLUMN_HALF_WALL_HEIGHT   = $38 ; 39
 ; $3A is free
-RAY_INDEX                 = $3B ; 3C
-RAY_INDEX_NEGATED         = $3D ; 3E
+ANGLE_INDEX               = $3B ; 3C
+ANGLE_INDEX_NEGATED       = $3D ; 3E
 
 PALETTE_COLOR_OFFSET      = $3F       ; TODO: Only used during palette loading
 
 NORMAL_DISTANCE_TO_WALL   = $40 ; 41  ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
-FROM_RAY_INDEX            = $42 ; 43  ; the ray index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
-TO_RAY_INDEX              = $44 ; 45  ; the ray index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
-SCREEN_START_RAY          = $46 ; 47  ; the ray index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
+FROM_ANGLE                = $42 ; 43  ; the angle index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
+TO_ANGLE                  = $44 ; 45  ; the angle index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
+SCREEN_START_ANGLE        = $46 ; 47  ; the angle index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
 FROM_HALF_WALL_HEIGHT     = $48       ; the height of the left side of the wall 
 TO_HALF_WALL_HEIGHT       = $49       ; the height of the right side of the wall
 WALL_HEIGHT_INCREASES     = $4A       ; equal to 1 if wall height goes from small to large, equal to 0 if it goes from large to small 
@@ -77,7 +77,7 @@ PLAYER_POS_X              = $50 ; 51  ; x-position of the player (8.8 bits)
 PLAYER_POS_Y              = $52 ; 53  ; y-position of the player (8.8 bits)
 VIEWPOINT_X               = $54 ; 55  ; x-position of the player (8.8 bits)
 VIEWPOINT_Y               = $56 ; 57  ; y-position of the player (8.8 bits)
-LOOKING_DIR               = $58 ; 59  ; looking direction of the player (0-1823)
+LOOKING_DIR_ANGLE         = $58 ; 59  ; looking direction of the player (0-1823)
 LOOKING_DIR_QUANDRANT     = $5A       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) -> this way you can easely check if something is in a different quadrant horizontally or vertically
 LOOKING_DIR_SINE          = $5B ; 5C
 LOOKING_DIR_COSINE        = $5D ; 5E
@@ -95,7 +95,7 @@ QUADRANT_CORRECTION       = $68
 FLIP_TAN_ANGLE            = $69
 DELTA_X                   = $6A ; 6B
 DELTA_Y                   = $6C ; 6D
-TESTING_RAY_INDEX         = $6E ; 6F
+TESTING_ANGLE             = $6E ; 6F
 
 ; Used only by (slow) 16bit multiplier (multply_16bits)
 MULTIPLIER                = $70 ; 71
@@ -215,28 +215,28 @@ reset:
     
 keep_turning_around:  
     lda #0
-    sta LOOKING_DIR
-    sta LOOKING_DIR+1
+    sta LOOKING_DIR_ANGLE
+    sta LOOKING_DIR_ANGLE+1
     
 turn_around:
     jsr update_viewpoint
     jsr draw_3d_view
-    inc LOOKING_DIR
+    inc LOOKING_DIR_ANGLE
     ;nop                      ; WEIRD FIXME!! if i have two nops here, its DOESNT work anymore on real HW! -> it it SOMETIMES draws a few columns!! (or 3 walls) -> if you try enough times, it starts to work?!!?
     ;nop                      ; ALSO: if i remove loading one of the textures, it also work! 
-    ; lda LOOKING_DIR        ; WEIRD FIXME!! if I remove this the HW works, but if I leave the lda in place, it crashes? (stays red)
+    ; lda LOOKING_DIR_ANGLE        ; WEIRD FIXME!! if I remove this the HW works, but if I leave the lda in place, it crashes? (stays red)
     bne turn_around
 
-    inc LOOKING_DIR+1
-    lda LOOKING_DIR+1
+    inc LOOKING_DIR_ANGLE+1
+    lda LOOKING_DIR_ANGLE+1
     cmp #$7                ; $720 = 1824
     bcc turn_around
     
 turn_around2:    
     jsr update_viewpoint
     jsr draw_3d_view
-    inc LOOKING_DIR
-    lda LOOKING_DIR
+    inc LOOKING_DIR_ANGLE
+    lda LOOKING_DIR_ANGLE
     cmp #$20
     bne turn_around2
     

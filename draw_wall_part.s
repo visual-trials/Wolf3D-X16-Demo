@@ -2,10 +2,10 @@
 draw_wall_part:
 
     ; NORMAL_DISTANCE_TO_WALL      ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
-    ; FROM_RAY_INDEX               ; the ray index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
-    ; TO_RAY_INDEX                 ; the ray index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
+    ; FROM_ANGLE                   ; the angle index of the left side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
+    ; TO_ANGLE                     ; the angle index of the right side of the wall we want to draw (angle relative to the normal line out of the wall to the player)
     
-    ; SCREEN_START_RAY             ; the ray index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
+    ; SCREEN_START_ANGLE           ; the angle index of the very first column on the screen, its left side (angle relative to the normal line out of the wall to the player)
     
     ; FROM_HALF_WALL_HEIGHT        ; the half of the height of the left side of the wall 
     ; TO_HALF_WALL_HEIGHT               ; the half of the height of the right side of the wall
@@ -17,7 +17,7 @@ draw_wall_part:
     
     ; We first determine how much the wall height will decrease per drawn column
 
-    ; We do the divide: HALF_WALL_HEIGHT_INCREMENT = ((TO_HALF_WALL_HEIGHT-FROM_HALF_WALL_HEIGHT) * 256) / TO_RAY_INDEX-FROM_RAY_INDEX;
+    ; We do the divide: HALF_WALL_HEIGHT_INCREMENT = ((TO_HALF_WALL_HEIGHT-FROM_HALF_WALL_HEIGHT) * 256) / TO_ANGLE-FROM_ANGLE;
     ; Note that the difference in wall height should be stored in DIVIDEND (to be used by the divider)
     ; Note: we will have a negative number when the wall height is decrementing
 
@@ -37,20 +37,20 @@ wall_height_increases:
 	sbc FROM_HALF_WALL_HEIGHT
 	sta DIVIDEND+1
     
-    ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_RAY_INDEX and TO_RAY_INDEX. We substract the two.
-    ; If FROM_RAY_INDEX > TO_RAY_INDEX (possible if FROM_RAY_INDEX starts before index 0, for example 1792) we need to make sure this calculation still works
-    ; so after subsctracting FROM_RAY_INDEX from TO_RAY_INDEX we add 4*456=1824 ($720) to the result. We can check if this is needed if the result was negative.
+    ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_ANGLE and TO_ANGLE. We substract the two.
+    ; If FROM_ANGLE > TO_ANGLE (possible if FROM_ANGLE starts before index 0, for example 1792) we need to make sure this calculation still works
+    ; so after subsctracting FROM_ANGLE from TO_ANGLE we add 4*456=1824 ($720) to the result. We can check if this is needed if the result was negative.
     
     ; SPEED: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_16bits)
     lda #0
     sta DIVISOR
     
     sec
-	lda TO_RAY_INDEX
-	sbc FROM_RAY_INDEX
+	lda TO_ANGLE
+	sbc FROM_ANGLE
 	sta DIVISOR
-	lda TO_RAY_INDEX+1
-	sbc FROM_RAY_INDEX+1
+	lda TO_ANGLE+1
+	sbc FROM_ANGLE+1
 	sta DIVISOR+1
     bpl wall_width_determined_increasing_height
     
@@ -79,20 +79,20 @@ wall_height_decreases:
 	sbc TO_HALF_WALL_HEIGHT
 	sta DIVIDEND+1
     
-    ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_RAY_INDEX and TO_RAY_INDEX. We substract the two.
-    ; If FROM_RAY_INDEX > TO_RAY_INDEX (possible if FROM_RAY_INDEX starts before index 0, for example 1792) we need to make sure this calculation still works
-    ; so after subsctracting FROM_RAY_INDEX from TO_RAY_INDEX we add 4*456=1824 ($720) to the result. We can check if this is needed if the result was negative.
+    ; The DIVISOR should contain the width of the wall on screen, so the difference between FROM_ANGLE and TO_ANGLE. We substract the two.
+    ; If FROM_ANGLE > TO_ANGLE (possible if FROM_ANGLE starts before index 0, for example 1792) we need to make sure this calculation still works
+    ; so after subsctracting FROM_ANGLE from TO_ANGLE we add 4*456=1824 ($720) to the result. We can check if this is needed if the result was negative.
     
     ; SPEED: Not sure if we need to reset this each time, probably not! (is not overwritten during divide_16bits)
     lda #0
     sta DIVISOR
     
     sec
-	lda TO_RAY_INDEX
-	sbc FROM_RAY_INDEX
+	lda TO_ANGLE
+	sbc FROM_ANGLE
 	sta DIVISOR
-	lda TO_RAY_INDEX+1
-	sbc FROM_RAY_INDEX+1
+	lda TO_ANGLE+1
+	sbc FROM_ANGLE+1
 	sta DIVISOR+1
     bpl wall_width_determined_decreasing_height
     
@@ -133,21 +133,21 @@ half_wall_height_increment_determined:
     
     ; Left part of the screen (256-8 = 248 columns)
 
-    ; Using FROM_RAY_INDEX as the start RAY_INDEX
-    lda FROM_RAY_INDEX
-    sta RAY_INDEX
-    lda FROM_RAY_INDEX+1
-    sta RAY_INDEX+1
+    ; Using FROM_ANGLE as the start ANGLE_INDEX
+    lda FROM_ANGLE
+    sta ANGLE_INDEX
+    lda FROM_ANGLE+1
+    sta ANGLE_INDEX+1
     
-    ; SPEED: its probably better to let the SCREEN_START_RAY also include the 8 pixels at the beginning: so it would be 8 if we started at the beginning). Maybe?
+    ; SPEED: its probably better to let the SCREEN_START_ANGLE also include the 8 pixels at the beginning: so it would be 8 if we started at the beginning). Maybe?
 
-    ; START_SCREEN_X = (FROM_RAY_INDEX - SCREEN_START_RAY) + 8 ; the x-position of the wall starting on screen
+    ; START_SCREEN_X = (FROM_ANGLE - SCREEN_START_ANGLE) + 8 ; the x-position of the wall starting on screen
     sec
-	lda FROM_RAY_INDEX
-	sbc SCREEN_START_RAY
+	lda FROM_ANGLE
+	sbc SCREEN_START_ANGLE
 	sta START_SCREEN_X
-	lda FROM_RAY_INDEX+1
-	sbc SCREEN_START_RAY+1
+	lda FROM_ANGLE+1
+	sbc SCREEN_START_ANGLE+1
 	sta START_SCREEN_X+1
     
     bpl start_screen_is_positive
@@ -200,52 +200,52 @@ draw_next_column_left:
     lda #0  ; default = no need to negate the result
     sta TMP2
     
-    lda RAY_INDEX+1
-    cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
+    lda ANGLE_INDEX+1
+    cmp #$2                       ; ANGLE_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
     bcs is_negative_left
     
-    lda RAY_INDEX+1
+    lda ANGLE_INDEX+1
     bne is_high_positive_ray_index_left
 is_low_positive_ray_index_left:
-    ldy RAY_INDEX
+    ldy ANGLE_INDEX
     lda TANGENT_HIGH,y
     sta MULTIPLICAND+1
     lda TANGENT_LOW,y
     sta MULTIPLICAND
     bra got_tangent_left
 is_high_positive_ray_index_left:
-    ldy RAY_INDEX
-    lda TANGENT_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
+    ldy ANGLE_INDEX
+    lda TANGENT_HIGH+256,y        ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
-    lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_LOW+256,y         ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND
     bra got_tangent_left
 
 is_negative_left:
     ; SPEED: we do this EACH time, this can be sped up!!
 
-    ; We substract RAY_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangent
+    ; We substract ANGLE_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangent
     sec 
 	lda #$20
-	sbc RAY_INDEX
-	sta RAY_INDEX_NEGATED
+	sbc ANGLE_INDEX
+	sta ANGLE_INDEX_NEGATED
 	lda #$7
-	sbc RAY_INDEX+1
-	sta RAY_INDEX_NEGATED+1
+	sbc ANGLE_INDEX+1
+	sta ANGLE_INDEX_NEGATED+1
     
     bne is_high_negative_ray_index_left
 is_low_negative_ray_index_left:
-    ldy RAY_INDEX_NEGATED
+    ldy ANGLE_INDEX_NEGATED
     lda TANGENT_HIGH,y
     sta MULTIPLICAND+1
     lda TANGENT_LOW,y
     sta MULTIPLICAND
     bra got_negative_tangent_left
 is_high_negative_ray_index_left:
-    ldy RAY_INDEX_NEGATED
-    lda TANGENT_HIGH+256,y        ; When the negated ray index >= 256, we retrieve from 256 positions further
+    ldy ANGLE_INDEX_NEGATED
+    lda TANGENT_HIGH+256,y        ; When the negated angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
-    lda TANGENT_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_LOW+256,y         ; When the negated angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND
 
 got_negative_tangent_left:
@@ -342,34 +342,34 @@ texture_index_ok_left:
 	adc HALF_WALL_HEIGHT_INCREMENT+1
 	sta COLUMN_HALF_WALL_HEIGHT+1
 
-    ; Incrmenting RAY_INDEX
-    inc RAY_INDEX
+    ; Incrmenting ANGLE_INDEX
+    inc ANGLE_INDEX
     bne ray_index_is_incremented_left
-    inc RAY_INDEX+1
+    inc ANGLE_INDEX+1
     
 ray_index_is_incremented_left:
 
-    ; If RAY_INDEX = 1824 (=$720) we reset it to 0 (we "loop" around)
-    lda RAY_INDEX
+    ; If ANGLE_INDEX = 1824 (=$720) we reset it to 0 (we "loop" around)
+    lda ANGLE_INDEX
     cmp #$20
     bne ray_index_is_updated_left
-    lda RAY_INDEX+1
+    lda ANGLE_INDEX+1
     cmp #$7
     bne ray_index_is_updated_left
     
-    ; Resetting RAY_INDEX to 0
+    ; Resetting ANGLE_INDEX to 0
     lda #0
-    sta RAY_INDEX
-    sta RAY_INDEX+1
+    sta ANGLE_INDEX
+    sta ANGLE_INDEX+1
     
 ray_index_is_updated_left:
 
-    ; We should stop drawing the wall if we reached the end of the wall, meaning RAY_INDEX == TO_RAY_INDEX (after incrementing it)
-    lda RAY_INDEX
-    cmp TO_RAY_INDEX
+    ; We should stop drawing the wall if we reached the end of the wall, meaning ANGLE_INDEX == TO_ANGLE (after incrementing it)
+    lda ANGLE_INDEX
+    cmp TO_ANGLE
     bne continue_drawing_left   ; not equal, so keep on going drawing the wall
-    lda RAY_INDEX+1
-    cmp TO_RAY_INDEX+1
+    lda ANGLE_INDEX+1
+    cmp TO_ANGLE+1
     bne continue_drawing_left   ; not equal, so keep on going drawing the wall
 
     ; both bytes are equal, we should stop drawing
@@ -386,7 +386,7 @@ continue_drawing_left:
     ; Right part of the screen (56 columns)
 draw_right_part_of_screen:
 
-    ; x = FROM_RAY_INDEX (low byte) Note: this is only done when *starting* on the right part of the screen!
+    ; x = FROM_ANGLE (low byte) Note: this is only done when *starting* on the right part of the screen!
     ldx START_SCREEN_X
 
 draw_next_column_right:
@@ -407,24 +407,24 @@ draw_next_column_right:
     lda #0  ; default = no need to negate the result
     sta TMP2
     
-    lda RAY_INDEX+1
-    cmp #$2                       ; RAY_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
+    lda ANGLE_INDEX+1
+    cmp #$2                       ; ANGLE_INDEX >= 512 ? (NOTE: we do not expect there to be angles between 90 degrees and 270 degrees. So check for ~100 degrees is good enough to see if we are in the 270-360 range = "negative")
     bcs is_negative_right
     
-    lda RAY_INDEX+1
+    lda ANGLE_INDEX+1
     bne is_high_positive_ray_index_right
 is_low_positive_ray_index_right:
-    ldy RAY_INDEX
+    ldy ANGLE_INDEX
     lda TANGENT_HIGH,y
     sta MULTIPLICAND+1
     lda TANGENT_LOW,y
     sta MULTIPLICAND
     bra got_tangent_right
 is_high_positive_ray_index_right:
-    ldy RAY_INDEX
-    lda TANGENT_HIGH+256,y        ; When the ray index >= 256, we retrieve from 256 positions further
+    ldy ANGLE_INDEX
+    lda TANGENT_HIGH+256,y        ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
-    lda TANGENT_LOW+256,y         ; When the ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_LOW+256,y         ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND
     
     bra got_tangent_right
@@ -432,28 +432,28 @@ is_high_positive_ray_index_right:
 is_negative_right:
     ; SPEED: we do this EACH time, this can be sped up!!
 
-    ; We substract RAY_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangent
+    ; We substract ANGLE_INDEX from 1824 (=$720)so we effectively negate it to allow is to use the (positive) tangent
     sec 
 	lda #$20
-	sbc RAY_INDEX
-	sta RAY_INDEX_NEGATED
+	sbc ANGLE_INDEX
+	sta ANGLE_INDEX_NEGATED
 	lda #$7
-	sbc RAY_INDEX+1
-	sta RAY_INDEX_NEGATED+1
+	sbc ANGLE_INDEX+1
+	sta ANGLE_INDEX_NEGATED+1
     
     bne is_high_negative_ray_index_right
 is_low_negative_ray_index_right:
-    ldy RAY_INDEX_NEGATED
+    ldy ANGLE_INDEX_NEGATED
     lda TANGENT_HIGH,y
     sta MULTIPLICAND+1
     lda TANGENT_LOW,y
     sta MULTIPLICAND
     bra got_negative_tangent_right
 is_high_negative_ray_index_right:
-    ldy RAY_INDEX_NEGATED
-    lda TANGENT_HIGH+256,y        ; When the negated ray index >= 256, we retrieve from 256 positions further
+    ldy ANGLE_INDEX_NEGATED
+    lda TANGENT_HIGH+256,y        ; When the negated angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
-    lda TANGENT_LOW+256,y         ; When the negated ray index >= 256, we retrieve from 256 positions further
+    lda TANGENT_LOW+256,y         ; When the negated angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND
 
 got_negative_tangent_right:
@@ -548,34 +548,34 @@ texture_index_ok_right:
 	adc HALF_WALL_HEIGHT_INCREMENT+1
 	sta COLUMN_HALF_WALL_HEIGHT+1
     
-    ; Incrmenting RAY_INDEX
-    inc RAY_INDEX
+    ; Incrmenting ANGLE_INDEX
+    inc ANGLE_INDEX
     bne ray_index_is_incremented_right
-    inc RAY_INDEX+1
+    inc ANGLE_INDEX+1
     
 ray_index_is_incremented_right:
 
-    ; If RAY_INDEX = 1824 (=$720) we reset it to 0 (we "loop" around)
-    lda RAY_INDEX
+    ; If ANGLE_INDEX = 1824 (=$720) we reset it to 0 (we "loop" around)
+    lda ANGLE_INDEX
     cmp #$20
     bne ray_index_is_updated_right
-    lda RAY_INDEX+1
+    lda ANGLE_INDEX+1
     cmp #$7
     bne ray_index_is_updated_right
     
-    ; Resetting RAY_INDEX to 0
+    ; Resetting ANGLE_INDEX to 0
     lda #0
-    sta RAY_INDEX
-    sta RAY_INDEX+1
+    sta ANGLE_INDEX
+    sta ANGLE_INDEX+1
     
 ray_index_is_updated_right:
 
-    ; We should stop drawing the wall if we reached the end of the wall, meaning RAY_INDEX == TO_RAY_INDEX (after incrementing it)
-    lda RAY_INDEX
-    cmp TO_RAY_INDEX
+    ; We should stop drawing the wall if we reached the end of the wall, meaning ANGLE_INDEX == TO_ANGLE (after incrementing it)
+    lda ANGLE_INDEX
+    cmp TO_ANGLE
     bne continue_drawing_right   ; not equal, so keep on going drawing the wall
-    lda RAY_INDEX+1
-    cmp TO_RAY_INDEX+1
+    lda ANGLE_INDEX+1
+    cmp TO_ANGLE+1
     beq done_drawing_wall       ; both bytes are equal, we should stop drawing
     
 continue_drawing_right:
