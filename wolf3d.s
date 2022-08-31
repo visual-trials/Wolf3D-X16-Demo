@@ -46,6 +46,8 @@ VIRTUAL_SCREEN_CURSOR     = $29
 TOP_HALF_WALL_HEIGHT      = $2A
 BOTTOM_HALF_WALL_HEIGHT   = $2B
 
+; $2C-34 available
+
 HALF_WALL_HEIGHT_INCREMENT= $35 ; 36
 ; $37 is free
 COLUMN_HALF_WALL_HEIGHT   = $38 ; 39
@@ -91,7 +93,10 @@ QUADRANT_CORRECTION       = $68
 FLIP_TAN_ANGLE            = $69
 DELTA_X                   = $6A ; 6B
 DELTA_Y                   = $6C ; 6D
-TESTING_ANGLE             = $6E ; 6F
+FROM_SCREEN_ANGLE         = $6E ; 6F
+TO_SCREEN_ANGLE           = $70 ; 71
+
+; $72-77 available
 
 FROM_QUADRANT             = $78       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
 TO_QUADRANT               = $79       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
@@ -115,7 +120,6 @@ TO_ANGLE_NEEDS_RECALC     = $8F
 
 WALL_LENGTH               = $90
 
-
 ; Used only by (slow) 16bit multiplier (multply_16bits)
 MULTIPLIER                = $EF ; F0
 MULTIPLICAND              = $F1 ; F2
@@ -125,7 +129,6 @@ PRODUCT                   = $F3 ; F4 ; F5 ; F6
 DIVIDEND                  = $F7 ; F8 ; F9  ; the thing you want to divide (e.g. 100 /) . This will also the result after the division
 DIVISOR                   = $FA ; FB ; FC  ; the thing you divide by (e.g. / 10)
 REMAINDER                 = $FD ; FE ; FF
-
 
 ; === VRAM addresses ===
 

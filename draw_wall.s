@@ -937,21 +937,21 @@ split_wall_into_wall_parts:
     sec
     lda FROM_ANGLE
     sbc SCREEN_START_ANGLE
-    sta TESTING_ANGLE
+    sta FROM_SCREEN_ANGLE
     lda FROM_ANGLE+1
     sbc SCREEN_START_ANGLE+1
-    sta TESTING_ANGLE+1
+    sta FROM_SCREEN_ANGLE+1
     
     bpl from_screen_angle_is_positive
     
     ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
     clc
-    lda TESTING_ANGLE
+    lda FROM_SCREEN_ANGLE
     adc #<(1824)
-    sta TESTING_ANGLE
-    lda TESTING_ANGLE+1
+    sta FROM_SCREEN_ANGLE
+    lda FROM_SCREEN_ANGLE+1
     adc #>(1824)
-    sta TESTING_ANGLE+1
+    sta FROM_SCREEN_ANGLE+1
     
 from_screen_angle_is_positive:
     ; We check if its within 0 and 304 angles (first check left, then right)
@@ -977,11 +977,11 @@ from_screen_angle_is_left_of_screen:
 from_screen_angle_is_not_left_of_screen:
 
     ; We also need to check if the from angle is to the *right* of the screen: check if its > 304
-    lda TESTING_ANGLE+1
+    lda FROM_SCREEN_ANGLE+1
     cmp #>(304)
     bcc from_screen_angle_is_within_the_screen
     bne from_screen_angle_is_right_of_screen
-    lda TESTING_ANGLE
+    lda FROM_SCREEN_ANGLE
     cmp #<(304)
     bcc from_screen_angle_is_within_the_screen
 
@@ -999,33 +999,33 @@ from_screen_angle_is_within_the_screen:
     sec
     lda TO_ANGLE
     sbc SCREEN_START_ANGLE
-    sta TESTING_ANGLE
+    sta TO_SCREEN_ANGLE
     lda TO_ANGLE+1
     sbc SCREEN_START_ANGLE+1
-    sta TESTING_ANGLE+1
+    sta TO_SCREEN_ANGLE+1
     
-    ; FIXME: because TO_ANGLE now represents the angle+1 until we want to draw, we are here subscracting 1 for the TESTING_ANGLE!
+    ; FIXME: because TO_ANGLE now represents the angle+1 until we want to draw, we are here subscracting 1 for the TO_SCREEN_ANGLE!
     ;        We might consider TO_ANGLE containing the angle (not +1) until we want to draw
 
-    ; SPEED: incremting TESTING_ANGLE with 1 (this can probably be done quicker!)
+    ; SPEED: incremting TO_SCREEN_ANGLE with 1 (this can probably be done quicker!)
     sec
-    lda TESTING_ANGLE
+    lda TO_SCREEN_ANGLE
     sbc #<(1)
-    sta TESTING_ANGLE
-    lda TESTING_ANGLE+1
+    sta TO_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE+1
     sbc #>(1)
-    sta TESTING_ANGLE+1
+    sta TO_SCREEN_ANGLE+1
     
     bpl to_screen_angle_is_positive
     
     ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
     clc
-    lda TESTING_ANGLE
+    lda TO_SCREEN_ANGLE
     adc #<(1824)
-    sta TESTING_ANGLE
-    lda TESTING_ANGLE+1
+    sta TO_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE+1
     adc #>(1824)
-    sta TESTING_ANGLE+1
+    sta TO_SCREEN_ANGLE+1
     
 to_screen_angle_is_positive:
 
@@ -1040,13 +1040,13 @@ to_screen_angle_is_positive:
 
 to_screen_angle_is_not_left_of_screen:
 
-; FIXME: is this still correct? Since TESTING_ANGLE was decremented by 1? Or is it NOW correct?
+; FIXME: is this still correct? Since TO_SCREEN_ANGLE was decremented by 1? Or is it NOW correct?
 
     ; Check if to angle > 60 degrees
     cmp #>(304)
     bcc to_screen_angle_is_not_right_of_screen
     bne to_screen_angle_is_on_right_of_screen
-    lda TESTING_ANGLE
+    lda TO_SCREEN_ANGLE
     cmp #<(304)
     bcc to_screen_angle_is_not_right_of_screen
     
