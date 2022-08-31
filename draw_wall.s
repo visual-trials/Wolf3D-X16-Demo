@@ -1097,8 +1097,17 @@ to_screen_angle_is_not_right_of_screen:
 
 
     ; FIXME: Actually split into wall parts here!
+    
+    lda CURRENT_WALL_INDEX
+    cmp #3
+    beq tmp_dont_skip_occlusion
+    cmp #4
+    beq tmp_dont_skip_occlusion
+    
+    
+    jmp tmp_skip_occlusion
 
-
+tmp_dont_skip_occlusion:
     ldy #0
     sta NR_OF_OCCLUDERS
     
@@ -1209,7 +1218,9 @@ end_of_wall_is_ok:
     tay
     bne next_occluder_to_check
 
-; FIXME: this call should be inside our wall-splitting loop!
+tmp_skip_occlusion:
+    
+; FIXME: this call should be *INSIDE* our wall-splitting loop!
     jsr prep_and_draw_wall_part
     
     
