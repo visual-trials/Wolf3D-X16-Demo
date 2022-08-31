@@ -77,7 +77,7 @@ wall_facing_north:
     sbc WALL_END_X
     sta WALL_LENGTH
     
-    ; Then we calculate the screen start ray
+    ; Then we calculate the screen start angle
 
     sec
     lda LOOKING_DIR_ANGLE
@@ -87,7 +87,7 @@ wall_facing_north:
     sbc #>(152+456*2)
     sta SCREEN_START_ANGLE+1
     
-    bpl wall_facing_north_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
+    bpl wall_facing_north_screen_start_angle_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
     
     clc
     lda SCREEN_START_ANGLE
@@ -97,7 +97,7 @@ wall_facing_north:
     adc #>(1824)
     sta SCREEN_START_ANGLE+1
 
-wall_facing_north_screen_start_ray_calculated:
+wall_facing_north_screen_start_angle_calculated:
     
     ; ============ START OF NORTH FACING WALL ===========
     
@@ -293,7 +293,7 @@ wall_facing_west:
     sbc WALL_START_Y
     sta WALL_LENGTH
     
-    ; Then we calculate the screen start ray
+    ; Then we calculate the screen start angle
 
     sec
     lda LOOKING_DIR_ANGLE
@@ -303,7 +303,7 @@ wall_facing_west:
     sbc #>(152+456*1)
     sta SCREEN_START_ANGLE+1
     
-    bpl wall_facing_west_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
+    bpl wall_facing_west_screen_start_angle_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
     
     clc
     lda SCREEN_START_ANGLE
@@ -313,7 +313,7 @@ wall_facing_west:
     adc #>(1824)
     sta SCREEN_START_ANGLE+1
 
-wall_facing_west_screen_start_ray_calculated:
+wall_facing_west_screen_start_angle_calculated:
     
     ; ============ START OF WEST FACING WALL ===========
 
@@ -510,7 +510,7 @@ wall_facing_south:
     sbc WALL_START_X
     sta WALL_LENGTH
     
-    ; Then we calculate the screen start ray
+    ; Then we calculate the screen start angle
 
     sec
     lda LOOKING_DIR_ANGLE
@@ -520,7 +520,7 @@ wall_facing_south:
     sbc #>(152+456*0)
     sta SCREEN_START_ANGLE+1
     
-    bpl wall_facing_south_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
+    bpl wall_facing_south_screen_start_angle_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
     
     clc
     lda SCREEN_START_ANGLE
@@ -530,7 +530,7 @@ wall_facing_south:
     adc #>(1824)
     sta SCREEN_START_ANGLE+1
 
-wall_facing_south_screen_start_ray_calculated:
+wall_facing_south_screen_start_angle_calculated:
     
     ; ============ START OF SOUTH FACING WALL ===========
 
@@ -718,7 +718,7 @@ wall_facing_east:
     sbc WALL_END_Y
     sta WALL_LENGTH
     
-    ; Then we calculate the screen start ray
+    ; Then we calculate the screen start angle
 
     sec
     lda LOOKING_DIR_ANGLE
@@ -728,7 +728,7 @@ wall_facing_east:
     sbc #>(152+456*3)
     sta SCREEN_START_ANGLE+1
     
-    bpl wall_facing_east_screen_start_ray_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
+    bpl wall_facing_east_screen_start_angle_calculated  ; if this is still positive we dont need to add 360 degrees (1824)
     
     clc
     lda SCREEN_START_ANGLE
@@ -738,7 +738,7 @@ wall_facing_east:
     adc #>(1824)
     sta SCREEN_START_ANGLE+1
 
-wall_facing_east_screen_start_ray_calculated:
+wall_facing_east_screen_start_angle_calculated:
     
     ; ============ START OF EAST FACING WALL ===========
 
@@ -932,7 +932,7 @@ split_wall_into_wall_parts:
     sta TO_RAY_NEEDS_RECALC
     
     ; Check if start of wall is between the left and right of the screen
-    ; To do this, we first need to know the ray number on the screen (FROM_ANGLE - SCREEN_START_ANGLE)
+    ; To do this, we first need to know the angle number on the screen (FROM_ANGLE - SCREEN_START_ANGLE)
     
     sec
     lda FROM_ANGLE
@@ -942,7 +942,7 @@ split_wall_into_wall_parts:
     sbc SCREEN_START_ANGLE+1
     sta TESTING_ANGLE+1
     
-    bpl from_testing_ray_is_positive
+    bpl from_screen_angle_is_positive
     
     ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
     clc
@@ -953,13 +953,13 @@ split_wall_into_wall_parts:
     adc #>(1824)
     sta TESTING_ANGLE+1
     
-from_testing_ray_is_positive:
-    ; We check if its within 0 and 304 rays (first check left, then right)
+from_screen_angle_is_positive:
+    ; We check if its within 0 and 304 angles (first check left, then right)
     ; FIXME: hack
     cmp #5
-    bcc from_ray_is_not_left_of_screen   
+    bcc from_screen_angle_is_not_left_of_screen   
     
-from_ray_is_left_of_screen:
+from_screen_angle_is_left_of_screen:
     ; SPEED: only do this IF the wall is not COMPLETELY left of the screen! -> so check if the end of the wall is ALSO to the left of the screen!D
     
     ; Cut off left part of wall to the beginning of the screen
@@ -972,27 +972,30 @@ from_ray_is_left_of_screen:
     lda #1
     sta FROM_RAY_NEEDS_RECALC
     
-    bra from_ray_is_within_the_screen
+    bra from_screen_angle_is_within_the_screen
     
-from_ray_is_not_left_of_screen:
+from_screen_angle_is_not_left_of_screen:
 
-    ; We also need to check if the from ray is to the *right* of the screen: check if its > 304
+    ; We also need to check if the from angle is to the *right* of the screen: check if its > 304
     lda TESTING_ANGLE+1
     cmp #>(304)
-    bcc from_ray_is_within_the_screen
-    bne from_ray_is_right_of_screen
+    bcc from_screen_angle_is_within_the_screen
+    bne from_screen_angle_is_right_of_screen
     lda TESTING_ANGLE
     cmp #<(304)
-    bcc from_ray_is_within_the_screen
+    bcc from_screen_angle_is_within_the_screen
 
-from_ray_is_right_of_screen:
+from_screen_angle_is_right_of_screen:
     ; FIXME: we should in fact check if there is another wall part possible?
     rts ; we are not drawing this wall, since its outside of the screen
     
     
-from_ray_is_within_the_screen:
+from_screen_angle_is_within_the_screen:
+
+
+
     ; Check if end of wall is between the left and right of the screen
-    ; To do this, we first need to know the ray number on the screen (TO_ANGLE - SCREEN_START_ANGLE)
+    ; To do this, we first need to know the angle number on the screen (TO_ANGLE - SCREEN_START_ANGLE)
     sec
     lda TO_ANGLE
     sbc SCREEN_START_ANGLE
@@ -1001,8 +1004,8 @@ from_ray_is_within_the_screen:
     sbc SCREEN_START_ANGLE+1
     sta TESTING_ANGLE+1
     
-    ; FIXME: because TO_ANGLE now represents the ray+1 until we want to draw, we are here subscracting 1 for the TESTING_ANGLE!
-    ;        We might consider TO_ANGLE containing the ray (not +1) until we want to draw
+    ; FIXME: because TO_ANGLE now represents the angle+1 until we want to draw, we are here subscracting 1 for the TESTING_ANGLE!
+    ;        We might consider TO_ANGLE containing the angle (not +1) until we want to draw
 
     ; SPEED: incremting TESTING_ANGLE with 1 (this can probably be done quicker!)
     sec
@@ -1013,7 +1016,7 @@ from_ray_is_within_the_screen:
     sbc #>(1)
     sta TESTING_ANGLE+1
     
-    bpl to_testing_ray_is_positive
+    bpl to_screen_angle_is_positive
     
     ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
     clc
@@ -1024,35 +1027,35 @@ from_ray_is_within_the_screen:
     adc #>(1824)
     sta TESTING_ANGLE+1
     
-to_testing_ray_is_positive:
+to_screen_angle_is_positive:
 
-    ; We check if the to-ray is not to the left of the screen
+    ; We check if the to-angle is not to the left of the screen
     ; FIXME: hack
     cmp #5
-    bcc to_ray_is_not_left_of_screen
+    bcc to_screen_angle_is_not_left_of_screen
     
-    ; If the to-ray is left of the screen, we should not draw the wall
+    ; If the to-angle is left of the screen, we should not draw the wall
     ; FIXME: we should in fact check if there is another wall part possible?
     rts 
 
-to_ray_is_not_left_of_screen:
+to_screen_angle_is_not_left_of_screen:
 
 ; FIXME: is this still correct? Since TESTING_ANGLE was decremented by 1? Or is it NOW correct?
 
-    ; Check if to ray > 60 degrees
+    ; Check if to angle > 60 degrees
     cmp #>(304)
-    bcc to_ray_is_not_right_of_screen
-    bne to_ray_is_on_right_of_screen
+    bcc to_screen_angle_is_not_right_of_screen
+    bne to_screen_angle_is_on_right_of_screen
     lda TESTING_ANGLE
     cmp #<(304)
-    bcc to_ray_is_not_right_of_screen
+    bcc to_screen_angle_is_not_right_of_screen
     
-to_ray_is_on_right_of_screen:
+to_screen_angle_is_on_right_of_screen:
 
     lda #1
     sta TO_RAY_NEEDS_RECALC
     
-    ; Set to-ray to screen start ray + 60 degrees (right column of the screen)
+    ; Set to-angle to screen start angle + 60 degrees (right column of the screen)
     clc
     lda SCREEN_START_ANGLE
     adc #<(304)
@@ -1065,13 +1068,13 @@ to_ray_is_on_right_of_screen:
     
     lda TO_ANGLE+1
     cmp #>(1824)
-    bcc to_ray_is_within_bounds
-    bne to_ray_is_outside_bounds
+    bcc to_screen_angle_is_within_bounds
+    bne to_screen_angle_is_outside_bounds
     lda TO_ANGLE
     cmp #<(1824)
-    bcc to_ray_is_within_bounds
+    bcc to_screen_angle_is_within_bounds
 
-to_ray_is_outside_bounds:
+to_screen_angle_is_outside_bounds:
     ; TO_ANGLE is more than $720, so we have to subtract $720
     sec
     lda TO_ANGLE
@@ -1081,10 +1084,10 @@ to_ray_is_outside_bounds:
     sbc #>(1824)
     sta TO_ANGLE+1
     
-to_ray_is_within_bounds:
+to_screen_angle_is_within_bounds:
     
     
-to_ray_is_not_right_of_screen:
+to_screen_angle_is_not_right_of_screen:
 
 
 
