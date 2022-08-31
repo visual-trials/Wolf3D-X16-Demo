@@ -24,7 +24,7 @@ prep_and_draw_wall_part:
     
     
     
-    lda FROM_RAY_NEEDS_RECALC
+    lda FROM_ANGLE_NEEDS_RECALC
     bne recalculate_from_ray_info
     
     ; There is no need to recalculate the from_ray_info so jump over it
@@ -262,7 +262,7 @@ from_ray_info_updated:
 
     ; ============ TO RAY ==========
     
-    lda TO_RAY_NEEDS_RECALC
+    lda TO_ANGLE_NEEDS_RECALC
     bne recalculate_to_ray_info
     
     ; There is no need to recalculate the to_ray_info so jump over it

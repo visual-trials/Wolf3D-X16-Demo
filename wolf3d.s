@@ -119,8 +119,8 @@ TO_DELTA_Y                = $88 ; 89
 FROM_DISTANCE             = $8A ; 8B
 TO_DISTANCE               = $8C ; 8D
 
-FROM_RAY_NEEDS_RECALC     = $8E
-TO_RAY_NEEDS_RECALC       = $8F
+FROM_ANGLE_NEEDS_RECALC   = $8E
+TO_ANGLE_NEEDS_RECALC     = $8F
 
 WALL_LENGTH               = $90
 

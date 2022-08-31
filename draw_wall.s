@@ -928,8 +928,8 @@ split_wall_into_wall_parts:
     ; For now we ONLY cut off walls if they do not fit into the screen
         
     lda #0
-    sta FROM_RAY_NEEDS_RECALC
-    sta TO_RAY_NEEDS_RECALC
+    sta FROM_ANGLE_NEEDS_RECALC
+    sta TO_ANGLE_NEEDS_RECALC
     
     ; Check if start of wall is between the left and right of the screen
     ; To do this, we first need to know the angle number on the screen (FROM_ANGLE - SCREEN_START_ANGLE)
@@ -970,7 +970,7 @@ from_screen_angle_is_left_of_screen:
     sta FROM_ANGLE+1
     
     lda #1
-    sta FROM_RAY_NEEDS_RECALC
+    sta FROM_ANGLE_NEEDS_RECALC
     
     bra from_screen_angle_is_within_the_screen
     
@@ -1053,7 +1053,7 @@ to_screen_angle_is_not_left_of_screen:
 to_screen_angle_is_on_right_of_screen:
 
     lda #1
-    sta TO_RAY_NEEDS_RECALC
+    sta TO_ANGLE_NEEDS_RECALC
     
     ; Set to-angle to screen start angle + 60 degrees (right column of the screen)
     clc
