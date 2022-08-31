@@ -1261,7 +1261,15 @@ end_of_wall_is_to_the_left_of_the_start_of_occluder:
 end_of_wall_is_ok:
 
 
-    ; FIXME: this call should be *INSIDE* our wall-splitting loop! -> DONE
+    ; FIXME: we should *COMBINE* with the already existing occluders if the "touch" each other!
+
+    
+    ; FIXME: Add the new wall part to the lined list of occluders
+
+    ; FIXME: y is already at the *next* occluder, but we need to update the _NEXT of the previous/current occluder!
+    
+
+    ; We draw the wall part
     jsr prep_and_draw_wall_part
 
 
