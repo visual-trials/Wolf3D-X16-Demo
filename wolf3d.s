@@ -321,6 +321,7 @@ wait_for_vsync:
     .include math.s
     .include init3d.s
     .include draw_wall_part.s
+    .include draw_wall.s
     .include draw3d.s
   
     ; ======== PETSCII CHARSET =======

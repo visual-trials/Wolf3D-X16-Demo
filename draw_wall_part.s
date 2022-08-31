@@ -1,4 +1,790 @@
+    ; ==================================================================================================================================
+    ;
+    ;                                                          PREPARE WALL PART
+    ;
+    ; ==================================================================================================================================
 
+prep_and_draw_wall_part:
+
+
+
+    ; ========== Recalculate FROM_RAY and TO_RAY INFO ===========
+    
+    ; Note that the FROM_ANGLE is an angle that is relative to the normal line of the wall
+    ; This means that it has to be between 270 and 90 degrees. In order to get the tangent(FROM_ANGLE) we
+    ; have to negate FROM_ANGLE if it is 'negative'. Note that we do *not* need to negate the result of tangent
+    ; since we also determine the quadrant in which the from way lies (and the cosine/sine use that)s
+    
+    ; Also: the tangent is the ratio of: distance-*over*-the-wall / normal-distance-*to*-the-wall
+    ; We want to know the distance-*over*-the-wall. But this can be either FROM_DELTA_X or FROM_DELTA_Y
+    ; In order for us to know this one we have to overwrite we look at the direction of the wall: 
+    ;   is it horizontal? then we have to recalculate the FROM_DELTA_X
+    ;   is it vertical? then we have to recalculate the FROM_DELTA_X
+    ; To check whether a wall is horizontal, we simply check the lowest bit of WALL_FACING_DIR.
+    
+    
+    
+    lda FROM_RAY_NEEDS_RECALC
+    bne recalculate_from_ray_info
+    
+    ; There is no need to recalculate the from_ray_info so jump over it
+    jmp from_ray_info_updated
+    
+    
+recalculate_from_ray_info:
+    ; -- Re-calculate FROM_DELTA_X **OR** FROM_DELTA_Y using tangent(FROM_ANGLE) --
+    
+    ; Check if FROM_ANGLE is 'negative' (between 270 degrees and 360)
+    lda FROM_ANGLE+1
+    ; FIXME: hack!
+    cmp #4
+    bcc from_ray_is_already_between_0_and_90_degrees
+    
+    sec
+    lda #<(1824)
+    sbc FROM_ANGLE
+    sta ANGLE_INDEX
+    lda #>(1824)
+    sbc FROM_ANGLE+1
+    sta ANGLE_INDEX+1
+    
+    bra from_ray_is_now_between_0_and_90_degrees
+
+from_ray_is_already_between_0_and_90_degrees:
+    lda FROM_ANGLE
+    sta ANGLE_INDEX
+    lda FROM_ANGLE+1
+    sta ANGLE_INDEX+1
+
+from_ray_is_now_between_0_and_90_degrees:
+
+    ; SPEED: no need to do this lda
+    lda ANGLE_INDEX+1
+    bne is_high_positive_from_ray_index
+is_low_positive_from_ray_index:
+    ldy ANGLE_INDEX
+    lda TANGENT_LOW,y             ; When the angle index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND
+    lda TANGENT_HIGH,y             ; When the angle index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND+1
+    bra got_tangent_from_ray
+is_high_positive_from_ray_index:
+    ldy ANGLE_INDEX
+    lda TANGENT_LOW+256,y         ; When the angle index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND
+    lda TANGENT_HIGH+256,y         ; When the angle index >= 256, we retrieve from 256 positions further
+    sta MULTIPLICAND+1
+got_tangent_from_ray:
+
+    jsr MULT_WITH_NORMAL_DISTANCE
+    
+    lda WALL_FACING_DIR
+    lsr
+    bcc from_ray_on_horizontal_wall ; no carry (facing south or norht), so we its a horizontal wall
+
+from_ray_on_vertical_wall:
+
+    lda PRODUCT+1
+    sta FROM_DELTA_Y
+    lda PRODUCT+2
+    sta FROM_DELTA_Y+1
+    
+    bra done_from_delta_calc
+    
+from_ray_on_horizontal_wall:
+    
+    lda PRODUCT+1
+    sta FROM_DELTA_X
+    lda PRODUCT+2
+    sta FROM_DELTA_X+1
+    
+done_from_delta_calc:
+    
+
+    ; -- Re-calculate FROM_QUADRANT using FROM_ANGLE --
+
+    ; FIXME: we first need to get the *absolute* angle for FROM_ANGLE
+    ;        right now we do this by "unnormalizing" it and checking the WALL_FACING_DIR
+    ;        but there is probably a better way to do this (earlier).
+
+    lda WALL_FACING_DIR
+    cmp #3  ; west
+    beq from_ray_calc_wall_facing_west
+    cmp #2  ; south
+    beq from_ray_calc_wall_facing_south
+    cmp #1  ; east
+    beq from_ray_calc_wall_facing_east
+    cmp #0  ; north
+    beq from_ray_calc_wall_facing_north
+
+from_ray_calc_wall_facing_east:
+    ; The wall is facing north so we are turned 270. We need to subtract 90 degrees
+    sec
+    lda FROM_ANGLE
+    sbc #<(1*456)
+    sta ANGLE_INDEX
+    lda FROM_ANGLE+1
+    sbc #>(1*456)
+    sta ANGLE_INDEX+1
+    bra unnormalized_from_ray
+
+from_ray_calc_wall_facing_north:
+    ; The wall is facing north so we are turned 180. We need to subtract 180 degrees
+    sec
+    lda FROM_ANGLE
+    sbc #<(2*456)
+    sta ANGLE_INDEX
+    lda FROM_ANGLE+1
+    sbc #>(2*456)
+    sta ANGLE_INDEX+1
+    bra unnormalized_from_ray
+    
+from_ray_calc_wall_facing_west:
+    ; The wall is facing west so we are turned 90. We need to subtract 270 degrees
+    sec
+    lda FROM_ANGLE
+    sbc #<(3*456)
+    sta ANGLE_INDEX
+    lda FROM_ANGLE+1
+    sbc #>(3*456)
+    sta ANGLE_INDEX+1
+    bra unnormalized_from_ray
+    
+from_ray_calc_wall_facing_south:
+    ; The wall is facing south so we are turned 0. No need to subtract anything.
+    lda FROM_ANGLE
+    sta ANGLE_INDEX
+    lda FROM_ANGLE+1
+    sta ANGLE_INDEX+1
+
+unnormalized_from_ray:
+
+    ; Checking if ANGLE_INDEX is below 0, if so add 1824
+    bpl unnormalized_from_ray_is_positive
+    
+    clc 
+    lda ANGLE_INDEX
+    adc #<(4*456)
+    sta ANGLE_INDEX
+    lda ANGLE_INDEX+1
+    adc #>(4*456)
+    sta ANGLE_INDEX+1
+
+unnormalized_from_ray_is_positive:
+    
+    lda ANGLE_INDEX+1
+    cmp #>(456*1)
+    bcc from_ray_in_q0
+    bne from_ray_in_not_in_q0
+    lda ANGLE_INDEX
+    cmp #<(456*1)
+    bcc from_ray_in_q0
+    
+from_ray_in_not_in_q0:
+    lda ANGLE_INDEX+1
+    cmp #>(456*2)
+    bcc from_ray_in_q1
+    bne from_ray_in_not_in_q1
+    lda ANGLE_INDEX
+    cmp #<(456*2)
+    bcc from_ray_in_q1
+    
+from_ray_in_not_in_q1:
+    lda ANGLE_INDEX+1
+    cmp #>(456*3)
+    bcc from_ray_in_q2
+    bne from_ray_in_q3
+    lda ANGLE_INDEX
+    cmp #<(456*3)
+    bcc from_ray_in_q2
+    
+from_ray_in_q3:
+    ; Normalize angle (360 degrees - q3angle = q0angle)
+    sec
+    lda #<(456*4)
+    sbc ANGLE_INDEX
+    sta ANGLE_INDEX
+    lda #>(456*4)
+    sbc ANGLE_INDEX+1
+    sta ANGLE_INDEX+1
+
+    ; Mark as q3
+    lda #%00000010
+    sta FROM_QUADRANT
+    
+    bra from_ray_info_updated
+    
+from_ray_in_q2:
+    ; Normalize angle (q2angle - 180 degrees = q0angle)
+    sec
+    lda ANGLE_INDEX
+    sbc #<(456*2)
+    sta ANGLE_INDEX
+    lda ANGLE_INDEX+1
+    sbc #>(456*2)
+    sta ANGLE_INDEX+1
+    
+    ; Mark as q2
+    lda #%00000011
+    sta FROM_QUADRANT
+    
+    bra from_ray_info_updated
+    
+from_ray_in_q1:
+    ; Normalize angle (180 degrees - q1angle = q0angle)
+    sec
+    lda #<(456*2)
+    sbc ANGLE_INDEX
+    sta ANGLE_INDEX
+    lda #>(456*2)
+    sbc ANGLE_INDEX+1
+    sta ANGLE_INDEX+1
+    
+    ; Mark as q1
+    lda #%00000001
+    sta FROM_QUADRANT
+    
+    bra from_ray_info_updated
+    
+from_ray_in_q0:
+
+    lda ANGLE_INDEX
+    sta ANGLE_INDEX
+    lda ANGLE_INDEX+1
+    sta ANGLE_INDEX+1
+    
+    ; Mark as q0
+    lda #%00000000
+    sta FROM_QUADRANT
+
+from_ray_info_updated:
+
+
+    ; ============ TO RAY ==========
+    
+    lda TO_RAY_NEEDS_RECALC
+    bne recalculate_to_ray_info
+    
+    ; There is no need to recalculate the to_ray_info so jump over it
+    jmp to_ray_info_updated
+    
+recalculate_to_ray_info:
+    ; -- Re-calculate TO_DELTA_X **OR** TO_DELTA_Y using tangent(TO_ANGLE) --
+    
+    ; Check if TO_ANGLE is 'negative' (between 270 degrees and 360)
+    lda TO_ANGLE+1
+    ; FIXME: hack!
+    cmp #4
+    bcc to_ray_is_already_between_0_and_90_degrees
+    
+    sec
+    lda #<(1824)
+    sbc TO_ANGLE
+    sta ANGLE_INDEX
+    lda #>(1824)
+    sbc TO_ANGLE+1
+    sta ANGLE_INDEX+1
+    
+    bra to_ray_is_now_between_0_and_90_degrees
+
+to_ray_is_already_between_0_and_90_degrees:
+    lda TO_ANGLE
+    sta ANGLE_INDEX
+    lda TO_ANGLE+1
+    sta ANGLE_INDEX+1
+
+to_ray_is_now_between_0_and_90_degrees:
+
+    ; SPEED: no need to do this lda
+    lda ANGLE_INDEX+1
+    bne is_high_positive_to_ray_index
+is_low_positive_to_ray_index:
+    ldy ANGLE_INDEX
+    lda TANGENT_LOW,y             ; When the angle index >= 256, we retrieve to 256 positions further
+    sta MULTIPLICAND
+    lda TANGENT_HIGH,y             ; When the angle index >= 256, we retrieve to 256 positions further
+    sta MULTIPLICAND+1
+    bra got_tangent_to_ray
+is_high_positive_to_ray_index:
+    ldy ANGLE_INDEX
+    lda TANGENT_LOW+256,y         ; When the angle index >= 256, we retrieve to 256 positions further
+    sta MULTIPLICAND
+    lda TANGENT_HIGH+256,y         ; When the angle index >= 256, we retrieve to 256 positions further
+    sta MULTIPLICAND+1
+got_tangent_to_ray:
+
+    jsr MULT_WITH_NORMAL_DISTANCE
+    
+    lda WALL_FACING_DIR
+    lsr
+    bcc to_ray_on_horizontal_wall ; no carry (facing south or norht), so we its a horizontal wall
+
+to_ray_on_vertical_wall:
+
+    lda PRODUCT+1
+    sta TO_DELTA_Y
+    lda PRODUCT+2
+    sta TO_DELTA_Y+1
+    
+    bra done_to_delta_calc
+    
+to_ray_on_horizontal_wall:
+    
+    lda PRODUCT+1
+    sta TO_DELTA_X
+    lda PRODUCT+2
+    sta TO_DELTA_X+1
+    
+done_to_delta_calc:
+    
+
+    ; -- Re-calculate TO_QUADRANT using TO_ANGLE --
+
+    ; FIXME: we first need to get the *absolute* angle for TO_ANGLE
+    ;        right now we do this by "unnormalizing" it and checking the WALL_FACING_DIR
+    ;        but there is probably a better way to do this (earlier).
+
+    lda WALL_FACING_DIR
+    cmp #3  ; west
+    beq to_ray_calc_wall_facing_west
+    cmp #2  ; south
+    beq to_ray_calc_wall_facing_south
+    cmp #1  ; east
+    beq to_ray_calc_wall_facing_east
+    cmp #0  ; north
+    beq to_ray_calc_wall_facing_north
+
+to_ray_calc_wall_facing_east:
+    ; The wall is facing north so we are turned 270. We need to subtract 90 degrees
+    sec
+    lda TO_ANGLE
+    sbc #<(1*456)
+    sta ANGLE_INDEX
+    lda TO_ANGLE+1
+    sbc #>(1*456)
+    sta ANGLE_INDEX+1
+    bra unnormalized_to_ray
+
+to_ray_calc_wall_facing_north:
+    ; The wall is facing north so we are turned 180. We need to subtract 180 degrees
+    sec
+    lda TO_ANGLE
+    sbc #<(2*456)
+    sta ANGLE_INDEX
+    lda TO_ANGLE+1
+    sbc #>(2*456)
+    sta ANGLE_INDEX+1
+    bra unnormalized_to_ray
+    
+to_ray_calc_wall_facing_west:
+    ; The wall is facing west so we are turned 90. We need to subtract 270 degrees
+    sec
+    lda TO_ANGLE
+    sbc #<(3*456)
+    sta ANGLE_INDEX
+    lda TO_ANGLE+1
+    sbc #>(3*456)
+    sta ANGLE_INDEX+1
+    bra unnormalized_to_ray
+    
+to_ray_calc_wall_facing_south:
+    ; The wall is facing south so we are turned 0. No need to subtract anything.
+    lda TO_ANGLE
+    sta ANGLE_INDEX
+    lda TO_ANGLE+1
+    sta ANGLE_INDEX+1
+
+unnormalized_to_ray:
+
+    ; Checking if ANGLE_INDEX is below 0, if so add 1824
+    bpl unnormalized_to_ray_is_positive
+    
+    clc 
+    lda ANGLE_INDEX
+    adc #<(4*456)
+    sta ANGLE_INDEX
+    lda ANGLE_INDEX+1
+    adc #>(4*456)
+    sta ANGLE_INDEX+1
+
+unnormalized_to_ray_is_positive:
+    
+    lda ANGLE_INDEX+1
+    cmp #>(456*1)
+    bcc to_ray_in_q0
+    bne to_ray_in_not_in_q0
+    lda ANGLE_INDEX
+    cmp #<(456*1)
+    bcc to_ray_in_q0
+    
+to_ray_in_not_in_q0:
+    lda ANGLE_INDEX+1
+    cmp #>(456*2)
+    bcc to_ray_in_q1
+    bne to_ray_in_not_in_q1
+    lda ANGLE_INDEX
+    cmp #<(456*2)
+    bcc to_ray_in_q1
+    
+to_ray_in_not_in_q1:
+    lda ANGLE_INDEX+1
+    cmp #>(456*3)
+    bcc to_ray_in_q2
+    bne to_ray_in_q3
+    lda ANGLE_INDEX
+    cmp #<(456*3)
+    bcc to_ray_in_q2
+    
+to_ray_in_q3:
+    ; Normalize angle (360 degrees - q3angle = q0angle)
+    sec
+    lda #<(456*4)
+    sbc ANGLE_INDEX
+    sta ANGLE_INDEX
+    lda #>(456*4)
+    sbc ANGLE_INDEX+1
+    sta ANGLE_INDEX+1
+
+    ; Mark as q3
+    lda #%00000010
+    sta TO_QUADRANT
+    
+    bra to_ray_info_updated
+    
+to_ray_in_q2:
+    ; Normalize angle (q2angle - 180 degrees = q0angle)
+    sec
+    lda ANGLE_INDEX
+    sbc #<(456*2)
+    sta ANGLE_INDEX
+    lda ANGLE_INDEX+1
+    sbc #>(456*2)
+    sta ANGLE_INDEX+1
+    
+    ; Mark as q2
+    lda #%00000011
+    sta TO_QUADRANT
+    
+    bra to_ray_info_updated
+    
+to_ray_in_q1:
+    ; Normalize angle (180 degrees - q1angle = q0angle)
+    sec
+    lda #<(456*2)
+    sbc ANGLE_INDEX
+    sta ANGLE_INDEX
+    lda #>(456*2)
+    sbc ANGLE_INDEX+1
+    sta ANGLE_INDEX+1
+    
+    ; Mark as q1
+    lda #%00000001
+    sta TO_QUADRANT
+    
+    bra to_ray_info_updated
+    
+to_ray_in_q0:
+
+    ; SPEED: this doesnt do anything!
+    lda ANGLE_INDEX
+    sta ANGLE_INDEX
+    lda ANGLE_INDEX+1
+    sta ANGLE_INDEX+1
+    
+    ; Mark as q0
+    lda #%00000000
+    sta TO_QUADRANT
+
+to_ray_info_updated:
+
+
+
+
+    .if 0
+; FIXME
+;    stp
+    lda SCREEN_START_ANGLE
+    lda SCREEN_START_ANGLE+1
+    
+    nop
+    
+    lda FROM_ANGLE
+    lda FROM_ANGLE+1
+    
+    nop
+    
+    lda TO_ANGLE
+    lda TO_ANGLE+1
+
+    nop
+    nop
+
+    lda LOOKING_DIR_QUANDRANT
+    lda FROM_QUADRANT
+    lda TO_QUADRANT
+    
+    nop
+    
+    lda FROM_DELTA_X
+    lda FROM_DELTA_X+1
+    
+    nop
+    
+    lda FROM_DELTA_Y
+    lda FROM_DELTA_Y+1
+    
+    nop
+    
+    lda TO_DELTA_X
+    lda TO_DELTA_X+1
+    
+    nop
+
+    lda TO_DELTA_Y
+    lda TO_DELTA_Y+1
+    
+    lda LOOKING_DIR_COSINE
+    lda LOOKING_DIR_COSINE+1
+    
+    lda LOOKING_DIR_SINE
+    lda LOOKING_DIR_SINE+1
+    
+    .endif
+    
+    ; If we have done that, we can now determine the distance from the player-plane and the left and right parts of the wall-part:
+    ;   normal_distance_to_point = delta_x * cos(player_angle) + delta_y * sin(player_angle)
+    ; Given these two distances, we can also determine the left and right wall heights.
+
+    ; ================ FROM DISTANCE ===============
+
+    ; First we calculate the *positive* distance along the looking direction due to DELTA_X and DELTA_Y accordingly
+
+    ; -- FROM: DISTANCE_DUE_TO_DELTA_X --
+
+    lda FROM_DELTA_X
+    sta MULTIPLICAND
+    lda FROM_DELTA_X+1
+    sta MULTIPLICAND+1
+
+    jsr MULT_WITH_LOOK_DIR_SINE
+    
+    lda PRODUCT+1
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda PRODUCT+2
+    sta DISTANCE_DUE_TO_DELTA_X+1
+
+    ; -- FROM: DISTANCE_DUE_TO_DELTA_Y --
+    
+    lda FROM_DELTA_Y
+    sta MULTIPLICAND
+    lda FROM_DELTA_Y+1
+    sta MULTIPLICAND+1
+
+    jsr MULT_WITH_LOOK_DIR_COSINE
+    
+    lda PRODUCT+1
+    sta DISTANCE_DUE_TO_DELTA_Y
+    lda PRODUCT+2
+    sta DISTANCE_DUE_TO_DELTA_Y+1
+
+    ; Now we need to know whether to negate either of these DISTANCES
+
+    lda LOOKING_DIR_QUANDRANT
+    eor FROM_QUADRANT             ; we XOR the bits with the FROM_QUADRANT. If bit 0 or 1 become a 1, this means there is a difference horizontally or vertically and we have to negate sine/cosine accordingly
+    sta TMP1
+
+from_check_vertical_difference:    
+    and #%00000001  ; check vertical
+    beq from_is_the_same_vertically
+from_is_not_the_same_vertically:
+    ; We negate the DISTANCE_DUE_TO_DELTA_Y
+    sec
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_Y
+    sta DISTANCE_DUE_TO_DELTA_Y
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_Y+1
+    sta DISTANCE_DUE_TO_DELTA_Y+1
+
+from_is_the_same_vertically:
+    ; Nothing to do with the DISTANCE_DUE_TO_DELTA_Y
+
+
+from_check_horizontal_difference:
+    lda TMP1
+    
+    and #%00000010  ; check horizontal
+    beq from_is_the_same_horizontally
+from_is_not_the_same_horizontally:
+    ; We negate the DISTANCE_DUE_TO_DELTA_X
+    sec
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_X
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_X+1
+    sta DISTANCE_DUE_TO_DELTA_X+1
+
+from_is_the_same_horizontally:
+    ; Nothing to do with the DISTANCE_DUE_TO_DELTA_X
+
+
+    ; --- Calculate the distance and then the wall height ---
+    clc
+    lda DISTANCE_DUE_TO_DELTA_Y
+    adc DISTANCE_DUE_TO_DELTA_X
+    sta FROM_DISTANCE
+    lda DISTANCE_DUE_TO_DELTA_Y+1
+    adc DISTANCE_DUE_TO_DELTA_X+1
+    sta FROM_DISTANCE+1
+    
+    ; FIXME: For now we do: 132.5*256/distance (Note: 265/2=132.5)
+    lda #128        ; 0.5
+    sta DIVIDEND
+    lda #<(132)
+    sta DIVIDEND+1
+    
+    lda FROM_DISTANCE
+    sta DIVISOR
+    lda FROM_DISTANCE+1
+    sta DIVISOR+1
+    
+    ; SPEED: we can speed this up using a lookup table: distance2halfheight!
+    jsr divide_16bits
+    
+    lda DIVIDEND
+    sta FROM_HALF_WALL_HEIGHT
+    
+
+    ; ================ TO DISTANCE ===============
+    
+    ; First we calculate the *positive* distance along the looking direction due to DELTA_X and DELTA_Y accordingly
+
+    ; -- TO: DISTANCE_DUE_TO_DELTA_X --
+
+    lda TO_DELTA_X
+    sta MULTIPLICAND
+    lda TO_DELTA_X+1
+    sta MULTIPLICAND+1
+
+    jsr MULT_WITH_LOOK_DIR_SINE
+    
+    lda PRODUCT+1
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda PRODUCT+2
+    sta DISTANCE_DUE_TO_DELTA_X+1
+
+    ; -- TO: DISTANCE_DUE_TO_DELTA_Y --
+    
+    lda TO_DELTA_Y
+    sta MULTIPLICAND
+    lda TO_DELTA_Y+1
+    sta MULTIPLICAND+1
+
+    jsr MULT_WITH_LOOK_DIR_COSINE
+    
+    lda PRODUCT+1
+    sta DISTANCE_DUE_TO_DELTA_Y
+    lda PRODUCT+2
+    sta DISTANCE_DUE_TO_DELTA_Y+1
+
+    ; Now we need to know whether to negate either of these DISTANCES
+
+    lda LOOKING_DIR_QUANDRANT
+    eor TO_QUADRANT             ; we XOR the bits with the TO_QUADRANT. If bit 0 or 1 become a 1, this means there is a difference horizontally or vertically and we have to negate sine/cosine accordingly
+    sta TMP1
+
+to_check_vertical_difference:    
+    and #%00000001  ; check vertical
+    beq to_is_the_same_vertically
+to_is_not_the_same_vertically:
+    ; We negate the DISTANCE_DUE_TO_DELTA_Y
+    sec
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_Y
+    sta DISTANCE_DUE_TO_DELTA_Y
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_Y+1
+    sta DISTANCE_DUE_TO_DELTA_Y+1
+
+to_is_the_same_vertically:
+    ; Nothing to do with the DISTANCE_DUE_TO_DELTA_Y
+
+
+to_check_horizontal_difference:
+    lda TMP1
+    
+    and #%00000010  ; check horizontal
+    beq to_is_the_same_horizontally
+to_is_not_the_same_horizontally:
+    ; We negate the DISTANCE_DUE_TO_DELTA_X
+    sec
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_X
+    sta DISTANCE_DUE_TO_DELTA_X
+    lda #0
+    sbc DISTANCE_DUE_TO_DELTA_X+1
+    sta DISTANCE_DUE_TO_DELTA_X+1
+
+to_is_the_same_horizontally:
+    ; Nothing to do with the DISTANCE_DUE_TO_DELTA_X
+
+
+    ; --- Calculate the distance and then the wall height ---
+    clc
+    lda DISTANCE_DUE_TO_DELTA_Y
+    adc DISTANCE_DUE_TO_DELTA_X
+    sta TO_DISTANCE
+    lda DISTANCE_DUE_TO_DELTA_Y+1
+    adc DISTANCE_DUE_TO_DELTA_X+1
+    sta TO_DISTANCE+1
+
+    ; FIXME: For now we do: 132.5*256/distance (Note: 265.0/2 = 132.5)
+    lda #128         ; 0.5
+    sta DIVIDEND
+    lda #<(132)
+    sta DIVIDEND+1
+    
+    lda TO_DISTANCE
+    sta DIVISOR
+    lda TO_DISTANCE+1
+    sta DIVISOR+1
+    
+    ; SPEED: we can speed this up using a lookup table: distance2halfheight!
+    jsr divide_16bits
+    
+    lda DIVIDEND
+    sta TO_HALF_WALL_HEIGHT
+
+    
+    ; We also have to determine whether the wall decreases (in height) from left to right, or the other way around and maybe do a different draw-wall-call accordingly
+    
+    lda #0
+    sta WALL_HEIGHT_INCREASES
+    
+    sec
+    lda FROM_HALF_WALL_HEIGHT
+    sbc TO_HALF_WALL_HEIGHT
+    bcs wall_height_incr_decr_determined
+
+    lda #1
+    sta WALL_HEIGHT_INCREASES
+    
+wall_height_incr_decr_determined:
+
+    jsr draw_wall_part
+    
+    rts
+
+
+
+
+    ; ==================================================================================================================================
+    ;
+    ;                                                            DRAW WALL PART
+    ;
+    ; ==================================================================================================================================
+    
 draw_wall_part:
 
     ; NORMAL_DISTANCE_TO_WALL      ; the normal distance of the player to the wall (length of the line 90 degress out of the wall to the player)
