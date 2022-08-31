@@ -33,13 +33,13 @@ prep_and_draw_wall_part:
     
 recalculate_from_angle_info:
 
-    ; -- Recalculate FROM_ANGLE using FROM_SCREEN_ANGLE + SCREEN_START_ANGLE --
+    ; -- Recalculate FROM_ANGLE using FROM_SCREEN_ANGLE_PART + SCREEN_START_ANGLE --
 
     clc
-    lda FROM_SCREEN_ANGLE
+    lda FROM_SCREEN_ANGLE_PART
     adc SCREEN_START_ANGLE
     sta FROM_ANGLE
-    lda FROM_SCREEN_ANGLE+1
+    lda FROM_SCREEN_ANGLE_PART+1
     adc SCREEN_START_ANGLE+1
     sta FROM_ANGLE+1
     
@@ -305,13 +305,13 @@ from_angle_info_updated:
 recalculate_to_angle_info:
 
 
-    ; -- Recalculate TO_ANGLE using TO_SCREEN_ANGLE + SCREEN_START_ANGLE --
+    ; -- Recalculate TO_ANGLE using TO_SCREEN_ANGLE_PART + SCREEN_START_ANGLE --
 
     clc
-    lda TO_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE_PART
     adc SCREEN_START_ANGLE
     sta TO_ANGLE
-    lda TO_SCREEN_ANGLE+1
+    lda TO_SCREEN_ANGLE_PART+1
     adc SCREEN_START_ANGLE+1
     sta TO_ANGLE+1
     

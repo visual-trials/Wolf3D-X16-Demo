@@ -69,7 +69,7 @@ START_SCREEN_X            = $4B ; 4C  ; the x-position of the wall starting on s
 TEXTURE_COLUMN_OFFSET     = $4D
 TEXTURE_INDEX_OFFSET      = $4E
 
-; $4F is free
+; $4f available
 
 PLAYER_POS_X              = $50 ; 51  ; x-position of the player (8.8 bits)
 PLAYER_POS_Y              = $52 ; 53  ; y-position of the player (8.8 bits)
@@ -96,7 +96,11 @@ DELTA_Y                   = $6C ; 6D
 FROM_SCREEN_ANGLE         = $6E ; 6F
 TO_SCREEN_ANGLE           = $70 ; 71
 
-; $72-77 available
+NR_OF_OCCLUDERS           = $72       ; the number of occluders in the linked list (to know which index to use when creating a new occluder)
+CURRENT_OCCLUDER_INDEX    = $73       ; the number of occluders in the linked list (to know which index to use when creating a new occluder)
+
+FROM_SCREEN_ANGLE_PART    = $74 ; 75
+TO_SCREEN_ANGLE_PART      = $76 ; 77
 
 FROM_QUADRANT             = $78       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
 TO_QUADRANT               = $79       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
@@ -167,6 +171,13 @@ SQUARE1_LOW              = $8000    ; 512 bytes
 SQUARE1_HIGH             = $8200    ; 512 bytes
 SQUARE2_LOW              = $8400    ; 512 bytes
 SQUARE2_HIGH             = $8600    ; 512 bytes
+
+OCCLUDER_FROM_ANGLE_LOW  = $8800    ; 32 bytes
+OCCLUDER_FROM_ANGLE_HIGH = $8820    ; 32 bytes
+OCCLUDER_TO_ANGLE_LOW    = $8840    ; 32 bytes
+OCCLUDER_TO_ANGLE_HIGH   = $8860    ; 32 bytes
+OCCLUDER_NEXT            = $8880    ; 32 bytes
+
 
 DRAW_COLUMN_CODE         = $A000    ; 152 * 3 bytes + 64 * 3 bytes + 1 byte = 649 bytes for each wall height (512 wall heights)
 

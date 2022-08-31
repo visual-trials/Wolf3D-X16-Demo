@@ -998,12 +998,21 @@ from_screen_angle_is_positive:
 to_screen_angle_is_positive:
 
 
+; FIXME
+;    stp
+    lda FROM_SCREEN_ANGLE
+    lda FROM_SCREEN_ANGLE+1
+    lda TO_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE+1
+
+
     ; --------------------------------------------------------------------------------------------
     ;                                 Check FROM_SCREEN_ANGLE
     ; --------------------------------------------------------------------------------------------
     
     ; Check if start of wall is between the left and right of the screen
     
+    ; FIXME: shouldnt we do this as part of the OCCLUDER check? Occluder 0 has angle 0 as end, so that would basicly be the same check?
     lda FROM_SCREEN_ANGLE+1
     ; We check if its within 0 and 304 angles (first check left, then right)
     ; FIXME: hack
@@ -1016,8 +1025,8 @@ from_screen_angle_is_left_of_screen:
     ; Cut off left part of wall to the beginning of the screen
     
     lda #0
-    sta FROM_SCREEN_ANGLE
-    sta FROM_SCREEN_ANGLE+1
+    sta FROM_SCREEN_ANGLE_PART
+    sta FROM_SCREEN_ANGLE_PART+1
     
     lda #1
     sta FROM_ANGLE_NEEDS_RECALC
@@ -1079,19 +1088,128 @@ to_screen_angle_is_on_right_of_screen:
     ; Set to-angle to a screen angle of 60 degrees (right column of the screen)
     
     lda #<(304)
-    sta TO_SCREEN_ANGLE
+    sta TO_SCREEN_ANGLE_PART
     lda #>(304)
-    sta TO_SCREEN_ANGLE+1
+    sta TO_SCREEN_ANGLE_PART+1
     
     
 to_screen_angle_is_not_right_of_screen:
 
 
-
     ; FIXME: Actually split into wall parts here!
 
 
+    ldy #0
+    sta NR_OF_OCCLUDERS
+    
+    ; The initial occluder begins at 304 and ends at 0 (basicly evertything that is not on screen)
+; FIXME
+;    lda #(<304)
+    lda #(<$5F)
+    sta OCCLUDER_FROM_ANGLE_LOW, y
+;    lda #(>304)
+    lda #(>$5F)
+    sta OCCLUDER_FROM_ANGLE_HIGH, y
+    
+; FIXME
+;    lda #0
+    lda #(<$D0)
+    sta OCCLUDER_TO_ANGLE_LOW, y
+    lda #(>$D0)
+    sta OCCLUDER_TO_ANGLE_HIGH, y
+    ; Initially there is no other occluder, so the next one is itself (index = 0)
+    sta OCCLUDER_NEXT, y
+    
+    ; We now have 1 occluder
+    inc NR_OF_OCCLUDERS
+    
+    ldy #0
+    sty CURRENT_OCCLUDER_INDEX
+    
+    
+next_occluder_to_check:    
+    ldy CURRENT_OCCLUDER_INDEX
 
+    ; Check if the wall starts to the left of the occluders end (meaning we have to cut-off something off the wall)
+; FIXME
+    .if 0
+    lda FROM_SCREEN_ANGLE+1
+    cmp OCCLUDER_TO_ANGLE_HIGH, y
+    bcc start_of_wall_is_to_the_left_of_the_end_of_occluder
+    ; -> FIXME: this assumes that the end index of an occluder is +1 its actual ending!
+    bne start_of_wall_is_to_the_right_of_or_at_the_end_of_occluder      
+    lda FROM_SCREEN_ANGLE
+    cmp OCCLUDER_TO_ANGLE_LOW, y
+    bcc start_of_wall_is_to_the_left_of_the_end_of_occluder
+
+start_of_wall_is_to_the_right_of_or_at_the_end_of_occluder:
+
+    ; No need to cut-off the wall on its left side
+    bra start_of_wall_is_ok
+
+
+start_of_wall_is_to_the_left_of_the_end_of_occluder:
+
+    ; We need to cut-off the left part of the wall
+    
+    lda OCCLUDER_TO_ANGLE_HIGH, y
+    sta FROM_SCREEN_ANGLE_PART+1
+    lda OCCLUDER_TO_ANGLE_LOW, y
+    sta FROM_SCREEN_ANGLE_PART
+    
+    ; FIXME: do we need to cutoff FROM_SCREEN_ANGLE as well?
+
+    lda #1
+    sta FROM_ANGLE_NEEDS_RECALC
+
+
+start_of_wall_is_ok:
+; FIXME
+    .endif
+
+    ; Check if the wall ends to the right of the start of the NEXT occluder
+    
+; FIXME: get the NEXT occluder first!
+    
+    lda TO_SCREEN_ANGLE+1
+    cmp OCCLUDER_FROM_ANGLE_HIGH, y
+    bcc end_of_wall_is_to_the_left_of_the_start_of_occluder
+    ; -> FIXME: this assumes that the end index of an occluder is +1 its actual ending!
+    bne end_of_wall_is_to_the_right_of_or_at_the_start_of_occluder      
+    lda TO_SCREEN_ANGLE
+    cmp OCCLUDER_FROM_ANGLE_LOW, y
+    bcc end_of_wall_is_to_the_left_of_the_start_of_occluder
+
+end_of_wall_is_to_the_right_of_or_at_the_start_of_occluder:
+
+    ; FIXME: we need to split off the wall into a wall part, but FOR NOW, we just cut it off
+    
+    ; FIXME: Do we need to do a -1 here?
+    
+    lda OCCLUDER_FROM_ANGLE_HIGH, y
+    sta TO_SCREEN_ANGLE_PART+1
+    lda OCCLUDER_FROM_ANGLE_LOW, y
+    sta TO_SCREEN_ANGLE_PART
+
+    lda #1
+    sta TO_ANGLE_NEEDS_RECALC
+    
+    bra end_of_wall_is_ok
+
+
+end_of_wall_is_to_the_left_of_the_start_of_occluder:
+
+    ; No need to cut-off the wall on its right side
+
+
+end_of_wall_is_ok:
+
+    ; Checking if occluder index != 0! (meaning there are no more occluders) otherwise continue to next occluder
+    lda OCCLUDER_NEXT, y
+    tay
+    bne next_occluder_to_check
+
+; FIXME: this call should be inside our wall-splitting loop!
     jsr prep_and_draw_wall_part
     
     
