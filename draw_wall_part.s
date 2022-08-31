@@ -260,7 +260,7 @@ from_angle_in_q0:
 from_angle_info_updated:
 
 
-    ; ============ TO RAY ==========
+    ; ============ TO ANGLE ==========
     
     lda TO_ANGLE_NEEDS_RECALC
     bne recalculate_to_angle_info

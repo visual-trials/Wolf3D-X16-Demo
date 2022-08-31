@@ -46,10 +46,6 @@ VIRTUAL_SCREEN_CURSOR     = $29
 TOP_HALF_WALL_HEIGHT      = $2A
 BOTTOM_HALF_WALL_HEIGHT   = $2B
 
-DIVIDEND                  = $2C ; 2D ; 2E  ; the thing you want to divide (e.g. 100 /) . This will also the result after the division
-DIVISOR                   = $2F ; 30 ; 31  ; the thing you divide by (e.g. / 10)
-REMAINDER                 = $32 ; 33 ; 34
-
 HALF_WALL_HEIGHT_INCREMENT= $35 ; 36
 ; $37 is free
 COLUMN_HALF_WALL_HEIGHT   = $38 ; 39
@@ -97,11 +93,6 @@ DELTA_X                   = $6A ; 6B
 DELTA_Y                   = $6C ; 6D
 TESTING_ANGLE             = $6E ; 6F
 
-; Used only by (slow) 16bit multiplier (multply_16bits)
-MULTIPLIER                = $70 ; 71
-MULTIPLICAND              = $72 ; 73
-PRODUCT                   = $74 ; 75 ; 76 ; 77
-
 FROM_QUADRANT             = $78       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
 TO_QUADRANT               = $79       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
 DISTANCE_DUE_TO_DELTA_X   = $7A ; 7B  ; The distance along the looking direction due to DELTA_X 
@@ -123,6 +114,18 @@ FROM_ANGLE_NEEDS_RECALC   = $8E
 TO_ANGLE_NEEDS_RECALC     = $8F
 
 WALL_LENGTH               = $90
+
+
+; Used only by (slow) 16bit multiplier (multply_16bits)
+MULTIPLIER                = $EF ; F0
+MULTIPLICAND              = $F1 ; F2
+PRODUCT                   = $F3 ; F4 ; F5 ; F6
+
+; Used by the 16bit and 24 dividers
+DIVIDEND                  = $F7 ; F8 ; F9  ; the thing you want to divide (e.g. 100 /) . This will also the result after the division
+DIVISOR                   = $FA ; FB ; FC  ; the thing you divide by (e.g. / 10)
+REMAINDER                 = $FD ; FE ; FF
+
 
 ; === VRAM addresses ===
 
