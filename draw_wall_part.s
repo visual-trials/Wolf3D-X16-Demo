@@ -32,6 +32,40 @@ prep_and_draw_wall_part:
     
     
 recalculate_from_angle_info:
+
+    ; -- Recalculate FROM_ANGLE using FROM_SCREEN_ANGLE + SCREEN_START_ANGLE --
+
+    clc
+    lda FROM_SCREEN_ANGLE
+    adc SCREEN_START_ANGLE
+    sta FROM_ANGLE
+    lda FROM_SCREEN_ANGLE+1
+    adc SCREEN_START_ANGLE+1
+    sta FROM_ANGLE+1
+    
+    ; Checking if > 1824 ($720)
+    
+    lda FROM_ANGLE+1
+    cmp #>(1824)
+    bcc from_angle_is_within_bounds
+    bne from_angle_is_outside_bounds
+    lda FROM_ANGLE
+    cmp #<(1824)
+    bcc from_angle_is_within_bounds
+
+from_angle_is_outside_bounds:
+    ; FROM_ANGLE is more than $720, so we have to subtract $720
+    sec
+    lda FROM_ANGLE
+    sbc #<(1824)
+    sta FROM_ANGLE
+    lda FROM_ANGLE+1
+    sbc #>(1824)
+    sta FROM_ANGLE+1
+    
+from_angle_is_within_bounds:
+
+
     ; -- Re-calculate FROM_DELTA_X **OR** FROM_DELTA_Y using tangent(FROM_ANGLE) --
     
     ; Check if FROM_ANGLE is 'negative' (between 270 degrees and 360)
@@ -269,6 +303,42 @@ from_angle_info_updated:
     jmp to_angle_info_updated
     
 recalculate_to_angle_info:
+
+
+    ; -- Recalculate TO_ANGLE using TO_SCREEN_ANGLE + SCREEN_START_ANGLE --
+
+    clc
+    lda TO_SCREEN_ANGLE
+    adc SCREEN_START_ANGLE
+    sta TO_ANGLE
+    lda TO_SCREEN_ANGLE+1
+    adc SCREEN_START_ANGLE+1
+    sta TO_ANGLE+1
+    
+    ; Checking if > 1824 ($720)
+    
+    lda TO_ANGLE+1
+    cmp #>(1824)
+    bcc to_screen_angle_is_within_bounds
+    bne to_screen_angle_is_outside_bounds
+    lda TO_ANGLE
+    cmp #<(1824)
+    bcc to_screen_angle_is_within_bounds
+
+to_screen_angle_is_outside_bounds:
+    ; TO_ANGLE is more than $720, so we have to subtract $720
+    sec
+    lda TO_ANGLE
+    sbc #<(1824)
+    sta TO_ANGLE
+    lda TO_ANGLE+1
+    sbc #>(1824)
+    sta TO_ANGLE+1
+    
+to_screen_angle_is_within_bounds:
+
+
+
     ; -- Re-calculate TO_DELTA_X **OR** TO_DELTA_Y using tangent(TO_ANGLE) --
     
     ; Check if TO_ANGLE is 'negative' (between 270 degrees and 360)

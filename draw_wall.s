@@ -1015,10 +1015,9 @@ from_screen_angle_is_left_of_screen:
     
     ; Cut off left part of wall to the beginning of the screen
     
-    lda SCREEN_START_ANGLE
-    sta FROM_ANGLE
-    lda SCREEN_START_ANGLE+1
-    sta FROM_ANGLE+1
+    lda #0
+    sta FROM_SCREEN_ANGLE
+    sta FROM_SCREEN_ANGLE+1
     
     lda #1
     sta FROM_ANGLE_NEEDS_RECALC
@@ -1077,36 +1076,12 @@ to_screen_angle_is_on_right_of_screen:
     lda #1
     sta TO_ANGLE_NEEDS_RECALC
     
-    ; Set to-angle to screen start angle + 60 degrees (right column of the screen)
-    clc
-    lda SCREEN_START_ANGLE
-    adc #<(304)
-    sta TO_ANGLE
-    lda SCREEN_START_ANGLE+1
-    adc #>(304)
-    sta TO_ANGLE+1
+    ; Set to-angle to a screen angle of 60 degrees (right column of the screen)
     
-    ; FIXME: checking if > $720, isnt there a nicer way?
-    
-    lda TO_ANGLE+1
-    cmp #>(1824)
-    bcc to_screen_angle_is_within_bounds
-    bne to_screen_angle_is_outside_bounds
-    lda TO_ANGLE
-    cmp #<(1824)
-    bcc to_screen_angle_is_within_bounds
-
-to_screen_angle_is_outside_bounds:
-    ; TO_ANGLE is more than $720, so we have to subtract $720
-    sec
-    lda TO_ANGLE
-    sbc #<(1824)
-    sta TO_ANGLE
-    lda TO_ANGLE+1
-    sbc #>(1824)
-    sta TO_ANGLE+1
-    
-to_screen_angle_is_within_bounds:
+    lda #<(304)
+    sta TO_SCREEN_ANGLE
+    lda #>(304)
+    sta TO_SCREEN_ANGLE+1
     
     
 to_screen_angle_is_not_right_of_screen:
