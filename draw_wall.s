@@ -112,6 +112,9 @@ wall_facing_north_screen_start_ray_calculated:
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_Y+1
     
+    ; Since the NORMAL_DISTANCE_TO_WALL has now been determined, we can prepare the multiplier that uses it
+    jsr setup_multiply_with_normal_distance_16bit
+
     ; Determine the distance in the x-direction (delta X) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
@@ -271,7 +274,7 @@ wall_facing_north_calc_angle_for_end_of_wall:
     lda ANGLE_INDEX+1
     sta TO_ANGLE+1
     
-    jmp calculated_normal_distance_to_wall
+    jmp split_wall_into_wall_parts
 
     
 
@@ -326,6 +329,9 @@ wall_facing_west_screen_start_ray_calculated:
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_X+1
     
+    ; Since the NORMAL_DISTANCE_TO_WALL has now been determined, we can prepare the multiplier that uses it
+    jsr setup_multiply_with_normal_distance_16bit
+
     ; Determine the distance in the y-direction (delta Y) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
@@ -485,7 +491,7 @@ wall_facing_west_calc_angle_for_end_of_wall:
     lda ANGLE_INDEX+1
     sta TO_ANGLE+1
     
-    jmp calculated_normal_distance_to_wall
+    jmp split_wall_into_wall_parts
 
 
 
@@ -540,6 +546,9 @@ wall_facing_south_screen_start_ray_calculated:
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_Y+1
     
+    ; Since the NORMAL_DISTANCE_TO_WALL has now been determined, we can prepare the multiplier that uses it
+    jsr setup_multiply_with_normal_distance_16bit
+
     ; Determine the distance in the x-direction (delta X) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
@@ -690,7 +699,7 @@ wall_facing_south_calc_angle_for_end_of_wall:
     lda ANGLE_INDEX+1
     sta TO_ANGLE+1
     
-    jmp calculated_normal_distance_to_wall
+    jmp split_wall_into_wall_parts
     
     
 
@@ -745,6 +754,9 @@ wall_facing_east_screen_start_ray_calculated:
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_X+1
     
+    ; Since the NORMAL_DISTANCE_TO_WALL has now been determined, we can prepare the multiplier that uses it
+    jsr setup_multiply_with_normal_distance_16bit
+
     ; Determine the distance in the y-direction (delta Y) for the START of the wall
     sec
     lda #0                      ; Walls always start on .0
@@ -895,14 +907,20 @@ wall_facing_east_calc_angle_for_end_of_wall:
     lda ANGLE_INDEX+1
     sta TO_ANGLE+1
     
-    jmp calculated_normal_distance_to_wall
+    ; SPEED: this jmp is not needed here
+    jmp split_wall_into_wall_parts
 
 
     
-calculated_normal_distance_to_wall:
+split_wall_into_wall_parts:
 
-    ; Since the NORMAL_DISTANCE_TO_WALL has now been determined, we can prepare the multiplier that uses it
-    jsr setup_multiply_with_normal_distance_16bit
+
+    ; ==================================================================================================================================
+    ;
+    ;                                                   SPLIT WALL INTO WALL PARTS
+    ;
+    ; ==================================================================================================================================
+
 
     ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
     ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
@@ -1078,6 +1096,12 @@ to_ray_is_not_right_of_screen:
     
 
 
+    ; ==================================================================================================================================
+    ;
+    ;                                                           CALC ANGLE FOR POINT
+    ;
+    ; ==================================================================================================================================
+    
     
 calc_angle_for_point:
 
