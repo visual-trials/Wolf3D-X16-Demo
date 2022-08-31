@@ -1088,6 +1088,10 @@ to_screen_angle_is_not_right_of_screen:
 
 
 
+    ; FIXME: Actually split into wall parts here!
+
+
+
     jsr prep_and_draw_wall_part
     
     
