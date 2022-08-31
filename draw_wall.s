@@ -931,8 +931,11 @@ split_wall_into_wall_parts:
     sta FROM_ANGLE_NEEDS_RECALC
     sta TO_ANGLE_NEEDS_RECALC
     
-    ; Check if start of wall is between the left and right of the screen
-    ; To do this, we first need to know the angle number on the screen (FROM_ANGLE - SCREEN_START_ANGLE)
+    ; --------------------------------------------------------------------------------------------
+    ;                                 Calculate FROM_SCREEN_ANGLE
+    ; --------------------------------------------------------------------------------------------
+
+    ; To test things relative tot the screen we first need to know the angle number on the screen (FROM_ANGLE - SCREEN_START_ANGLE)
     
     sec
     lda FROM_ANGLE
@@ -954,6 +957,54 @@ split_wall_into_wall_parts:
     sta FROM_SCREEN_ANGLE+1
     
 from_screen_angle_is_positive:
+
+    ; --------------------------------------------------------------------------------------------
+    ;                                 Calculate TO_SCREEN_ANGLE
+    ; --------------------------------------------------------------------------------------------
+    
+    ; To test things relative tot the screen we first need to know the angle number on the screen (FROM_ANGLE - SCREEN_START_ANGLE)
+    
+    sec
+    lda TO_ANGLE
+    sbc SCREEN_START_ANGLE
+    sta TO_SCREEN_ANGLE
+    lda TO_ANGLE+1
+    sbc SCREEN_START_ANGLE+1
+    sta TO_SCREEN_ANGLE+1
+    
+    ; FIXME: because TO_ANGLE now represents the angle+1 until we want to draw, we are here subscracting 1 for the TO_SCREEN_ANGLE!
+    ;        We might consider TO_ANGLE containing the angle (not +1) until we want to draw
+
+    ; SPEED: incremting TO_SCREEN_ANGLE with 1 (this can probably be done quicker!)
+    sec
+    lda TO_SCREEN_ANGLE
+    sbc #<(1)
+    sta TO_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE+1
+    sbc #>(1)
+    sta TO_SCREEN_ANGLE+1
+    
+    bpl to_screen_angle_is_positive
+    
+    ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
+    clc
+    lda TO_SCREEN_ANGLE
+    adc #<(1824)
+    sta TO_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE+1
+    adc #>(1824)
+    sta TO_SCREEN_ANGLE+1
+    
+to_screen_angle_is_positive:
+
+
+    ; --------------------------------------------------------------------------------------------
+    ;                                 Check FROM_SCREEN_ANGLE
+    ; --------------------------------------------------------------------------------------------
+    
+    ; Check if start of wall is between the left and right of the screen
+    
+    lda FROM_SCREEN_ANGLE+1
     ; We check if its within 0 and 304 angles (first check left, then right)
     ; FIXME: hack
     cmp #5
@@ -993,43 +1044,14 @@ from_screen_angle_is_right_of_screen:
 from_screen_angle_is_within_the_screen:
 
 
-
+    ; --------------------------------------------------------------------------------------------
+    ;                                 Check TO_SCREEN_ANGLE
+    ; --------------------------------------------------------------------------------------------
+    
     ; Check if end of wall is between the left and right of the screen
-    ; To do this, we first need to know the angle number on the screen (TO_ANGLE - SCREEN_START_ANGLE)
-    sec
-    lda TO_ANGLE
-    sbc SCREEN_START_ANGLE
-    sta TO_SCREEN_ANGLE
-    lda TO_ANGLE+1
-    sbc SCREEN_START_ANGLE+1
-    sta TO_SCREEN_ANGLE+1
     
-    ; FIXME: because TO_ANGLE now represents the angle+1 until we want to draw, we are here subscracting 1 for the TO_SCREEN_ANGLE!
-    ;        We might consider TO_ANGLE containing the angle (not +1) until we want to draw
-
-    ; SPEED: incremting TO_SCREEN_ANGLE with 1 (this can probably be done quicker!)
-    sec
-    lda TO_SCREEN_ANGLE
-    sbc #<(1)
-    sta TO_SCREEN_ANGLE
+    ; We first check if the to-angle is not to the left of the screen
     lda TO_SCREEN_ANGLE+1
-    sbc #>(1)
-    sta TO_SCREEN_ANGLE+1
-    
-    bpl to_screen_angle_is_positive
-    
-    ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
-    clc
-    lda TO_SCREEN_ANGLE
-    adc #<(1824)
-    sta TO_SCREEN_ANGLE
-    lda TO_SCREEN_ANGLE+1
-    adc #>(1824)
-    sta TO_SCREEN_ANGLE+1
-    
-to_screen_angle_is_positive:
-
-    ; We check if the to-angle is not to the left of the screen
     ; FIXME: hack
     cmp #5
     bcc to_screen_angle_is_not_left_of_screen
