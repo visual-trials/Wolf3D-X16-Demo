@@ -185,7 +185,7 @@ draw_3d_view:
 
 draw_walls:
 
-;    lda #3
+;    lda #4
     lda #0
     sta CURRENT_WALL_INDEX
 
@@ -235,7 +235,7 @@ wall_doorness_determined:
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
     cmp #8
-;    cmp #4
+;    cmp #5
     bne draw_next_wall
     
     rts
