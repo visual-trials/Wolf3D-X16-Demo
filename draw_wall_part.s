@@ -8,7 +8,7 @@ prep_and_draw_wall_part:
 
 
 
-    ; ========== Recalculate FROM_RAY and TO_RAY INFO ===========
+    ; ========== Recalculate FROM_ANGLE and TO_ANGLE INFO ===========
     
     ; Note that the FROM_ANGLE is an angle that is relative to the normal line of the wall
     ; This means that it has to be between 270 and 90 degrees. In order to get the tangent(FROM_ANGLE) we
@@ -25,20 +25,20 @@ prep_and_draw_wall_part:
     
     
     lda FROM_ANGLE_NEEDS_RECALC
-    bne recalculate_from_ray_info
+    bne recalculate_from_angle_info
     
-    ; There is no need to recalculate the from_ray_info so jump over it
-    jmp from_ray_info_updated
+    ; There is no need to recalculate the from_angle_info so jump over it
+    jmp from_angle_info_updated
     
     
-recalculate_from_ray_info:
+recalculate_from_angle_info:
     ; -- Re-calculate FROM_DELTA_X **OR** FROM_DELTA_Y using tangent(FROM_ANGLE) --
     
     ; Check if FROM_ANGLE is 'negative' (between 270 degrees and 360)
     lda FROM_ANGLE+1
     ; FIXME: hack!
     cmp #4
-    bcc from_ray_is_already_between_0_and_90_degrees
+    bcc from_angle_is_already_between_0_and_90_degrees
     
     sec
     lda #<(1824)
@@ -48,41 +48,41 @@ recalculate_from_ray_info:
     sbc FROM_ANGLE+1
     sta ANGLE_INDEX+1
     
-    bra from_ray_is_now_between_0_and_90_degrees
+    bra from_angle_is_now_between_0_and_90_degrees
 
-from_ray_is_already_between_0_and_90_degrees:
+from_angle_is_already_between_0_and_90_degrees:
     lda FROM_ANGLE
     sta ANGLE_INDEX
     lda FROM_ANGLE+1
     sta ANGLE_INDEX+1
 
-from_ray_is_now_between_0_and_90_degrees:
+from_angle_is_now_between_0_and_90_degrees:
 
     ; SPEED: no need to do this lda
     lda ANGLE_INDEX+1
-    bne is_high_positive_from_ray_index
-is_low_positive_from_ray_index:
+    bne is_high_positive_from_angle_index
+is_low_positive_from_angle_index:
     ldy ANGLE_INDEX
     lda TANGENT_LOW,y             ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND
     lda TANGENT_HIGH,y             ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
-    bra got_tangent_from_ray
-is_high_positive_from_ray_index:
+    bra got_tangent_from_angle
+is_high_positive_from_angle_index:
     ldy ANGLE_INDEX
     lda TANGENT_LOW+256,y         ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND
     lda TANGENT_HIGH+256,y         ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
-got_tangent_from_ray:
+got_tangent_from_angle:
 
     jsr MULT_WITH_NORMAL_DISTANCE
     
     lda WALL_FACING_DIR
     lsr
-    bcc from_ray_on_horizontal_wall ; no carry (facing south or norht), so we its a horizontal wall
+    bcc from_angle_on_horizontal_wall ; no carry (facing south or norht), so we its a horizontal wall
 
-from_ray_on_vertical_wall:
+from_angle_on_vertical_wall:
 
     lda PRODUCT+1
     sta FROM_DELTA_Y
@@ -91,7 +91,7 @@ from_ray_on_vertical_wall:
     
     bra done_from_delta_calc
     
-from_ray_on_horizontal_wall:
+from_angle_on_horizontal_wall:
     
     lda PRODUCT+1
     sta FROM_DELTA_X
@@ -109,15 +109,15 @@ done_from_delta_calc:
 
     lda WALL_FACING_DIR
     cmp #3  ; west
-    beq from_ray_calc_wall_facing_west
+    beq from_angle_calc_wall_facing_west
     cmp #2  ; south
-    beq from_ray_calc_wall_facing_south
+    beq from_angle_calc_wall_facing_south
     cmp #1  ; east
-    beq from_ray_calc_wall_facing_east
+    beq from_angle_calc_wall_facing_east
     cmp #0  ; north
-    beq from_ray_calc_wall_facing_north
+    beq from_angle_calc_wall_facing_north
 
-from_ray_calc_wall_facing_east:
+from_angle_calc_wall_facing_east:
     ; The wall is facing north so we are turned 270. We need to subtract 90 degrees
     sec
     lda FROM_ANGLE
@@ -126,9 +126,9 @@ from_ray_calc_wall_facing_east:
     lda FROM_ANGLE+1
     sbc #>(1*456)
     sta ANGLE_INDEX+1
-    bra unnormalized_from_ray
+    bra unnormalized_from_angle
 
-from_ray_calc_wall_facing_north:
+from_angle_calc_wall_facing_north:
     ; The wall is facing north so we are turned 180. We need to subtract 180 degrees
     sec
     lda FROM_ANGLE
@@ -137,9 +137,9 @@ from_ray_calc_wall_facing_north:
     lda FROM_ANGLE+1
     sbc #>(2*456)
     sta ANGLE_INDEX+1
-    bra unnormalized_from_ray
+    bra unnormalized_from_angle
     
-from_ray_calc_wall_facing_west:
+from_angle_calc_wall_facing_west:
     ; The wall is facing west so we are turned 90. We need to subtract 270 degrees
     sec
     lda FROM_ANGLE
@@ -148,19 +148,19 @@ from_ray_calc_wall_facing_west:
     lda FROM_ANGLE+1
     sbc #>(3*456)
     sta ANGLE_INDEX+1
-    bra unnormalized_from_ray
+    bra unnormalized_from_angle
     
-from_ray_calc_wall_facing_south:
+from_angle_calc_wall_facing_south:
     ; The wall is facing south so we are turned 0. No need to subtract anything.
     lda FROM_ANGLE
     sta ANGLE_INDEX
     lda FROM_ANGLE+1
     sta ANGLE_INDEX+1
 
-unnormalized_from_ray:
+unnormalized_from_angle:
 
     ; Checking if ANGLE_INDEX is below 0, if so add 1824
-    bpl unnormalized_from_ray_is_positive
+    bpl unnormalized_from_angle_is_positive
     
     clc 
     lda ANGLE_INDEX
@@ -170,35 +170,35 @@ unnormalized_from_ray:
     adc #>(4*456)
     sta ANGLE_INDEX+1
 
-unnormalized_from_ray_is_positive:
+unnormalized_from_angle_is_positive:
     
     lda ANGLE_INDEX+1
     cmp #>(456*1)
-    bcc from_ray_in_q0
-    bne from_ray_in_not_in_q0
+    bcc from_angle_in_q0
+    bne from_angle_in_not_in_q0
     lda ANGLE_INDEX
     cmp #<(456*1)
-    bcc from_ray_in_q0
+    bcc from_angle_in_q0
     
-from_ray_in_not_in_q0:
+from_angle_in_not_in_q0:
     lda ANGLE_INDEX+1
     cmp #>(456*2)
-    bcc from_ray_in_q1
-    bne from_ray_in_not_in_q1
+    bcc from_angle_in_q1
+    bne from_angle_in_not_in_q1
     lda ANGLE_INDEX
     cmp #<(456*2)
-    bcc from_ray_in_q1
+    bcc from_angle_in_q1
     
-from_ray_in_not_in_q1:
+from_angle_in_not_in_q1:
     lda ANGLE_INDEX+1
     cmp #>(456*3)
-    bcc from_ray_in_q2
-    bne from_ray_in_q3
+    bcc from_angle_in_q2
+    bne from_angle_in_q3
     lda ANGLE_INDEX
     cmp #<(456*3)
-    bcc from_ray_in_q2
+    bcc from_angle_in_q2
     
-from_ray_in_q3:
+from_angle_in_q3:
     ; Normalize angle (360 degrees - q3angle = q0angle)
     sec
     lda #<(456*4)
@@ -212,9 +212,9 @@ from_ray_in_q3:
     lda #%00000010
     sta FROM_QUADRANT
     
-    bra from_ray_info_updated
+    bra from_angle_info_updated
     
-from_ray_in_q2:
+from_angle_in_q2:
     ; Normalize angle (q2angle - 180 degrees = q0angle)
     sec
     lda ANGLE_INDEX
@@ -228,9 +228,9 @@ from_ray_in_q2:
     lda #%00000011
     sta FROM_QUADRANT
     
-    bra from_ray_info_updated
+    bra from_angle_info_updated
     
-from_ray_in_q1:
+from_angle_in_q1:
     ; Normalize angle (180 degrees - q1angle = q0angle)
     sec
     lda #<(456*2)
@@ -244,9 +244,9 @@ from_ray_in_q1:
     lda #%00000001
     sta FROM_QUADRANT
     
-    bra from_ray_info_updated
+    bra from_angle_info_updated
     
-from_ray_in_q0:
+from_angle_in_q0:
 
     lda ANGLE_INDEX
     sta ANGLE_INDEX
@@ -257,25 +257,25 @@ from_ray_in_q0:
     lda #%00000000
     sta FROM_QUADRANT
 
-from_ray_info_updated:
+from_angle_info_updated:
 
 
     ; ============ TO RAY ==========
     
     lda TO_ANGLE_NEEDS_RECALC
-    bne recalculate_to_ray_info
+    bne recalculate_to_angle_info
     
-    ; There is no need to recalculate the to_ray_info so jump over it
-    jmp to_ray_info_updated
+    ; There is no need to recalculate the to_angle_info so jump over it
+    jmp to_angle_info_updated
     
-recalculate_to_ray_info:
+recalculate_to_angle_info:
     ; -- Re-calculate TO_DELTA_X **OR** TO_DELTA_Y using tangent(TO_ANGLE) --
     
     ; Check if TO_ANGLE is 'negative' (between 270 degrees and 360)
     lda TO_ANGLE+1
     ; FIXME: hack!
     cmp #4
-    bcc to_ray_is_already_between_0_and_90_degrees
+    bcc to_angle_is_already_between_0_and_90_degrees
     
     sec
     lda #<(1824)
@@ -285,41 +285,41 @@ recalculate_to_ray_info:
     sbc TO_ANGLE+1
     sta ANGLE_INDEX+1
     
-    bra to_ray_is_now_between_0_and_90_degrees
+    bra to_angle_is_now_between_0_and_90_degrees
 
-to_ray_is_already_between_0_and_90_degrees:
+to_angle_is_already_between_0_and_90_degrees:
     lda TO_ANGLE
     sta ANGLE_INDEX
     lda TO_ANGLE+1
     sta ANGLE_INDEX+1
 
-to_ray_is_now_between_0_and_90_degrees:
+to_angle_is_now_between_0_and_90_degrees:
 
     ; SPEED: no need to do this lda
     lda ANGLE_INDEX+1
-    bne is_high_positive_to_ray_index
-is_low_positive_to_ray_index:
+    bne is_high_positive_to_angle_index
+is_low_positive_to_angle_index:
     ldy ANGLE_INDEX
     lda TANGENT_LOW,y             ; When the angle index >= 256, we retrieve to 256 positions further
     sta MULTIPLICAND
     lda TANGENT_HIGH,y             ; When the angle index >= 256, we retrieve to 256 positions further
     sta MULTIPLICAND+1
-    bra got_tangent_to_ray
-is_high_positive_to_ray_index:
+    bra got_tangent_to_angle
+is_high_positive_to_angle_index:
     ldy ANGLE_INDEX
     lda TANGENT_LOW+256,y         ; When the angle index >= 256, we retrieve to 256 positions further
     sta MULTIPLICAND
     lda TANGENT_HIGH+256,y         ; When the angle index >= 256, we retrieve to 256 positions further
     sta MULTIPLICAND+1
-got_tangent_to_ray:
+got_tangent_to_angle:
 
     jsr MULT_WITH_NORMAL_DISTANCE
     
     lda WALL_FACING_DIR
     lsr
-    bcc to_ray_on_horizontal_wall ; no carry (facing south or norht), so we its a horizontal wall
+    bcc to_angle_on_horizontal_wall ; no carry (facing south or norht), so we its a horizontal wall
 
-to_ray_on_vertical_wall:
+to_angle_on_vertical_wall:
 
     lda PRODUCT+1
     sta TO_DELTA_Y
@@ -328,7 +328,7 @@ to_ray_on_vertical_wall:
     
     bra done_to_delta_calc
     
-to_ray_on_horizontal_wall:
+to_angle_on_horizontal_wall:
     
     lda PRODUCT+1
     sta TO_DELTA_X
@@ -346,15 +346,15 @@ done_to_delta_calc:
 
     lda WALL_FACING_DIR
     cmp #3  ; west
-    beq to_ray_calc_wall_facing_west
+    beq to_angle_calc_wall_facing_west
     cmp #2  ; south
-    beq to_ray_calc_wall_facing_south
+    beq to_angle_calc_wall_facing_south
     cmp #1  ; east
-    beq to_ray_calc_wall_facing_east
+    beq to_angle_calc_wall_facing_east
     cmp #0  ; north
-    beq to_ray_calc_wall_facing_north
+    beq to_angle_calc_wall_facing_north
 
-to_ray_calc_wall_facing_east:
+to_angle_calc_wall_facing_east:
     ; The wall is facing north so we are turned 270. We need to subtract 90 degrees
     sec
     lda TO_ANGLE
@@ -363,9 +363,9 @@ to_ray_calc_wall_facing_east:
     lda TO_ANGLE+1
     sbc #>(1*456)
     sta ANGLE_INDEX+1
-    bra unnormalized_to_ray
+    bra unnormalized_to_angle
 
-to_ray_calc_wall_facing_north:
+to_angle_calc_wall_facing_north:
     ; The wall is facing north so we are turned 180. We need to subtract 180 degrees
     sec
     lda TO_ANGLE
@@ -374,9 +374,9 @@ to_ray_calc_wall_facing_north:
     lda TO_ANGLE+1
     sbc #>(2*456)
     sta ANGLE_INDEX+1
-    bra unnormalized_to_ray
+    bra unnormalized_to_angle
     
-to_ray_calc_wall_facing_west:
+to_angle_calc_wall_facing_west:
     ; The wall is facing west so we are turned 90. We need to subtract 270 degrees
     sec
     lda TO_ANGLE
@@ -385,19 +385,19 @@ to_ray_calc_wall_facing_west:
     lda TO_ANGLE+1
     sbc #>(3*456)
     sta ANGLE_INDEX+1
-    bra unnormalized_to_ray
+    bra unnormalized_to_angle
     
-to_ray_calc_wall_facing_south:
+to_angle_calc_wall_facing_south:
     ; The wall is facing south so we are turned 0. No need to subtract anything.
     lda TO_ANGLE
     sta ANGLE_INDEX
     lda TO_ANGLE+1
     sta ANGLE_INDEX+1
 
-unnormalized_to_ray:
+unnormalized_to_angle:
 
     ; Checking if ANGLE_INDEX is below 0, if so add 1824
-    bpl unnormalized_to_ray_is_positive
+    bpl unnormalized_to_angle_is_positive
     
     clc 
     lda ANGLE_INDEX
@@ -407,35 +407,35 @@ unnormalized_to_ray:
     adc #>(4*456)
     sta ANGLE_INDEX+1
 
-unnormalized_to_ray_is_positive:
+unnormalized_to_angle_is_positive:
     
     lda ANGLE_INDEX+1
     cmp #>(456*1)
-    bcc to_ray_in_q0
-    bne to_ray_in_not_in_q0
+    bcc to_angle_in_q0
+    bne to_angle_in_not_in_q0
     lda ANGLE_INDEX
     cmp #<(456*1)
-    bcc to_ray_in_q0
+    bcc to_angle_in_q0
     
-to_ray_in_not_in_q0:
+to_angle_in_not_in_q0:
     lda ANGLE_INDEX+1
     cmp #>(456*2)
-    bcc to_ray_in_q1
-    bne to_ray_in_not_in_q1
+    bcc to_angle_in_q1
+    bne to_angle_in_not_in_q1
     lda ANGLE_INDEX
     cmp #<(456*2)
-    bcc to_ray_in_q1
+    bcc to_angle_in_q1
     
-to_ray_in_not_in_q1:
+to_angle_in_not_in_q1:
     lda ANGLE_INDEX+1
     cmp #>(456*3)
-    bcc to_ray_in_q2
-    bne to_ray_in_q3
+    bcc to_angle_in_q2
+    bne to_angle_in_q3
     lda ANGLE_INDEX
     cmp #<(456*3)
-    bcc to_ray_in_q2
+    bcc to_angle_in_q2
     
-to_ray_in_q3:
+to_angle_in_q3:
     ; Normalize angle (360 degrees - q3angle = q0angle)
     sec
     lda #<(456*4)
@@ -449,9 +449,9 @@ to_ray_in_q3:
     lda #%00000010
     sta TO_QUADRANT
     
-    bra to_ray_info_updated
+    bra to_angle_info_updated
     
-to_ray_in_q2:
+to_angle_in_q2:
     ; Normalize angle (q2angle - 180 degrees = q0angle)
     sec
     lda ANGLE_INDEX
@@ -465,9 +465,9 @@ to_ray_in_q2:
     lda #%00000011
     sta TO_QUADRANT
     
-    bra to_ray_info_updated
+    bra to_angle_info_updated
     
-to_ray_in_q1:
+to_angle_in_q1:
     ; Normalize angle (180 degrees - q1angle = q0angle)
     sec
     lda #<(456*2)
@@ -481,9 +481,9 @@ to_ray_in_q1:
     lda #%00000001
     sta TO_QUADRANT
     
-    bra to_ray_info_updated
+    bra to_angle_info_updated
     
-to_ray_in_q0:
+to_angle_in_q0:
 
     ; SPEED: this doesnt do anything!
     lda ANGLE_INDEX
@@ -495,7 +495,7 @@ to_ray_in_q0:
     lda #%00000000
     sta TO_QUADRANT
 
-to_ray_info_updated:
+to_angle_info_updated:
 
 
 
@@ -991,15 +991,15 @@ draw_next_column_left:
     bcs is_negative_left
     
     lda ANGLE_INDEX+1
-    bne is_high_positive_ray_index_left
-is_low_positive_ray_index_left:
+    bne is_high_positive_angle_index_left
+is_low_positive_angle_index_left:
     ldy ANGLE_INDEX
     lda TANGENT_HIGH,y
     sta MULTIPLICAND+1
     lda TANGENT_LOW,y
     sta MULTIPLICAND
     bra got_tangent_left
-is_high_positive_ray_index_left:
+is_high_positive_angle_index_left:
     ldy ANGLE_INDEX
     lda TANGENT_HIGH+256,y        ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
@@ -1019,15 +1019,15 @@ is_negative_left:
 	sbc ANGLE_INDEX+1
 	sta ANGLE_INDEX_NEGATED+1
     
-    bne is_high_negative_ray_index_left
-is_low_negative_ray_index_left:
+    bne is_high_negative_angle_index_left
+is_low_negative_angle_index_left:
     ldy ANGLE_INDEX_NEGATED
     lda TANGENT_HIGH,y
     sta MULTIPLICAND+1
     lda TANGENT_LOW,y
     sta MULTIPLICAND
     bra got_negative_tangent_left
-is_high_negative_ray_index_left:
+is_high_negative_angle_index_left:
     ldy ANGLE_INDEX_NEGATED
     lda TANGENT_HIGH+256,y        ; When the negated angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
@@ -1080,7 +1080,7 @@ product_ok_left:
     sta PRODUCT+2
     
     ; FIXME: we check if the index into the wall (tiles) is within bounds. Instead of doing that, we should instead 
-    ;        NOT do any tan+multiply calculation for the start and end ray.
+    ;        NOT do any tan+multiply calculation for the start and end angle.
     bmi texture_start_index_not_ok_left ; Check if the index is negative
     cmp WALL_LENGTH       ; Check if the index is beyond the length of the wall
     bcc texture_index_ok_left
@@ -1130,25 +1130,25 @@ texture_index_ok_left:
 
     ; Incrmenting ANGLE_INDEX
     inc ANGLE_INDEX
-    bne ray_index_is_incremented_left
+    bne angle_index_is_incremented_left
     inc ANGLE_INDEX+1
     
-ray_index_is_incremented_left:
+angle_index_is_incremented_left:
 
     ; If ANGLE_INDEX = 1824 (=$720) we reset it to 0 (we "loop" around)
     lda ANGLE_INDEX
     cmp #$20
-    bne ray_index_is_updated_left
+    bne angle_index_is_updated_left
     lda ANGLE_INDEX+1
     cmp #$7
-    bne ray_index_is_updated_left
+    bne angle_index_is_updated_left
     
     ; Resetting ANGLE_INDEX to 0
     lda #0
     sta ANGLE_INDEX
     sta ANGLE_INDEX+1
     
-ray_index_is_updated_left:
+angle_index_is_updated_left:
 
     ; We should stop drawing the wall if we reached the end of the wall, meaning ANGLE_INDEX == TO_ANGLE (after incrementing it)
     lda ANGLE_INDEX
@@ -1198,15 +1198,15 @@ draw_next_column_right:
     bcs is_negative_right
     
     lda ANGLE_INDEX+1
-    bne is_high_positive_ray_index_right
-is_low_positive_ray_index_right:
+    bne is_high_positive_angle_index_right
+is_low_positive_angle_index_right:
     ldy ANGLE_INDEX
     lda TANGENT_HIGH,y
     sta MULTIPLICAND+1
     lda TANGENT_LOW,y
     sta MULTIPLICAND
     bra got_tangent_right
-is_high_positive_ray_index_right:
+is_high_positive_angle_index_right:
     ldy ANGLE_INDEX
     lda TANGENT_HIGH+256,y        ; When the angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
@@ -1227,15 +1227,15 @@ is_negative_right:
 	sbc ANGLE_INDEX+1
 	sta ANGLE_INDEX_NEGATED+1
     
-    bne is_high_negative_ray_index_right
-is_low_negative_ray_index_right:
+    bne is_high_negative_angle_index_right
+is_low_negative_angle_index_right:
     ldy ANGLE_INDEX_NEGATED
     lda TANGENT_HIGH,y
     sta MULTIPLICAND+1
     lda TANGENT_LOW,y
     sta MULTIPLICAND
     bra got_negative_tangent_right
-is_high_negative_ray_index_right:
+is_high_negative_angle_index_right:
     ldy ANGLE_INDEX_NEGATED
     lda TANGENT_HIGH+256,y        ; When the negated angle index >= 256, we retrieve from 256 positions further
     sta MULTIPLICAND+1
@@ -1287,7 +1287,7 @@ product_ok_right:
     sta PRODUCT+2
     
     ; FIXME: we check if the index into the wall (tiles) is within bounds. Instead of doing that, we should instead 
-    ;        NOT do any tan+multiply calculation for the start and end ray.
+    ;        NOT do any tan+multiply calculation for the start and end angle.
     bmi texture_start_index_not_ok_right ; Check if the index is negative
     cmp WALL_LENGTH       ; Check if the index is beyond the length of the wall
     bcc texture_index_ok_right
@@ -1336,25 +1336,25 @@ texture_index_ok_right:
     
     ; Incrmenting ANGLE_INDEX
     inc ANGLE_INDEX
-    bne ray_index_is_incremented_right
+    bne angle_index_is_incremented_right
     inc ANGLE_INDEX+1
     
-ray_index_is_incremented_right:
+angle_index_is_incremented_right:
 
     ; If ANGLE_INDEX = 1824 (=$720) we reset it to 0 (we "loop" around)
     lda ANGLE_INDEX
     cmp #$20
-    bne ray_index_is_updated_right
+    bne angle_index_is_updated_right
     lda ANGLE_INDEX+1
     cmp #$7
-    bne ray_index_is_updated_right
+    bne angle_index_is_updated_right
     
     ; Resetting ANGLE_INDEX to 0
     lda #0
     sta ANGLE_INDEX
     sta ANGLE_INDEX+1
     
-ray_index_is_updated_right:
+angle_index_is_updated_right:
 
     ; We should stop drawing the wall if we reached the end of the wall, meaning ANGLE_INDEX == TO_ANGLE (after incrementing it)
     lda ANGLE_INDEX
