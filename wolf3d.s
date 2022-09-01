@@ -97,32 +97,33 @@ FROM_SCREEN_ANGLE         = $6E ; 6F
 TO_SCREEN_ANGLE           = $70 ; 71
 
 NR_OF_OCCLUDERS           = $72       ; the number of occluders in the linked list (to know which index to use when creating a new occluder)
-CURRENT_OCCLUDER_INDEX    = $73       ; the number of occluders in the linked list (to know which index to use when creating a new occluder)
+CURRENT_OCCLUDER_INDEX    = $73
+PREVIOUS_OCCLUDER_INDEX   = $74
 
-FROM_SCREEN_ANGLE_PART    = $74 ; 75
-TO_SCREEN_ANGLE_PART      = $76 ; 77
+FROM_SCREEN_ANGLE_PART    = $75 ; 76
+TO_SCREEN_ANGLE_PART      = $77 ; 78
 
-FROM_QUADRANT             = $78       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
-TO_QUADRANT               = $79       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
-DISTANCE_DUE_TO_DELTA_X   = $7A ; 7B  ; The distance along the looking direction due to DELTA_X 
-DISTANCE_DUE_TO_DELTA_Y   = $7C ; 7D  ; The distance along the looking direction due to DELTA_Y 
+FROM_QUADRANT             = $79       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
+TO_QUADRANT               = $7A       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11 = q2 (sw), 10 = q3 (nw) 
+DISTANCE_DUE_TO_DELTA_X   = $7B ; 7C  ; The distance along the looking direction due to DELTA_X 
+DISTANCE_DUE_TO_DELTA_Y   = $7D ; 7E  ; The distance along the looking direction due to DELTA_Y 
 ; FIXME: not only do we need to have variable for knowing when to negate from and to points, but also after walls have been cut-off, these points also need their distance be calculated. So we need a different solution.
-NEGATE_COSINE_RESULT_FROM = $7E       ; This indicates whether we have to negate the result from cosine (FROM)
-NEGATE_SINE_RESULT_FROM   = $7F       ; This indicates whether we have to negate the result from sine (FROM)
-NEGATE_COSINE_RESULT_TO   = $80       ; This indicates whether we have to negate the result from cosine (TO)
-NEGATE_SINE_RESULT_TO     = $81       ; This indicates whether we have to negate the result from sine (TO)
+NEGATE_COSINE_RESULT_FROM = $7F       ; This indicates whether we have to negate the result from cosine (FROM)
+NEGATE_SINE_RESULT_FROM   = $80       ; This indicates whether we have to negate the result from sine (FROM)
+NEGATE_COSINE_RESULT_TO   = $81       ; This indicates whether we have to negate the result from cosine (TO)
+NEGATE_SINE_RESULT_TO     = $82       ; This indicates whether we have to negate the result from sine (TO)
 ; FIXME: we want to get rid of these, but for now this is helpful
-FROM_DELTA_X              = $82 ; 83
-FROM_DELTA_Y              = $84 ; 85
-TO_DELTA_X                = $86 ; 87
-TO_DELTA_Y                = $88 ; 89
-FROM_DISTANCE             = $8A ; 8B
-TO_DISTANCE               = $8C ; 8D
+FROM_DELTA_X              = $83 ; 84
+FROM_DELTA_Y              = $85 ; 86
+TO_DELTA_X                = $87 ; 88
+TO_DELTA_Y                = $89 ; 8A
+FROM_DISTANCE             = $8B ; 8C
+TO_DISTANCE               = $8D ; 8E
 
-FROM_ANGLE_NEEDS_RECALC   = $8E
-TO_ANGLE_NEEDS_RECALC     = $8F
+FROM_ANGLE_NEEDS_RECALC   = $8F
+TO_ANGLE_NEEDS_RECALC     = $90
 
-WALL_LENGTH               = $90
+WALL_LENGTH               = $91
 
 ; Used only by (slow) 16bit multiplier (multply_16bits)
 MULTIPLIER                = $EF ; F0

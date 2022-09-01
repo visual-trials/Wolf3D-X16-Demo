@@ -1025,8 +1025,8 @@ from_screen_angle_is_left_of_screen:
     ; Cut off left part of wall to the beginning of the screen
     
     lda #0
-    sta FROM_SCREEN_ANGLE_PART
-    sta FROM_SCREEN_ANGLE_PART+1
+    sta FROM_SCREEN_ANGLE
+    sta FROM_SCREEN_ANGLE+1
 
     lda #1
     sta FROM_ANGLE_NEEDS_RECALC
@@ -1088,19 +1088,35 @@ to_screen_angle_is_on_right_of_screen:
     
 ; FIXME: shouldnt we also update TO_SCREEN_ANGLE here? Since we will calculate based on that one after this?
     lda #<(304)
-    sta TO_SCREEN_ANGLE_PART
+    sta TO_SCREEN_ANGLE
     lda #>(304)
-    sta TO_SCREEN_ANGLE_PART+1
+    sta TO_SCREEN_ANGLE+1
     
     
 to_screen_angle_is_not_right_of_screen:
 
+
+
 ; FIXME
 ;    stp
+    lda FROM_SCREEN_ANGLE_PART
+    lda FROM_SCREEN_ANGLE_PART+1
+    lda TO_SCREEN_ANGLE_PART
+    lda TO_SCREEN_ANGLE_PART+1
+    
+    nop
+
     lda FROM_SCREEN_ANGLE
     lda FROM_SCREEN_ANGLE+1
     lda TO_SCREEN_ANGLE
     lda TO_SCREEN_ANGLE+1
+    
+    nop
+    
+    lda FROM_ANGLE_NEEDS_RECALC
+    lda TO_ANGLE_NEEDS_RECALC
+    
+
 
 
     ; FIXME: Actually *split* (not just *cut-off*) into wall parts here!
@@ -1111,7 +1127,8 @@ to_screen_angle_is_not_right_of_screen:
     beq tmp_dont_skip_occlusion
     cmp #4
     beq tmp_dont_skip_occlusion
-    jmp tmp_skip_occlusion
+; FIXME
+;    jmp tmp_skip_occlusion
 tmp_dont_skip_occlusion:
 
     ldy #0
@@ -1202,6 +1219,12 @@ start_of_wall_is_to_the_right_of_or_at_the_start_of_next_occluder:
 start_of_wall_is_to_the_left_of_the_start_of_next_occluder:
 
     ; No need to cut-off the wall on its left side
+    
+    lda FROM_SCREEN_ANGLE
+    sta FROM_SCREEN_ANGLE_PART
+    lda FROM_SCREEN_ANGLE+1
+    sta FROM_SCREEN_ANGLE_PART+1
+
     bra start_of_wall_is_ok
 
 
@@ -1257,6 +1280,10 @@ end_of_wall_is_to_the_left_of_the_start_of_occluder:
 
     ; No need to cut-off the wall on its right side
 
+    lda TO_SCREEN_ANGLE
+    sta TO_SCREEN_ANGLE_PART
+    lda TO_SCREEN_ANGLE+1
+    sta TO_SCREEN_ANGLE_PART+1
 
 end_of_wall_is_ok:
 
@@ -1267,7 +1294,9 @@ end_of_wall_is_ok:
     ; FIXME: Add the new wall part to the lined list of occluders
 
     ; FIXME: y is already at the *next* occluder, but we need to update the _NEXT of the previous/current occluder!
-    
+    ; use PREVIOUS_OCCLUDER_INDEX!
+
+
 
     ; We draw the wall part
     jsr prep_and_draw_wall_part
@@ -1278,7 +1307,7 @@ end_of_wall_is_ok:
     ; SPEED: since we do sty here, we can remove the ldy at the beginning of the loop
     sty CURRENT_OCCLUDER_INDEX
     lda CURRENT_OCCLUDER_INDEX
-    bne next_occluder_to_check
+    bne next_occluder_to_check_jmp
 
 done_with_occluders:
 
@@ -1290,6 +1319,9 @@ done_with_occluders:
 tmp_skip_occlusion:
     jsr prep_and_draw_wall_part
     rts
+
+next_occluder_to_check_jmp:
+    jmp next_occluder_to_check
 
 
     ; ==================================================================================================================================
