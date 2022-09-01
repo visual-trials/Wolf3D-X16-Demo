@@ -109,9 +109,7 @@ setup_player:
     ; TODO: this is now hardcoded, but this should to taken from a map
 
     ; x-position of the viewpoint (8.8 bits)
-    lda #200
-; FIXME
-;    lda #128
+    lda #128
     sta PLAYER_POS_X 
     lda #1
     sta PLAYER_POS_X+1
@@ -119,15 +117,15 @@ setup_player:
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_Y
-    lda #2
+    lda #3
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
-    ;lda #0
-    lda #<(1824-100)
+    lda #0
+    ;lda #<(1824-100)
     sta LOOKING_DIR_ANGLE
-    ;lda #0
-    lda #>(1824-100)
+    lda #0
+    ;lda #>(1824-100)
     sta LOOKING_DIR_ANGLE+1
     
     rts

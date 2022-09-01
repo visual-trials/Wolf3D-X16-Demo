@@ -266,6 +266,39 @@ stop_turning:
 
 do_not_turn_around:
 
+
+
+    ; bra do_not_move_forward
+    
+keep_moving_forward:
+    lda #0
+    sta PLAYER_POS_Y
+    lda #1
+    sta PLAYER_POS_Y+1
+    
+move_forward:
+    jsr update_viewpoint
+    jsr draw_3d_view
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    bne move_forward
+
+    inc PLAYER_POS_Y+1
+    lda PLAYER_POS_Y+1
+    cmp #$4
+    bcc move_forward
+    
+    bra keep_moving_forward
+
+stop_moving:
+    jmp stop_moving
+
+do_not_move_forward:
+
+
+
     ; jmp vsync_measurement
     
 loop2:
