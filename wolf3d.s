@@ -173,6 +173,7 @@ SQUARE1_HIGH             = $8200    ; 512 bytes
 SQUARE2_LOW              = $8400    ; 512 bytes
 SQUARE2_HIGH             = $8600    ; 512 bytes
 
+; FIXME: make this 48 bytes!
 OCCLUDER_FROM_ANGLE_LOW  = $8800    ; 32 bytes
 OCCLUDER_FROM_ANGLE_HIGH = $8820    ; 32 bytes
 OCCLUDER_TO_ANGLE_LOW    = $8840    ; 32 bytes

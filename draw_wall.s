@@ -1097,25 +1097,6 @@ to_screen_angle_is_not_right_of_screen:
 
 
 
-; FIXME
-;    stp
-    lda FROM_SCREEN_ANGLE_PART
-    lda FROM_SCREEN_ANGLE_PART+1
-    lda TO_SCREEN_ANGLE_PART
-    lda TO_SCREEN_ANGLE_PART+1
-    
-    nop
-
-    lda FROM_SCREEN_ANGLE
-    lda FROM_SCREEN_ANGLE+1
-    lda TO_SCREEN_ANGLE
-    lda TO_SCREEN_ANGLE+1
-    
-    nop
-    
-    lda FROM_ANGLE_NEEDS_RECALC
-    lda TO_ANGLE_NEEDS_RECALC
-    
 
 
 
@@ -1131,9 +1112,16 @@ to_screen_angle_is_not_right_of_screen:
 ;    jmp tmp_skip_occlusion
 tmp_dont_skip_occlusion:
 
-    .if 0
-    
+
+    lda CURRENT_WALL_INDEX
+    cmp #2
+    bne tmp_draw_this_wall
+;    jmp done_with_occluders
+tmp_draw_this_wall:
+
+
 ; FIXME: remove this! (we are adding a temp occluder here)
+    .if 0
     lda #1
     sta OCCLUDER_NEXT, y
     iny
@@ -1153,10 +1141,10 @@ tmp_dont_skip_occlusion:
     sta OCCLUDER_TO_ANGLE_HIGH, y
     lda #0
     sta OCCLUDER_NEXT, y
-    
     .endif
+    
 
-
+    
     ; Start at first occluder in linked list
     ldy #0
     sty CURRENT_OCCLUDER_INDEX
@@ -1202,7 +1190,8 @@ start_of_wall_is_to_the_right_of_or_at_the_start_of_next_occluder:
 ; FIXME: is this the correct logic?
     lda CURRENT_OCCLUDER_INDEX
     bne next_occluder_to_check   ; only go to next occluder if it exists
-    bra done_with_occluders
+    jmp done_with_occluders
+
     
 start_of_wall_is_to_the_left_of_the_start_of_next_occluder:
 
@@ -1225,8 +1214,6 @@ start_of_wall_is_to_the_left_of_the_end_of_occluder:
     lda OCCLUDER_TO_ANGLE_LOW, y
     sta FROM_SCREEN_ANGLE_PART
     
-    ; FIXME: do we need to cutoff FROM_SCREEN_ANGLE as well?
-
     lda #1
     sta FROM_ANGLE_NEEDS_RECALC
 
@@ -1277,6 +1264,48 @@ end_of_wall_is_to_the_left_of_the_start_of_occluder:
 end_of_wall_is_ok:
 
 
+; FIXME
+;    stp
+    .if 0
+    lda CURRENT_WALL_INDEX
+
+    lda FROM_SCREEN_ANGLE_PART
+    lda FROM_SCREEN_ANGLE_PART+1
+    lda TO_SCREEN_ANGLE_PART
+    lda TO_SCREEN_ANGLE_PART+1
+    
+    nop
+
+    lda FROM_SCREEN_ANGLE
+    lda FROM_SCREEN_ANGLE+1
+    lda TO_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE+1
+    
+    nop
+    
+    lda FROM_ANGLE_NEEDS_RECALC
+    lda TO_ANGLE_NEEDS_RECALC
+    .endif
+    
+    ; We also stop if the wall has shrunk to negative size
+    ; FIXME: is there a more elegant way to detect this? Maybe we can see this eariier?
+    sec
+    lda TO_SCREEN_ANGLE_PART+1
+    sbc FROM_SCREEN_ANGLE_PART+1
+    bcc wall_part_has_negaitive_or_zero_length
+    bne wall_part_has_positive_length
+    lda TO_SCREEN_ANGLE_PART
+    sbc FROM_SCREEN_ANGLE_PART
+    bcc wall_part_has_negaitive_or_zero_length
+    ; FIXME: should we also stop if the size is 0? Or is that already done because there is no -1 on the TO_SCREEN_ANGLE_PART?
+    beq wall_part_has_negaitive_or_zero_length
+    bra wall_part_has_positive_length
+wall_part_has_negaitive_or_zero_length:
+    rts
+    
+    
+wall_part_has_positive_length:
+
     ; FIXME: we should *COMBINE* with the already existing occluders if they "touch" each other!
 
     ; We add the new wall part to the lined list of occluders
@@ -1303,6 +1332,12 @@ end_of_wall_is_ok:
     lda TO_SCREEN_ANGLE_PART+1
     sta OCCLUDER_TO_ANGLE_HIGH, x
     
+; FIXME: is this correct: now that we are drawing this wall part, the part is "taken off" the left-over wall
+    lda TO_SCREEN_ANGLE_PART
+    sta FROM_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE_PART+1
+    sta FROM_SCREEN_ANGLE+1
+    
     ; We set the current occluder (y) as the next occluder of the just added occluder
     tya
     sta OCCLUDER_NEXT, x
@@ -1312,11 +1347,12 @@ end_of_wall_is_ok:
     ; We draw the wall part
     jsr prep_and_draw_wall_part
     ply
+
     
 ; FIXME: right now we are FORCING a wall to create only ONE wall part!!
 ; FIXME: right now we are FORCING a wall to create only ONE wall part!!
 ; FIXME: right now we are FORCING a wall to create only ONE wall part!!
-    rts
+;    rts
     
     
     ; Checking if occluder index != 0! (meaning there are no more occluders) otherwise continue to next occluder

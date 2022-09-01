@@ -33,8 +33,11 @@ wall_1_info:
     .byte BS1
 
 wall_2_info:
-    .byte 1, 4 ; start x, y
-    .byte 2, 4 ; end x, y
+; FIXME: HACK!
+    .byte 1, 8 ; start x, y
+    .byte 2, 8 ; end x, y
+;    .byte 1, 4 ; start x, y
+;    .byte 2, 4 ; end x, y
     .byte (2 | 4)   ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west  (bit 2 = 1 means this is a door)
     .byte CLD
     
@@ -62,11 +65,18 @@ wall_6_info:
     .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
     .byte BS1, BS1, BS2, BS2
     
+; FIXME: HACK! moving back wall to front!
 wall_7_info:
-    .byte 3, 0 ; start x, y
-    .byte 0, 0 ; end x, y
-    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
-    .byte BS1, BS2, BS1
+    .byte 0, 8 ; start x, y
+    .byte 3, 8 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1, BS1, BS1
+    
+;wall_7_info:
+;    .byte 3, 0 ; start x, y
+;    .byte 0, 0 ; end x, y
+;    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+;    .byte BS1, BS2, BS1
     
 
 ; Square room
@@ -99,7 +109,9 @@ setup_player:
     ; TODO: this is now hardcoded, but this should to taken from a map
 
     ; x-position of the viewpoint (8.8 bits)
-    lda #128
+    lda #200
+; FIXME
+;    lda #128
     sta PLAYER_POS_X 
     lda #1
     sta PLAYER_POS_X+1
@@ -111,11 +123,11 @@ setup_player:
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
-    lda #0
-    ;lda #<(1824/4-100)
+    ;lda #0
+    lda #<(1824-100)
     sta LOOKING_DIR_ANGLE
-    lda #0
-    ;lda #>(1824/4-100)
+    ;lda #0
+    lda #>(1824-100)
     sta LOOKING_DIR_ANGLE+1
     
     rts
