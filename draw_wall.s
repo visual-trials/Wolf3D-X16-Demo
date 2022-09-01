@@ -1131,25 +1131,7 @@ to_screen_angle_is_not_right_of_screen:
 ;    jmp tmp_skip_occlusion
 tmp_dont_skip_occlusion:
 
-    ldy #0
-    sta NR_OF_OCCLUDERS
-    
-    ; The initial occluder begins at 304 and ends at 0 (basicly evertything that is not on screen)
-    lda #(<304)
-    sta OCCLUDER_FROM_ANGLE_LOW, y
-    lda #(>304)
-    sta OCCLUDER_FROM_ANGLE_HIGH, y
-    
-    lda #0
-    sta OCCLUDER_TO_ANGLE_LOW, y
-    sta OCCLUDER_TO_ANGLE_HIGH, y
-    ; Initially there is no other occluder, so the next one is itself (index = 0)
-    sta OCCLUDER_NEXT, y
-    
-    ; We now have 1 occluder
-    inc NR_OF_OCCLUDERS
-    
-
+    .if 0
     
 ; FIXME: remove this! (we are adding a temp occluder here)
     lda #1
@@ -1171,13 +1153,18 @@ tmp_dont_skip_occlusion:
     sta OCCLUDER_TO_ANGLE_HIGH, y
     lda #0
     sta OCCLUDER_NEXT, y
-
     
+    .endif
+
+
     ; Start at first occluder in linked list
     ldy #0
     sty CURRENT_OCCLUDER_INDEX
     
 next_occluder_to_check:
+
+;    stp
+
     ; SPEED: isnt this already set, always?
     ldy CURRENT_OCCLUDER_INDEX
 
@@ -1194,6 +1181,7 @@ next_occluder_to_check:
 start_of_wall_is_to_the_right_of_or_at_the_end_of_occluder:
 
     ;We get the NEXT occluder (its index is put in y)
+    sty PREVIOUS_OCCLUDER_INDEX
     lda OCCLUDER_NEXT, y
     tay
     
@@ -1243,6 +1231,7 @@ start_of_wall_is_to_the_left_of_the_end_of_occluder:
     sta FROM_ANGLE_NEEDS_RECALC
 
     ;We get the NEXT occluder (its index is put in y)
+    sty PREVIOUS_OCCLUDER_INDEX
     lda OCCLUDER_NEXT, y
     tay
     
@@ -1288,20 +1277,48 @@ end_of_wall_is_to_the_left_of_the_start_of_occluder:
 end_of_wall_is_ok:
 
 
-    ; FIXME: we should *COMBINE* with the already existing occluders if the "touch" each other!
+    ; FIXME: we should *COMBINE* with the already existing occluders if they "touch" each other!
 
+    ; We add the new wall part to the lined list of occluders
+
+    ; We create a new occluder index
+    lda NR_OF_OCCLUDERS  ; the nr of occuluder == the *next* occluder index
+    inc NR_OF_OCCLUDERS
     
-    ; FIXME: Add the new wall part to the lined list of occluders
+    ; We update the OCCLUDER_NEXT for the *previous occluder* and point it to the new occluder index
+    ldx PREVIOUS_OCCLUDER_INDEX
+    sta OCCLUDER_NEXT, x
+    
+    ; We put the index of the new occluder into the x register
+    tax
 
-    ; FIXME: y is already at the *next* occluder, but we need to update the _NEXT of the previous/current occluder!
-    ; use PREVIOUS_OCCLUDER_INDEX!
+    lda FROM_SCREEN_ANGLE_PART
+    sta OCCLUDER_FROM_ANGLE_LOW, x
+    lda FROM_SCREEN_ANGLE_PART+1
+    sta OCCLUDER_FROM_ANGLE_HIGH, x
+    
+; FIXME: should we do -1 here?
+    lda TO_SCREEN_ANGLE_PART
+    sta OCCLUDER_TO_ANGLE_LOW, x
+    lda TO_SCREEN_ANGLE_PART+1
+    sta OCCLUDER_TO_ANGLE_HIGH, x
+    
+    ; We set the current occluder (y) as the next occluder of the just added occluder
+    tya
+    sta OCCLUDER_NEXT, x
 
-
-
+    ; SPEED: we are preserving y here using the stack. Is there a better way?
+    phy
     ; We draw the wall part
     jsr prep_and_draw_wall_part
-
-
+    ply
+    
+; FIXME: right now we are FORCING a wall to create only ONE wall part!!
+; FIXME: right now we are FORCING a wall to create only ONE wall part!!
+; FIXME: right now we are FORCING a wall to create only ONE wall part!!
+    rts
+    
+    
     ; Checking if occluder index != 0! (meaning there are no more occluders) otherwise continue to next occluder
 ;    lda OCCLUDER_NEXT, y
     ; SPEED: since we do sty here, we can remove the ldy at the beginning of the loop
@@ -1311,7 +1328,6 @@ end_of_wall_is_ok:
 
 done_with_occluders:
 
-    
     
     rts
     

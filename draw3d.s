@@ -185,6 +185,29 @@ draw_3d_view:
 
 draw_walls:
 
+    ; FIXME: make this a prepare_for_wall_draw routines?
+
+    ldy #0
+    sty NR_OF_OCCLUDERS
+    
+    ; The initial occluder begins at 304 and ends at 0 (basicly evertything that is not on screen)
+    lda #(<304)
+    sta OCCLUDER_FROM_ANGLE_LOW, y
+    lda #(>304)
+    sta OCCLUDER_FROM_ANGLE_HIGH, y
+    
+    lda #0
+    sta OCCLUDER_TO_ANGLE_LOW, y
+    sta OCCLUDER_TO_ANGLE_HIGH, y
+    ; Initially there is no other occluder, so the next one is itself (index = 0)
+    sta OCCLUDER_NEXT, y
+    
+    ; We now have 1 occluder
+    inc NR_OF_OCCLUDERS
+
+
+    ; Iterating over all walls
+
     lda #0
     sta CURRENT_WALL_INDEX
 
