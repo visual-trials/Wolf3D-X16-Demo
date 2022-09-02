@@ -124,9 +124,6 @@ FROM_ANGLE_NEEDS_RECALC   = $8F
 TO_ANGLE_NEEDS_RECALC     = $90
 
 WALL_LENGTH               = $91
-
-; FIXME: this is a temporary variable. How should we handle/store door openings? Or do we actually need this variable? 
-; FIXME: Maybe we should use 0,1 and 2 for the HIGH byte: 00xx = fully opened, 01xx = partially opened/closed, 02xx fully closed? (so that both 'end' states can easely be determined)
 DOOR_OPENED               = $92 ; 93     $0000 = fully closed,  $0040 = quarter opened, $0080 = half opened, $00FF = (almost) fully opened, ; $0100 =  fully opened
 ; FIXME: temporary
 TMP_DOOR_OPENED_STATUS    = $94 ; 95
