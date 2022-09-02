@@ -232,10 +232,17 @@ draw_next_wall:
     and #%00000100                ; checking for bit 2
     beq wall_is_not_a_door
     
+    ; The wall is a door
     lda WALL_INFO_FACING_DIR, y
     and #%11111011                ; unsetting bit 2
     sta WALL_FACING_DIR
     
+    ; FIXME: set DOOR_OPENED value properly!
+    lda TMP_DOOR_OPENED_STATUS
+    sta DOOR_OPENED
+    lda TMP_DOOR_OPENED_STATUS+1
+    sta DOOR_OPENED+1
+
     lda #128
     sta WALL_POSITION_IN_TILE
     bra wall_doorness_determined
@@ -245,6 +252,12 @@ wall_is_not_a_door:
     sta WALL_FACING_DIR
     lda #0
     sta WALL_POSITION_IN_TILE
+    
+    ; FIXME: set DOOR_OPENED value properly!
+    lda #0
+    sta DOOR_OPENED
+    lda #0               ; a normal wall is always 'fully closed'
+    sta DOOR_OPENED+1
     
 wall_doorness_determined:
     

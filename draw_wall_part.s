@@ -1151,6 +1151,9 @@ product_ok_left:
     
     ; FIXME: we check if the index into the wall (tiles) is within bounds. Instead of doing that, we should instead 
     ;        NOT do any tan+multiply calculation for the start and end angle.
+    
+    ; FIXME: how to deal with half-open doors and WALL_LENGTH? Should it be adapted?
+    
     bmi texture_start_index_not_ok_left ; Check if the index is negative
     cmp WALL_LENGTH       ; Check if the index is beyond the length of the wall
     bcc texture_index_ok_left

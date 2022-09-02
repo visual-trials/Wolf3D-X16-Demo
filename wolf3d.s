@@ -125,6 +125,12 @@ TO_ANGLE_NEEDS_RECALC     = $90
 
 WALL_LENGTH               = $91
 
+; FIXME: this is a temporary variable. How should we handle/store door openings? Or do we actually need this variable? 
+; FIXME: Maybe we should use 0,1 and 2 for the HIGH byte: 00xx = fully opened, 01xx = partially opened/closed, 02xx fully closed? (so that both 'end' states can easely be determined)
+DOOR_OPENED               = $92 ; 93     $0000 = fully closed,  $0040 = quarter opened, $0080 = half opened, $00FF = (almost) fully opened, ; $0100 =  fully opened
+; FIXME: temporary
+TMP_DOOR_OPENED_STATUS    = $94 ; 95
+
 ; Used only by (slow) 16bit multiplier (multply_16bits)
 MULTIPLIER                = $EF ; F0
 MULTIPLICAND              = $F1 ; F2
@@ -228,6 +234,7 @@ reset:
     jsr setup_player
     jsr setup_wall_info
     
+; FIXME: change color back to RED!
     jsr clear_3d_view_fast
     
     bra do_not_turn_around
@@ -268,7 +275,7 @@ do_not_turn_around:
 
 
 
-    ; bra do_not_move_forward
+    bra do_not_move_forward
     
 keep_moving_forward:
     lda #0
@@ -296,6 +303,40 @@ stop_moving:
     jmp stop_moving
 
 do_not_move_forward:
+
+
+
+
+
+    lda #0
+    sta TMP_DOOR_OPENED_STATUS
+    lda #0
+    sta TMP_DOOR_OPENED_STATUS+1
+
+    ; bra do_not_open_door
+    
+move_door:
+    jsr update_viewpoint
+    jsr draw_3d_view
+    inc TMP_DOOR_OPENED_STATUS
+    inc TMP_DOOR_OPENED_STATUS
+    inc TMP_DOOR_OPENED_STATUS
+    inc TMP_DOOR_OPENED_STATUS
+    inc TMP_DOOR_OPENED_STATUS
+    inc TMP_DOOR_OPENED_STATUS
+    inc TMP_DOOR_OPENED_STATUS
+    inc TMP_DOOR_OPENED_STATUS
+    bne move_door
+
+    inc TMP_DOOR_OPENED_STATUS+1
+    jsr update_viewpoint
+    jsr draw_3d_view
+    
+
+stop_opening:
+    jmp stop_opening
+
+do_not_open_door:
 
 
 

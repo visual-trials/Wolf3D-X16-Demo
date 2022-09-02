@@ -550,8 +550,19 @@ wall_facing_south_screen_start_angle_calculated:
     jsr setup_multiply_with_normal_distance_16bit
 
     ; Determine the distance in the x-direction (delta X) for the START of the wall
+    
+    ; Check whether this is an opened door (or simply a closed wall)
+    lda DOOR_OPENED+1
+    bne wall_facing_south_fully_opened_door
+wall_facing_south_partially_opened_or_closed_door:
     sec
-    lda #0                      ; Walls always start on .0
+    lda DOOR_OPENED             ; in this lower byte the amount of opened is stored
+; FIXME    lda #0                      ; Walls always start on .0
+    bra wall_facing_south_determined_openness
+wall_facing_south_fully_opened_door:
+    ; FIXME: A fully opened wall/door is simply not drawn, right?
+    rts    
+wall_facing_south_determined_openness:
     sbc VIEWPOINT_X
     sta DELTA_X
     sta TEXTURE_COLUMN_OFFSET   ; In order to determine where a texture starts, this offset has to be subtracted
