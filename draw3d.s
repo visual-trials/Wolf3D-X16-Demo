@@ -4,6 +4,8 @@ update_viewpoint:
     ; FIXME: <BUG> at position 1.128, 2.200 we see (on the left side) a column been drawn with an incalid texture. So it looks like the texture lookup is not (entirely) correct yet.
     
     ; FIXME: <BUG> when looking at the east-south corner (and rotating by) the wall seems to cover another wall (weird looking).
+    
+    ; FIXME: <BUG> when 'walking' forwards, white lines (at the corner of the walls) become visible and there is a lot of 'flickering' going on (some kind of rounding issue?)
 
     
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR_ANGLE (every frame)
