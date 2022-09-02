@@ -136,6 +136,7 @@ wall_facing_north_partially_opened_or_closed_door:
     lda DELTA_X
     sbc DOOR_OPENED             ; in this lower byte the amount of opened is stored
     sta DELTA_X
+    ; FIXME: Is this correct? There seems to be a white flash halfway through opening a wall...
     lda DELTA_X+1
     sbc #0
     sta DELTA_X+1
