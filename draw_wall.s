@@ -1182,7 +1182,9 @@ tmp_draw_this_wall:
     
 next_occluder_to_check:
 
-;    stp
+    stp
+; FIXME    
+    lda CURRENT_WALL_INDEX
 
     ; SPEED: isnt this already set, always?
     ldy CURRENT_OCCLUDER_INDEX
