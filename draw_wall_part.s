@@ -570,9 +570,10 @@ to_angle_info_updated:
 
 
 
+; FIXME
     .if 0
 ; FIXME
-;    stp
+    stp
     lda SCREEN_START_ANGLE
     lda SCREEN_START_ANGLE+1
     

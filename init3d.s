@@ -1,5 +1,5 @@
 ; FIXME: use a different background color, or none!
-BACKGROUND_COLOR_3D_VIEW = 0
+BACKGROUND_COLOR_3D_VIEW = 2
 CEILING_COLOR            = 19
 FLOOR_COLOR              = 22
 

@@ -231,8 +231,11 @@ reset:
     jsr setup_player
     jsr setup_wall_info
     
-; FIXME: change color back to RED!
     jsr clear_3d_view_fast
+    
+    ; -----------------------------------------------------------------
+    ;                             Turn around
+    ; -----------------------------------------------------------------
     
     bra do_not_turn_around
     
@@ -271,6 +274,9 @@ stop_turning:
 do_not_turn_around:
 
 
+    ; -----------------------------------------------------------------
+    ;                             Move forward
+    ; -----------------------------------------------------------------
 
     bra do_not_move_forward
     
@@ -302,8 +308,9 @@ stop_moving:
 do_not_move_forward:
 
 
-
-
+    ; -----------------------------------------------------------------
+    ;                             Opening door
+    ; -----------------------------------------------------------------
 
     lda #0
     sta TMP_DOOR_OPENED_STATUS

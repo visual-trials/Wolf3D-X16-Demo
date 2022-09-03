@@ -126,7 +126,6 @@ wall_facing_north_screen_start_angle_calculated:
     sta DELTA_X+1
 
     
-    
     ; FIXME: this seems inefficient and it can probably be done in a nicer way
     ; Check whether this is an opened door (or simply a closed wall)
     lda DOOR_OPENED+1
@@ -146,7 +145,6 @@ wall_facing_north_fully_opened_door:
     rts    
 wall_facing_north_determined_openness:
 
-    
     ; Check if DELTA_X is negative: if so, this means it starts to the west of the player, if not, it starts to the east
     bpl wall_facing_north_starting_east
     
@@ -1381,7 +1379,7 @@ wall_part_has_positive_length:
     jsr prep_and_draw_wall_part
     ply
 
-    
+
 ; FIXME: right now we are FORCING a wall to create only ONE wall part!!
 ; FIXME: right now we are FORCING a wall to create only ONE wall part!!
 ; FIXME: right now we are FORCING a wall to create only ONE wall part!!
@@ -1515,10 +1513,11 @@ do_tan_lookup:
     beq tan_angle_result_is_correct
     
     sec
-    lda #<(456)
+; FIXME: is the -1 correct here? (if we do not do this we end up with $720 degress when looking south (and a north facing door that is halfway open)
+    lda #<(456-1)
     sbc ANGLE_INDEX
     sta ANGLE_INDEX
-    lda #>(456)
+    lda #>(456-1)
     sbc ANGLE_INDEX+1   ; TODO: this is always 0, right? So we can save a clock cycle here...
     sta ANGLE_INDEX+1
     
