@@ -568,6 +568,28 @@ to_angle_in_q0:
 to_angle_info_updated:
 
 
+    .if 0
+; FIXME: should we decrement TO_ANGLE?
+; FIXME: should we decrement TO_ANGLE?
+; FIXME: should we decrement TO_ANGLE?
+; FIXME: should we decrement TO_ANGLE?
+
+    dec TO_ANGLE
+    bpl to_angle_decremented
+    dec TO_ANGLE+1
+    bpl to_angle_decremented
+    ; TO_ANGLE became negative, so we add 1824 to it
+    clc
+    lda TO_ANGLE
+    adc #(<1824)
+    sta TO_ANGLE+1
+    adc #(>1824)
+to_angle_decremented:
+    
+    stp
+    .endif
+    
+
 
 
 ; FIXME

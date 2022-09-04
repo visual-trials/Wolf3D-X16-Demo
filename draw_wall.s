@@ -1303,13 +1303,6 @@ end_of_wall_is_ok:
 
 
 
-; FIXME: should we decrement TO_SCREEN_ANGLE_PART?
-; FIXME: should we decrement TO_SCREEN_ANGLE_PART?
-; FIXME: should we decrement TO_SCREEN_ANGLE_PART?
-; FIXME: should we decrement TO_SCREEN_ANGLE_PART?
-
-
-
 ; FIXME
 ;    stp
     .if 0

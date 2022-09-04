@@ -278,7 +278,7 @@ do_not_turn_around:
     ;                             Move forward
     ; -----------------------------------------------------------------
 
-    ; bra do_not_move_forward
+    bra do_not_move_forward
     
 keep_moving_forward:
     lda #0
@@ -317,7 +317,7 @@ do_not_move_forward:
     lda #0
     sta TMP_DOOR_OPENED_STATUS+1
 
-    ; bra do_not_open_door
+    bra do_not_open_door
     
 move_door:
     jsr update_viewpoint
