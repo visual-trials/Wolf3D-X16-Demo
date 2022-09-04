@@ -237,7 +237,7 @@ reset:
     ;                             Turn around
     ; -----------------------------------------------------------------
     
-    bra do_not_turn_around
+    ; bra do_not_turn_around
     
 keep_turning_around:  
     lda #0

@@ -7,6 +7,7 @@ update_viewpoint:
     
     ; FIXME: <BUG> when 'walking' forwards, white lines (at the corner of the walls) become visible and there is a lot of 'flickering' going on (some kind of rounding issue?)
     
+    ; FIXME: <BUG> on real HW the door dissapeared!
     
     ; FIXME: We should add PLAYER_POS_X/Y and calcluate VIEWPOINT_X/Y from the player position and the LOOKING_DIR_ANGLE (every frame)
     ;        The viewpoint position is around 0.34 tiles "behind" the player position.
