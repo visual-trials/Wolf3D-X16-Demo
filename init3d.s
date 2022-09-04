@@ -1,5 +1,5 @@
 ; FIXME: use a different background color, or none!
-BACKGROUND_COLOR_3D_VIEW = 2
+BACKGROUND_COLOR_3D_VIEW = 0
 CEILING_COLOR            = 19
 FLOOR_COLOR              = 22
 
@@ -71,17 +71,17 @@ wall_6_info:
     .byte BS1, BS1, BS2, BS2
     
 ; FIXME: HACK! moving back wall to front!
-;wall_7_info:
-;    .byte 0, 8 ; start x, y
-;    .byte 3, 8 ; end x, y
-;    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
-;    .byte BS1, BS1, BS1
-    
 wall_7_info:
-    .byte 3, 0 ; start x, y
-    .byte 0, 0 ; end x, y
-    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
-    .byte BS1, BS2, BS1
+    .byte 0, 8 ; start x, y
+    .byte 7, 8 ; end x, y
+    .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1, BS1, BS1, BS1, BS1, BS1, BS1, BS1
+    
+;wall_7_info:
+;    .byte 3, 0 ; start x, y
+;    .byte 0, 0 ; end x, y
+;    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+;    .byte BS1, BS2, BS1
     
 
 ; Square room

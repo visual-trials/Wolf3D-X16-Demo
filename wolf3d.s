@@ -233,11 +233,18 @@ reset:
     
     jsr clear_3d_view_fast
     
+    ; FIXME: put this somewhere else!
+    lda #0
+    sta TMP_DOOR_OPENED_STATUS
+    lda #0
+    sta TMP_DOOR_OPENED_STATUS+1
+
+    
     ; -----------------------------------------------------------------
     ;                             Turn around
     ; -----------------------------------------------------------------
     
-    ; bra do_not_turn_around
+    bra do_not_turn_around
     
 keep_turning_around:  
     lda #0
@@ -274,11 +281,15 @@ stop_turning:
 do_not_turn_around:
 
 
+; FIXME: back to RED background!!
+; FIXME: back to RED background!!
+; FIXME: back to RED background!!
+
     ; -----------------------------------------------------------------
     ;                             Move forward
     ; -----------------------------------------------------------------
 
-    bra do_not_move_forward
+    ; bra do_not_move_forward
     
 keep_moving_forward:
     lda #0
@@ -293,17 +304,29 @@ move_forward:
     inc PLAYER_POS_Y
     inc PLAYER_POS_Y
     inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
     bne move_forward
 
     inc PLAYER_POS_Y+1
     lda PLAYER_POS_Y+1
-    cmp #$4
+    cmp #$3
     bcc move_forward
     
-    bra keep_moving_forward
+;    bra keep_moving_forward
 
-stop_moving:
-    jmp stop_moving
+;stop_moving:
+;    jmp stop_moving
 
 do_not_move_forward:
 
@@ -312,12 +335,7 @@ do_not_move_forward:
     ;                             Opening door
     ; -----------------------------------------------------------------
 
-    lda #0
-    sta TMP_DOOR_OPENED_STATUS
-    lda #0
-    sta TMP_DOOR_OPENED_STATUS+1
-
-    bra do_not_open_door
+;    bra do_not_open_door
     
 move_door:
     jsr update_viewpoint
@@ -337,10 +355,59 @@ move_door:
     jsr draw_3d_view
     
 
-stop_opening:
-    jmp stop_opening
+;stop_opening:
+;    jmp stop_opening
 
 do_not_open_door:
+
+
+
+    ; -----------------------------------------------------------------
+    ;                             Move forward 2
+    ; -----------------------------------------------------------------
+
+    ; bra do_not_move_forward2
+    
+move_forward2:
+    jsr update_viewpoint
+    jsr draw_3d_view
+    inc LOOKING_DIR_ANGLE
+    inc LOOKING_DIR_ANGLE
+    inc LOOKING_DIR_ANGLE
+    inc LOOKING_DIR_ANGLE
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    inc PLAYER_POS_Y
+    bne move_forward2
+
+    inc PLAYER_POS_Y+1
+    lda PLAYER_POS_Y+1
+    cmp #$4
+    bcc move_forward2
+    
+stop_moving2:
+    jmp stop_moving2
+
+do_not_move_forward2:
+
+
+
+
+
+
 
 
 
