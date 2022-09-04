@@ -37,12 +37,13 @@ wall_2_info:
 ;    .byte 1, 8 ; start x, y
 ;    .byte 2, 8 ; end x, y
 ; FIXME: door on north facing wall
-    .byte 2, 0 ; start x, y
-    .byte 1, 0 ; end x, y
-    .byte (0 | 4)   ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west  (bit 2 = 1 means this is a door)
-;    .byte 1, 4 ; start x, y
-;    .byte 2, 4 ; end x, y
-;    .byte (2 | 4)   ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west  (bit 2 = 1 means this is a door)
+;    .byte 2, 0 ; start x, y
+;    .byte 1, 0 ; end x, y
+;    .byte (0 | 4)   ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west  (bit 2 = 1 means this is a door)
+; Normal door:
+    .byte 1, 4 ; start x, y
+    .byte 2, 4 ; end x, y
+    .byte (2 | 4)   ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west  (bit 2 = 1 means this is a door)
     .byte CLD
     
 wall_3_info:
@@ -121,15 +122,15 @@ setup_player:
     ; y-position of the viewpoint (8.8 bits)
     lda #0
     sta PLAYER_POS_Y
-    lda #3
+    lda #1
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
-    ;lda #0
-    lda #<(1824/2)
+    lda #0
+    ;lda #<(1824/2)
     sta LOOKING_DIR_ANGLE
-    ;lda #0
-    lda #>(1824/2)
+    lda #0
+    ;lda #>(1824/2)
     sta LOOKING_DIR_ANGLE+1
     
     rts

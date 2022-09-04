@@ -1006,14 +1006,14 @@ from_screen_angle_is_positive:
     ; FIXME: because TO_ANGLE now represents the angle+1 until we want to draw, we are here subscracting 1 for the TO_SCREEN_ANGLE!
     ;        We might consider TO_ANGLE containing the angle (not +1) until we want to draw
 
-    ; SPEED: incremting TO_SCREEN_ANGLE with 1 (this can probably be done quicker!)
-    sec
-    lda TO_SCREEN_ANGLE
-    sbc #<(1)
-    sta TO_SCREEN_ANGLE
-    lda TO_SCREEN_ANGLE+1
-    sbc #>(1)
-    sta TO_SCREEN_ANGLE+1
+    ; SPEED: decrementing TO_SCREEN_ANGLE with 1 (this can probably be done quicker!)
+;    sec
+;    lda TO_SCREEN_ANGLE
+;    sbc #<(1)
+;    sta TO_SCREEN_ANGLE
+;    lda TO_SCREEN_ANGLE+1
+;    sbc #>(1)
+;    sta TO_SCREEN_ANGLE+1
     
     bpl to_screen_angle_is_positive
     
@@ -1074,6 +1074,7 @@ from_screen_angle_is_not_left_of_screen:
     lda FROM_SCREEN_ANGLE
     cmp #<(304)
     bcc from_screen_angle_is_within_the_screen
+                                                    ; Note that is FROM_SCREEN_ANGLE = 304, it *IS* regarded as being right of screen
 
 from_screen_angle_is_right_of_screen:
     ; FIXME: we should in fact check if there is another wall part possible?
@@ -1109,6 +1110,7 @@ to_screen_angle_is_not_left_of_screen:
     lda TO_SCREEN_ANGLE
     cmp #<(304)
     bcc to_screen_angle_is_not_right_of_screen
+    beq to_screen_angle_is_not_right_of_screen   ; if TO_SCREEN_ANGLE = 304, we say that it is NOT right of screen (since TO_SCREEN_ANGLE is +1 the actual angle)
     
 to_screen_angle_is_on_right_of_screen:
 
@@ -1117,7 +1119,6 @@ to_screen_angle_is_on_right_of_screen:
     
     ; Set to-angle to a screen angle of 60 degrees (right column of the screen)
     
-; FIXME: shouldnt we also update TO_SCREEN_ANGLE here? Since we will calculate based on that one after this?
     lda #<(304)
     sta TO_SCREEN_ANGLE
     lda #>(304)
@@ -1182,7 +1183,7 @@ tmp_draw_this_wall:
     
 next_occluder_to_check:
 
-    stp
+;    stp
 ; FIXME    
     lda CURRENT_WALL_INDEX
 
@@ -1198,6 +1199,8 @@ next_occluder_to_check:
     lda FROM_SCREEN_ANGLE
     cmp OCCLUDER_TO_ANGLE_LOW, y
     bcc start_of_wall_is_to_the_left_of_the_end_of_occluder
+                                                              ; Note: when the OCCLUDER_TO_ANGLE = 228 this means its last angle index is 227. 
+                                                              ;       This means that if the FROM_SCREEN_ANGLE = 228 the wall starts to the *right of* the end of the occluder!
 
 start_of_wall_is_to_the_right_of_or_at_the_end_of_occluder:
 
@@ -1214,6 +1217,8 @@ start_of_wall_is_to_the_right_of_or_at_the_end_of_occluder:
     lda FROM_SCREEN_ANGLE
     cmp OCCLUDER_FROM_ANGLE_LOW, y
     bcc start_of_wall_is_to_the_left_of_the_start_of_next_occluder
+                                                              ; Note: when the OCCLUDER_FROM_ANGLE = 228 this means its first angle index really is 228. 
+                                                              ;       This means that if the FROM_SCREEN_ANGLE = 228 the wall starts to the *right of* or *at* the start of the next occluder!
     
 start_of_wall_is_to_the_right_of_or_at_the_start_of_next_occluder:
 
@@ -1295,6 +1300,14 @@ end_of_wall_is_to_the_left_of_the_start_of_occluder:
     sta TO_SCREEN_ANGLE_PART+1
 
 end_of_wall_is_ok:
+
+
+
+; FIXME: should we decrement TO_SCREEN_ANGLE_PART?
+; FIXME: should we decrement TO_SCREEN_ANGLE_PART?
+; FIXME: should we decrement TO_SCREEN_ANGLE_PART?
+; FIXME: should we decrement TO_SCREEN_ANGLE_PART?
+
 
 
 ; FIXME
