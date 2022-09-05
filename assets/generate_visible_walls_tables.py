@@ -4,20 +4,13 @@ import pygame
 nr_of_sqaures_horizontal = 16
 nr_of_sqaures_vertical = 16
 grid_size = 32
+
 background_color = (100,100,100)
 bs1_wall_color = (0,0,100)
 bs2_wall_color = (0,0,200)
 door_color = (150,150,0)
 grid_line_color = (80,80,80)
-
-bs1_texture_color = (0,0,100)
-bs2_texture_color = (0,0,200)
-drf_texture_color = (150,150,100)
-drs_texture_color = (150,150,100)
-
-west_door_color = (150,0,150)
-east_door_color = (150,150,200)
-south_door_color = (50,50,0)
+door_color_line = (180,180,0)
 
 WALL_FACING_NORTH = 0
 WALL_FACING_EAST = 1
@@ -45,6 +38,7 @@ def run():
     pygame.init()
 
 
+    pygame.display.set_caption('X16 Wold3D asset converter')
     screen = pygame.display.set_mode((screen_width, screen_height))
     clock = pygame.time.Clock()
 
@@ -194,7 +188,7 @@ def determine_walls_and_doors(map_info, map_width, map_height):
         current_wall = None
         
         if (y <= 1):
-            # Since we are looking for horizontal walls facting south, the last 2 rows can be skipped
+            # Since we are looking for horizontal walls facting south, the first/bottom 2 rows can be skipped
             continue
             
         # Loop from low to high (for south facing walls)
@@ -241,6 +235,58 @@ def determine_walls_and_doors(map_info, map_width, map_height):
                 current_wall = None
                 
 
+    # Run through rows and determine horizontal walls/doors that are facing north
+    for y in range(map_height):
+        # We start a row with no current wall
+        current_wall = None
+        
+        if (y >= map_height-2):
+            # Since we are looking for horizontal walls facting north, the last/top 2 rows can be skipped
+            continue
+            
+        # Loop from high to low (for north facing walls)
+        for x in range(map_width, 0, -1):
+            # For each grid square we look if its a wall or a door
+            if (is_GRID_WALL(map_info[y][x])):
+                # We then look if the square to the TOP of it is empty
+                if (map_info[y+1][x] == GRID_EMPTY):
+                    # We have a empty square on the top and a filled sqaure on the top, so we have a north facing wall
+                    if not current_wall:
+                        # We do not have a current wall so we create one
+                        current_wall = create_new_wall_or_door(x+1, y+1, x, y+1, WALL_FACING_NORTH)
+                        current_wall['textures'].append(grid_code_to_texture(map_info[y][x]))
+                        walls.append(current_wall)
+                    else:
+                        # We need to add this wall segment to the current wall
+                        current_wall['x_end'] = x
+                        current_wall['textures'].append(grid_code_to_texture(map_info[y][x]))
+                elif (map_info[y+1][x] == GRID_DOOR):
+                    # We have a door square on the top and a filled sqaure on the top, so we have a north facing wall (with a door-side-texture)
+                    if not current_wall:
+                        # We do not have a current wall so we create one
+                        current_wall = create_new_wall_or_door(x+1, y+1, x, y+1, WALL_FACING_NORTH)
+                        current_wall['textures'].append(TEXTURE_DRS)
+                        walls.append(current_wall)
+                    else:
+                        # We need to add this wall segment to the current wall
+                        current_wall['x_end'] = x
+                        current_wall['textures'].append(TEXTURE_DRS)
+                else:
+                    # We have no empty square on the top (anymore) so we unset the current wall
+                    current_wall = None
+            elif (map_info[y][x] == GRID_DOOR):
+                # We have no wall (anymore) so we unset the current wall
+                current_wall = None
+                # We then look if the square to the top of it is empty
+                if (map_info[y+1][x] == GRID_EMPTY):
+                    # We have a empty square on the top and a door sqaure on the top, so we have a north facing door
+                    new_door = create_new_wall_or_door(x+1, y+1, x, y+1, DOOR_FACING_NORTH)
+                    new_door['textures'].append(TEXTURE_DRF)
+                    walls.append(new_door)
+            else:  # Assuming its empty
+                # We have no wall (anymore) so we unset the current wall
+                current_wall = None
+
 
 
                 
@@ -257,13 +303,13 @@ def grid_code_to_texture(grid_code):
 
 def texture_to_color(texture):
     if (texture == TEXTURE_BS1):
-        return bs1_texture_color
+        return bs1_wall_color
     elif (texture == TEXTURE_BS2):
-        return bs2_texture_color
+        return bs2_wall_color
     elif (texture == TEXTURE_DRF):
-        return drf_texture_color
+        return door_color
     elif (texture == TEXTURE_DRS):
-        return drs_texture_color
+        return door_color
 
 
 
@@ -301,7 +347,7 @@ def draw_walls(screen, walls):
                     width=wall_thickness)
             
         elif (wall['facing_dir'] == DOOR_FACING_WEST):
-            pygame.draw.line(screen, west_door_color, (wall['x_start']*grid_size-wall_thickness/2+grid_size/2, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size-wall_thickness/2+grid_size/2, screen_height-wall['y_end']*grid_size), width=wall_thickness)
+            pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size-wall_thickness/2+grid_size/2, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size-wall_thickness/2+grid_size/2, screen_height-wall['y_end']*grid_size), width=wall_thickness)
 
         if (wall['facing_dir'] == WALL_FACING_EAST):
 
@@ -316,7 +362,7 @@ def draw_walls(screen, walls):
                     width=wall_thickness)
                     
         elif (wall['facing_dir'] == DOOR_FACING_EAST):
-            pygame.draw.line(screen, east_door_color, (wall['x_start']*grid_size+wall_thickness/2-grid_size/2, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size+wall_thickness/2-grid_size/2, screen_height-wall['y_end']*grid_size), width=wall_thickness)
+            pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size+wall_thickness/2-grid_size/2, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size+wall_thickness/2-grid_size/2, screen_height-wall['y_end']*grid_size), width=wall_thickness)
 
         elif (wall['facing_dir'] == WALL_FACING_SOUTH):
             length_of_wall = wall['x_end']-wall['x_start']
@@ -330,8 +376,21 @@ def draw_walls(screen, walls):
                     width=wall_thickness)
             
         elif (wall['facing_dir'] == DOOR_FACING_SOUTH):
-            pygame.draw.line(screen, south_door_color, (wall['x_start']*grid_size, screen_height-(wall['y_start']*grid_size-wall_thickness/2+grid_size/2)), (wall['x_end']*grid_size, screen_height-(wall['y_end']*grid_size-wall_thickness/2+grid_size/2)), width=wall_thickness)
+            pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size, screen_height-(wall['y_start']*grid_size-wall_thickness/2+grid_size/2)), (wall['x_end']*grid_size, screen_height-(wall['y_end']*grid_size-wall_thickness/2+grid_size/2)), width=wall_thickness)
 
+        elif (wall['facing_dir'] == WALL_FACING_NORTH):
+            length_of_wall = wall['x_start']-wall['x_end']
+            for x_offset_west in range(length_of_wall):
+                texture = wall['textures'][x_offset_west]
+                pygame.draw.line(
+                    screen, 
+                    texture_to_color(texture), 
+                    ((wall['x_start'] - x_offset_west    ) * grid_size, screen_height-(wall['y_start'] * grid_size)), 
+                    ((wall['x_start'] - x_offset_west - 1) * grid_size, screen_height-(wall['y_end'] * grid_size)), 
+                    width=wall_thickness)
+            
+        elif (wall['facing_dir'] == DOOR_FACING_NORTH):
+            pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size, screen_height-(wall['y_start']*grid_size-wall_thickness/2+grid_size/2)), (wall['x_end']*grid_size, screen_height-(wall['y_end']*grid_size-wall_thickness/2+grid_size/2)), width=wall_thickness)
             
 def draw_map(screen, map_info, map_width, map_height):
 
@@ -341,6 +400,7 @@ def draw_map(screen, map_info, map_width, map_height):
         for x in range(nr_of_sqaures_horizontal):
             if (x >= map_width):
                 continue
+                
             if (map_info[y][x] == GRID_BS1):
                 border_width = 0
                 square_color = bs1_wall_color
@@ -353,6 +413,7 @@ def draw_map(screen, map_info, map_width, map_height):
             elif (map_info[y][x] == GRID_EMPTY):
                 border_width = 1
                 square_color = grid_line_color
+                
             pygame.draw.rect(screen, square_color, pygame.Rect(x*grid_size+4, (screen_height-grid_size)-y*grid_size+4, grid_size-8, grid_size-8), width=border_width)
 
 
