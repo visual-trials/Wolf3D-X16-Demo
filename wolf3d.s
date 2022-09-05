@@ -233,12 +233,6 @@ reset:
     
     jsr clear_3d_view_fast
     
-    ; FIXME: put this somewhere else!
-    lda #0
-    sta TMP_DOOR_OPENED_STATUS
-    lda #0
-    sta TMP_DOOR_OPENED_STATUS+1
-
     
     ; -----------------------------------------------------------------
     ;                             Turn around
@@ -284,6 +278,14 @@ do_not_turn_around:
 ; FIXME: back to RED background!!
 ; FIXME: back to RED background!!
 ; FIXME: back to RED background!!
+run_big_loop:
+
+    ; FIXME: put this somewhere else!
+    lda #0
+    sta TMP_DOOR_OPENED_STATUS
+    sta TMP_DOOR_OPENED_STATUS+1
+    sta LOOKING_DIR_ANGLE
+    sta LOOKING_DIR_ANGLE+1
 
     ; -----------------------------------------------------------------
     ;                             Move forward
@@ -397,6 +399,10 @@ move_forward2:
     lda PLAYER_POS_Y+1
     cmp #$4
     bcc move_forward2
+    
+; FIXME
+    jmp run_big_loop
+    
     
 stop_moving2:
     jmp stop_moving2
