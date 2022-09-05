@@ -9,17 +9,27 @@ wall_color = (0,0,150)
 door_color = (150,150,0)
 grid_line_color = (50,50,50)
 
+screen_width = grid_size*nr_of_sqaures_horizontal
+screen_height = grid_size*nr_of_sqaures_vertical
+
 def run():
     pygame.init()
 
-    screen_width = grid_size*nr_of_sqaures_horizontal
-    screen_height = grid_size*nr_of_sqaures_vertical
 
     screen = pygame.display.set_mode((screen_width, screen_height))
     clock = pygame.time.Clock()
 
-    running = True
+    
+    map_width = 15
+    map_height = 14
+    map_info = get_map_info()
+    print(map_info)
 
+
+    # Run through columns
+#    for x in range(nr_of_sqaures_horizontal):
+        
+    running = True
     while running:
         # TODO: We might want to set this to max?
         clock.tick(60)
@@ -32,29 +42,38 @@ def run():
             #if event.type == pygame.MOUSEMOTION: 
             #    newrect.center = event.pos
 
-        screen.fill(background_color)
+        draw_map(screen, map_info, map_width, map_height)
         
-        map = get_map()
-
-        for y in range(nr_of_sqaures_vertical):
-            for x in range(nr_of_sqaures_horizontal):
-                if (map[y][x] == 1):
-                    border_width = 0
-                    square_color = wall_color
-                elif (map[y][x] == 8):
-                    border_width = 0
-                    square_color = door_color
-                elif (map[y][x] == 0):
-                    border_width = 1
-                    square_color = grid_line_color
-                pygame.draw.rect(screen, square_color, pygame.Rect(x*grid_size, y*grid_size, grid_size, grid_size), width=border_width)
-     
         pygame.display.update()
-
+     
     pygame.quit()
 
-def get_map():
-    return [
+
+def draw_map(screen, map_info, map_width, map_height):
+
+    screen.fill(background_color)
+    
+    for y in range(nr_of_sqaures_vertical):
+        if (y >= map_height):
+            continue
+        for x in range(nr_of_sqaures_horizontal):
+            if (x >= map_width):
+                continue
+            if (map_info[y][x] == 1):
+                border_width = 0
+                square_color = wall_color
+            elif (map_info[y][x] == 8):
+                border_width = 0
+                square_color = door_color
+            elif (map_info[y][x] == 0):
+                border_width = 1
+                square_color = grid_line_color
+            pygame.draw.rect(screen, square_color, pygame.Rect(x*grid_size, (screen_height-grid_size)-y*grid_size, grid_size, grid_size), width=border_width)
+
+
+
+def get_map_info():
+    return list(reversed([
         [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ],
         [ 0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0 ],
         [ 1,1,1,1,1,1,1,8,1,1,1,1,1,1,1,0 ],
@@ -71,6 +90,6 @@ def get_map():
         [ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 ],
         [ 1,0,0,0,0,0,0,0,0,0,0,0,0,0,1,0 ],
         [ 1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,0 ],
-    ]
+    ]))
     
 run()
