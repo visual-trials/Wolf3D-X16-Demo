@@ -9,6 +9,17 @@ wall_color = (0,0,150)
 door_color = (150,150,0)
 grid_line_color = (50,50,50)
 
+west_wall_color = (0,150,150)
+
+WALL_FACING_NORTH = 0
+WALL_FACING_EAST = 1
+WALL_FACING_SOUTH = 2
+WALL_FACING_WEST = 3
+DOOR_FACING_NORTH = 4
+DOOR_FACING_EAST = 5
+DOOR_FACING_SOUTH = 6
+DOOR_FACING_WEST = 7
+
 screen_width = grid_size*nr_of_sqaures_horizontal
 screen_height = grid_size*nr_of_sqaures_vertical
 
@@ -23,11 +34,8 @@ def run():
     map_width = 15
     map_height = 14
     map_info = get_map_info()
-    print(map_info)
 
-
-    # Run through columns
-#    for x in range(nr_of_sqaures_horizontal):
+    walls = determine_walls_and_doors(map_info, map_width, map_height)
         
     running = True
     while running:
@@ -42,17 +50,74 @@ def run():
             #if event.type == pygame.MOUSEMOTION: 
             #    newrect.center = event.pos
 
+        screen.fill(background_color)
+    
         draw_map(screen, map_info, map_width, map_height)
         
+        draw_walls(screen, walls)
+    
         pygame.display.update()
-     
+    
+        
     pygame.quit()
 
 
+def determine_walls_and_doors(map_info, map_width, map_height):
+
+    walls = []
+
+    # Run through columns and determine vertical walls that are facing west
+    for x in range(map_width):
+        # We start a column with no current wall
+        current_west_facing_wall = None
+        if (x == 0):
+            # Since we are looking for vertical walls facting west, the first column can be skipped
+            continue
+        for y in range(map_height):
+            # For each grid square we look if its a wall
+            if (map_info[y][x] == 1):
+                # We then look if the square to the left of it is empty
+                if (map_info[y][x-1] == 0):
+                    # We have a empty square on the left and a filled sqaure on the right, so we have a west facing wall
+                    if not current_west_facing_wall:
+                        # We do not have a current wall so we create one
+                        current_west_facing_wall = create_new_wall(x, y+1, x, y, WALL_FACING_WEST)
+                        walls.append(current_west_facing_wall)
+                    else:
+                        # We need to add this wall segment to the current wall
+                        current_west_facing_wall['y_start'] = y+1
+                else:
+                    # We have no empty square on the left (anymore) so we unset the current wall
+                    current_west_facing_wall = None
+            else:
+                # We have no wall (anymore) so we unset the current wall
+                current_west_facing_wall = None
+                
+                
+                
+    return walls
+    
+    
+def create_new_wall(x_start, y_start, x_end, y_end, facing_dir):
+    wall = {}
+    wall['x_start'] = x_start
+    wall['y_start'] = y_start
+    wall['x_end'] = x_end
+    wall['y_end'] = y_end
+    wall['facing_dir'] = facing_dir
+    
+    return wall
+
+
+def draw_walls(screen, walls):
+    wall_thickness = 2
+
+    for wall in walls:
+        if (wall['facing_dir'] == WALL_FACING_WEST):
+            pygame.draw.line(screen, west_wall_color, (wall['x_start']*grid_size-wall_thickness, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size-wall_thickness, screen_height-wall['y_end']*grid_size), width=wall_thickness)
+
 def draw_map(screen, map_info, map_width, map_height):
 
-    screen.fill(background_color)
-    
     for y in range(nr_of_sqaures_vertical):
         if (y >= map_height):
             continue
