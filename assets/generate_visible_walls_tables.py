@@ -266,6 +266,8 @@ def first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, 
         # Since we know where the start and end angles came from, we also know what the coordinates of those points are
         # These two points have a distance to the viewpoint: the one that is closest is the wall that is closest
         
+        # PROBLEM: if a wall is completely behind another wall, both the start and the end will come from ONE wall! So this doesnt tell us which one is behind the other one!
+        
         
         print('----')
         print(angle_start_first_wall, angle_end_first_wall)
