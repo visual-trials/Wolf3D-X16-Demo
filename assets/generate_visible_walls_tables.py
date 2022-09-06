@@ -237,44 +237,50 @@ def first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, 
     
     walls_are_overlapping = False
     
+    start_is_from_first_wall = False
+    start_is_from_second_wall = False
+    end_is_from_first_wall = False
+    end_is_from_second_wall = False
     
     # We get the largest start
     if normalized_angle_start_second_wall > normalized_angle_start_first_wall:
         largest_normalized_start_angle = normalized_angle_start_second_wall
+        start_is_from_second_wall = True
     else:
         largest_normalized_start_angle = normalized_angle_start_first_wall
+        start_is_from_first_wall = True
         
     # We get the smallest end
     if normalized_angle_end_second_wall < normalized_angle_end_first_wall:
         smallest_normalized_end_angle = normalized_angle_end_second_wall
+        end_is_from_second_wall = True
     else:
         smallest_normalized_end_angle = normalized_angle_end_first_wall
+        end_is_from_first_wall = True
+
     
     # If the smallest end is larger than the largest start, we have an overlap
     if smallest_normalized_end_angle > largest_normalized_start_angle:
         walls_are_overlapping = True
         
-        # unnormalize angles: we now know the absolute overlap angles
+        # Since we know where the start and end angles came from, we also know what the coordinates of those points are
+        # These two points have a distance to the viewpoint: the one that is closest is the wall that is closest
         
         
-    if not walls_are_overlapping:
+        print('----')
+        print(angle_start_first_wall, angle_end_first_wall)
+        print(angle_start_second_wall, angle_end_second_wall)    
+        print(normalized_angle_start_first_wall, normalized_angle_end_first_wall)
+        print(normalized_angle_start_second_wall, normalized_angle_end_second_wall)
+        
+        # FIXME: for now we want to show overlapping walls!
+        return 1
+        # FIXME!
+        #    return first_is_behind_second
+        
+    else:
         # We have no overlap, so we dont know which one is behind or in front. We therefore return None`
         return None
-    
-    
-    print('----')
-    print(angle_start_first_wall, angle_end_first_wall)
-    print(angle_start_second_wall, angle_end_second_wall)    
-    print(normalized_angle_start_first_wall, normalized_angle_end_first_wall)
-    print(normalized_angle_start_second_wall, normalized_angle_end_second_wall)
-    
-    # FIXME: for now we want to show overlapping walls!
-    return 1
-
-        
-    # FIXME!
-
-#    return first_is_behind_second
     
 def draw_wall_cone(viewpoint_x, viewpoint_y, wall, is_first_wall):
     
