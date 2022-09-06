@@ -11,6 +11,8 @@ bs2_wall_color = (0,0,200)
 door_color = (150,150,0)
 grid_line_color = (80,80,80)
 door_color_line = (180,180,0)
+first_wall_cone_color = (200,200,0)
+second_wall_cone_color = (0,200,200)
 
 WALL_FACING_NORTH = 0
 WALL_FACING_EAST = 1
@@ -34,18 +36,21 @@ TEXTURE_DRS = 3  # Door side
 screen_width = grid_size*nr_of_sqaures_horizontal
 screen_height = grid_size*nr_of_sqaures_vertical
 
+pygame.init()
+
+pygame.display.set_caption('X16 Wold3D asset converter')
+screen = pygame.display.set_mode((screen_width, screen_height))
+clock = pygame.time.Clock()
+
 def run():
-    pygame.init()
 
-
-    pygame.display.set_caption('X16 Wold3D asset converter')
-    screen = pygame.display.set_mode((screen_width, screen_height))
-    clock = pygame.time.Clock()
-
-    
     map_width = 15
     map_height = 14
     map_info = get_map_info()
+    
+    # FIXME: hardcoded, we should iterate through all grid elements
+    viewpoint_x = 3
+    viewpoint_y = 7
 
     walls = determine_walls_and_doors(map_info, map_width, map_height)
         
@@ -64,15 +69,73 @@ def run():
 
         screen.fill(background_color)
     
-        draw_map(screen, map_info, map_width, map_height)
+        draw_map(map_info, map_width, map_height)
         
-        draw_walls(screen, walls)
+        draw_walls(walls)
+        
+        ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls)
     
         pygame.display.update()
     
         
     pygame.quit()
 
+    
+def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
+    ordered_walls = []
+    
+    # FIXME: we need the viewpoint to be able to contain x.5 values!
+    
+    # Bubble sorting the walls for this viewpoint
+    for outer_index in range(len(walls) - 1):
+    
+        for inner_index in range(0, len(walls) - outer_index - 1):
+        
+            first_wall = walls[inner_index]
+            draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
+            
+            second_wall = walls[inner_index+1]
+            draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
+            
+            if first_wall_is_further_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall):
+                # Swap the two walls in the array
+                tmp_wall = walls[inner_index+1]
+                walls[inner_index+1] = walls[inner_index]
+                walls[inner_index] = tmp_wall
+            
+            # FIXME
+            break
+            
+        pygame.display.update()
+        
+        # FIXME
+        break
+
+
+    
+    
+    return ordered_walls
+    
+def first_wall_is_further_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall):
+    # FIXME!
+    first_wall_is_further = False
+    
+    # FIXME!
+
+    return first_wall_is_further
+    
+def draw_wall_cone(viewpoint_x, viewpoint_y, wall, is_first_wall):
+    
+    viewpoint = (viewpoint_x*grid_size, screen_height-viewpoint_y*grid_size)
+    start_point = (wall['x_start']*grid_size, screen_height-wall['y_start']*grid_size)
+    end_point = (wall['x_end']*grid_size, screen_height-wall['y_end']*grid_size)
+
+    if is_first_wall:
+        pygame.draw.polygon(screen, first_wall_cone_color, (viewpoint, start_point, end_point))
+    else:
+        pygame.draw.polygon(screen, second_wall_cone_color, (viewpoint, start_point, end_point))
+    
+    
 
 def determine_walls_and_doors(map_info, map_width, map_height):
 
@@ -331,7 +394,7 @@ def create_new_wall_or_door(x_start, y_start, x_end, y_end, facing_dir):
     return wall
 
 
-def draw_walls(screen, walls):
+def draw_walls(walls):
     wall_thickness = 2
 
     for wall in walls:
@@ -392,7 +455,7 @@ def draw_walls(screen, walls):
         elif (wall['facing_dir'] == DOOR_FACING_NORTH):
             pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size, screen_height-(wall['y_start']*grid_size-wall_thickness/2+grid_size/2)), (wall['x_end']*grid_size, screen_height-(wall['y_end']*grid_size-wall_thickness/2+grid_size/2)), width=wall_thickness)
             
-def draw_map(screen, map_info, map_width, map_height):
+def draw_map(map_info, map_width, map_height):
 
     for y in range(nr_of_sqaures_vertical):
         if (y >= map_height):
