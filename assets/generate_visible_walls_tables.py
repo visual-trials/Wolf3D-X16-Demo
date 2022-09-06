@@ -51,11 +51,16 @@ def run():
     map_height = 14
     map_info = get_map_info()
     
+    
     # FIXME: hardcoded, we should iterate through all grid elements
     viewpoint_x = 3
     viewpoint_y = 7
 
-    walls = determine_walls_and_doors(map_info, map_width, map_height)
+    all_walls = determine_walls_and_doors(map_info, map_width, map_height)
+    # FIXME: filter out walls that are 'inverted' (never visible from this viewpoint)
+    potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
+    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
+    # ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
     TMP_first_wall_index = 0
     TMP_second_wall_index = 34
@@ -80,9 +85,8 @@ def run():
     
         draw_map(map_info, map_width, map_height)
         
-        draw_walls(walls)
+        draw_walls(all_walls)
         
-        ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls)
         
         #first_wall = walls[TMP_first_wall_index]
         #second_wall = walls[TMP_second_wall_index]
@@ -99,6 +103,56 @@ def run():
         
     pygame.quit()
 
+def filter_out_inverted_walls(viewpoint_x, viewpoint_y, walls):
+    potentially_visible_walls = []
+
+    for wall in walls:
+    
+        # FIXME: we need a more precise viewpoint_x/y!!
+    
+        delta_x_start = wall['x_start'] - viewpoint_x
+        delta_y_start = wall['y_start'] - viewpoint_y
+        delta_x_end = wall['x_end'] - viewpoint_x
+        delta_y_end = wall['y_end'] - viewpoint_y
+
+        # We calculate the angle from the viewpoint (looking north) as a value between 0 and 360 degrees (clockwise looking from above)
+        angle_start = math.atan2(delta_x_start, delta_y_start)/math.pi*180
+        angle_end = math.atan2(delta_x_end, delta_y_end)/math.pi*180
+    
+        # We check if the wall is the wrong way around (meaning its never visible from this viewpoint)
+        # Also if we look at the wall flat on we filter it out
+        if angle_end-angle_start <= 0 or angle_end-angle_start >= 180:
+            continue
+        
+        # We store the calculated start and end angle
+        wall['angle_start'] = angle_start
+        wall['angle_end'] = angle_end
+        
+        potentially_visible_walls.append(wall)
+
+    return potentially_visible_walls
+
+def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
+
+    for first_wall_index in range(len(walls) - 1):
+    
+        for second_wall_index in range(first_wall_index + 1, len(walls)):
+            print(first_wall_index, second_wall_index)
+            first_wall = walls[first_wall_index]
+            second_wall = walls[second_wall_index]
+            
+            first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
+            
+            # FIXME: mark walls as being behind/in front of each other
+    
+            # FIXME: temp code!
+            if first_behind_second == 1:
+                screen.fill(background_color)
+                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
+                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
+                pygame.display.update()
+                clock.tick(60)
+                time.sleep(1)
     
 def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
     ordered_walls = []
@@ -113,7 +167,7 @@ def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
             first_wall = walls[inner_index]
             second_wall = walls[inner_index+1]
             
-            first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
+            # first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
 
             # FIXME!
             #screen.fill(background_color)
@@ -123,11 +177,11 @@ def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
             #clock.tick(60)
             
             # FIXME: temp code!
-            if first_behind_second is None:
-                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
-                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
-                pygame.display.update()
-                break
+            #if first_behind_second is None:
+            #    draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
+            #    draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
+            #    pygame.display.update()
+            #    break
                 
             # FIXME: enable this!
             if first_behind_second:
@@ -153,32 +207,11 @@ def first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, 
     # FIXME!
     # first_is_behind_second = False
     
-    # FIXME: we need a more precise viewpoint_x/y!!
-    
-    delta_x_start_first = first_wall['x_start'] - viewpoint_x
-    delta_y_start_first = first_wall['y_start'] - viewpoint_y
-    delta_x_end_first = first_wall['x_end'] - viewpoint_x
-    delta_y_end_first = first_wall['y_end'] - viewpoint_y
-    
-    delta_x_start_second = second_wall['x_start'] - viewpoint_x
-    delta_y_start_second = second_wall['y_start'] - viewpoint_y
-    delta_x_end_second = second_wall['x_end'] - viewpoint_x
-    delta_y_end_second = second_wall['y_end'] - viewpoint_y
-
-    # We calculate the angle from the viewpoint (looking north) as a value between 0 and 360 degrees (clockwise looking from above)
-    angle_start_first_wall = math.atan2(delta_x_start_first, delta_y_start_first)/math.pi*180
-    angle_end_first_wall = math.atan2(delta_x_end_first, delta_y_end_first)/math.pi*180
-    angle_start_second_wall = math.atan2(delta_x_start_second, delta_y_start_second)/math.pi*180
-    angle_end_second_wall = math.atan2(delta_x_end_second, delta_y_end_second)/math.pi*180
-    
-    # We check if either wall is the wrong way around (meaning its never visible from this viewpoint)
-    if angle_end_first_wall-angle_start_first_wall < 0:
-        # FIXME: the first wall is the wrong way around and should not be in the list of walls at all: for now we push it to the back of the list, but we should mark it as such!
-        return True      
-
-    if angle_end_second_wall-angle_start_second_wall < 0:
-        # FIXME: the second wall is the wrong way around and should not be in the list of walls at all: for now we don't pull it forward of the list, but we should mark it as such!
-        return False
+    # We get the angle from the viewpoint
+    angle_start_first_wall = first_wall['angle_start']
+    angle_end_first_wall = first_wall['angle_end']
+    angle_start_second_wall = second_wall['angle_start']
+    angle_end_second_wall = second_wall['angle_end']
     
     # We make the angle be between 0 and 360 degrees (clockwise looking from above)
     if angle_start_first_wall < 0:
@@ -204,24 +237,39 @@ def first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, 
     
     walls_are_overlapping = False
     
-    # We check if the start of the second wall is to the left of the end of the first wall
-    if (normalized_angle_start_second_wall < normalized_angle_end_first_wall):
-        # We check if the end of the second wall is to the right of the start of the first wall
-        if (normalized_angle_end_second_wall > 0):
-            walls_are_overlapping = True
-
+    
+    # We get the largest start
+    if normalized_angle_start_second_wall > normalized_angle_start_first_wall:
+        largest_normalized_start_angle = normalized_angle_start_second_wall
+    else:
+        largest_normalized_start_angle = normalized_angle_start_first_wall
+        
+    # We get the smallest end
+    if normalized_angle_end_second_wall < normalized_angle_end_first_wall:
+        smallest_normalized_end_angle = normalized_angle_end_second_wall
+    else:
+        smallest_normalized_end_angle = normalized_angle_end_first_wall
+    
+    # If the smallest end is larger than the largest start, we have an overlap
+    if smallest_normalized_end_angle > largest_normalized_start_angle:
+        walls_are_overlapping = True
+        
+        # unnormalize angles: we now know the absolute overlap angles
+        
+        
+    if not walls_are_overlapping:
+        # We have no overlap, so we dont know which one is behind or in front. We therefore return None`
+        return None
+    
+    
     print('----')
     print(angle_start_first_wall, angle_end_first_wall)
     print(angle_start_second_wall, angle_end_second_wall)    
     print(normalized_angle_start_first_wall, normalized_angle_end_first_wall)
     print(normalized_angle_start_second_wall, normalized_angle_end_second_wall)
     
-    if not walls_are_overlapping:
-        # We have no overlap, so we don't have to change the order in the list
-        return False
-    
     # FIXME: for now we want to show overlapping walls!
-    return None
+    return 1
 
         
     # FIXME!
