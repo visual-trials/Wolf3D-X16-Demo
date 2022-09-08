@@ -268,6 +268,13 @@ def first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, 
         
         # PROBLEM: if a wall is completely behind another wall, both the start and the end will come from ONE wall! So this doesnt tell us which one is behind the other one!
         
+        # SOLUTION: 
+        #   - take the middle-angle between the overlapping begin and end angles.
+        #   - determine the distance from the viewpoint to the first and second wall at this angle, by doing this per wall:
+        #       - you take the normal distance (which is either delta_x or delta_y) depending on the wall facing direction
+        #       - you calculate the other delta_x/y by taking the tan(angle)*normal_distance
+        #       - since you now have delta_x and delta_y you can calculate the distance using square root of the square of them
+        
         
         print('----')
         print(angle_start_first_wall, angle_end_first_wall)
