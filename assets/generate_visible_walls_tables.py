@@ -143,16 +143,28 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
             
             first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
             
-            # FIXME: mark walls as being behind/in front of each other
+            if first_behind_second is None:
+                # We SKIP sets of walls where we can't (directly) determine whether they are in front or behind each other
+                continue
     
-            # FIXME: temp code!
-            if first_behind_second == 1:
+            if first_behind_second:
                 screen.fill(background_color)
                 draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
                 draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
                 pygame.display.update()
                 clock.tick(60)
                 time.sleep(1)
+            else:
+                screen.fill(background_color)
+                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
+                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
+                pygame.display.update()
+                clock.tick(60)
+                time.sleep(1)
+
+            # FIXME: *MARK* walls as being behind/in front of each other
+            
+            
     
 def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
     ordered_walls = []
@@ -204,8 +216,6 @@ def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
     return ordered_walls
     
 def first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall):
-    # FIXME!
-    # first_is_behind_second = False
     
     # We get the angle from the viewpoint
     angle_start_first_wall = first_wall['angle_start']
@@ -263,33 +273,69 @@ def first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, 
     if smallest_normalized_end_angle > largest_normalized_start_angle:
         walls_are_overlapping = True
         
-        # Since we know where the start and end angles came from, we also know what the coordinates of those points are
-        # These two points have a distance to the viewpoint: the one that is closest is the wall that is closest
+        # Take now the middle-angle between the overlapping begin and end angles.
+        normalized_middle_angle = (smallest_normalized_end_angle + largest_normalized_start_angle) / 2
         
-        # PROBLEM: if a wall is completely behind another wall, both the start and the end will come from ONE wall! So this doesnt tell us which one is behind the other one!
+        # We need to unnormalize this middle_angle to make it an absolute angle
+        middle_angle = normalized_middle_angle + angle_start_first_wall
+        if middle_angle > 360:
+            middle_angle -= 360
         
-        # SOLUTION: 
-        #   - take the middle-angle between the overlapping begin and end angles.
-        #   - determine the distance from the viewpoint to the first and second wall at this angle, by doing this per wall:
-        #       - you take the normal distance (which is either delta_x or delta_y) depending on the wall facing direction
-        #       - you calculate the other delta_x/y by taking the tan(angle)*normal_distance
-        #       - since you now have delta_x and delta_y you can calculate the distance using square root of the square of them
+        # We calculate the distance to both walls given this middle angle
+        distance_first_wall = calculate_distance_given_wall_and_angle(middle_angle, viewpoint_x, viewpoint_y, first_wall)
+        distance_second_wall = calculate_distance_given_wall_and_angle(middle_angle, viewpoint_x, viewpoint_y, second_wall)
         
-        
-        print('----')
-        print(angle_start_first_wall, angle_end_first_wall)
-        print(angle_start_second_wall, angle_end_second_wall)    
-        print(normalized_angle_start_first_wall, normalized_angle_end_first_wall)
-        print(normalized_angle_start_second_wall, normalized_angle_end_second_wall)
-        
-        # FIXME: for now we want to show overlapping walls!
-        return 1
-        # FIXME!
-        #    return first_is_behind_second
+#        print('----')
+#        print(angle_start_first_wall, angle_end_first_wall)
+#        print(angle_start_second_wall, angle_end_second_wall)    
+#        print(normalized_angle_start_first_wall, normalized_angle_end_first_wall)
+#        print(normalized_angle_start_second_wall, normalized_angle_end_second_wall)
+
+        if distance_first_wall < distance_second_wall:
+            # First wall is closer, so its *not* behind the second wall
+            return False
+        else:
+            # First wall is further, so it *is* behind the second wall
+            return True
         
     else:
         # We have no overlap, so we dont know which one is behind or in front. We therefore return None`
         return None
+    
+    
+def calculate_distance_given_wall_and_angle(angle, viewpoint_x, viewpoint_y, wall):
+    distance = None
+    
+    # Determine the distance from the viewpoint to a wall at this angle, by doing this for the wall:
+    #   - you take the normal distance (which is either delta_x or delta_y) depending on the wall facing direction
+    #   - you calculate the other delta_x/y by taking the tan(angle)*normal_distance
+    #   - since you now have delta_x and delta_y you can calculate the distance using square root of the square of them
+    
+    # FIXME: we need a more precice viewpoint_x/y!!
+    
+    normal_distance = None
+    normalized_angle = None
+    if wall['facing_dir'] == WALL_FACING_NORTH or wall['facing_dir'] == DOOR_FACING_NORTH:
+        normal_distance = viewpoint_y - wall['y_start']
+        normalized_angle = angle + 180
+    elif wall['facing_dir'] == WALL_FACING_EAST or wall['facing_dir'] == DOOR_FACING_EAST:
+        normal_distance = viewpoint_x - wall['x_start']
+        normalized_angle = angle + 90
+    elif wall['facing_dir'] == WALL_FACING_SOUTH or wall['facing_dir'] == DOOR_FACING_SOUTH:
+        normal_distance = wall['y_start'] - viewpoint_y
+        normalized_angle = angle + 0
+    elif wall['facing_dir'] == WALL_FACING_WEST or wall['facing_dir'] == DOOR_FACING_WEST:
+        normal_distance = wall['x_start'] = viewpoint_x
+        normalized_angle = angle + 270
+
+    if normalized_angle > 360:
+        normalized_angle -= 360
+    distance_over_wall = normal_distance*math.tan((normalized_angle/360)*math.pi*2)
+
+    distance = math.sqrt(normal_distance*normal_distance + distance_over_wall*distance_over_wall)
+
+    return distance
+
     
 def draw_wall_cone(viewpoint_x, viewpoint_y, wall, is_first_wall):
     
