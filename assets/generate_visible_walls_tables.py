@@ -165,6 +165,7 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
                 # We SKIP sets of walls where we can't (directly) determine whether they are in front or behind each other
                 continue
     
+            # TODO: we are using wall indexes of the array potentially_visible_walls, we should probably use a unique index for each wall, independent of the array they are in 
             
             if first_behind_second:
                 # We mark the first wall as being behind the second wall
