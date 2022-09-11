@@ -121,14 +121,20 @@ def filter_out_inverted_walls(viewpoint_x, viewpoint_y, walls):
         angle_start = math.atan2(delta_x_start, delta_y_start)/math.pi*180
         angle_end = math.atan2(delta_x_end, delta_y_end)/math.pi*180
         
+        # TODO: isn't there a more elegant way of doing all this?
+        
         if angle_start < 0:
             angle_start += 360
         if angle_end < 0:
             angle_end += 360
+            
+        angle_diff = angle_end-angle_start
+        if angle_diff < 0:
+            angle_diff += 360
     
         # We check if the wall is the wrong way around (meaning its never visible from this viewpoint)
         # Also if we look at the wall flat on (=0) we filter it out
-        if angle_end-angle_start <= 0 or angle_end-angle_start >= 180:
+        if angle_diff <= 0 or angle_diff >= 180:
             continue
         
         # We store the calculated start and end angle
