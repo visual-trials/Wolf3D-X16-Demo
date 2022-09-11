@@ -14,8 +14,9 @@ bs2_wall_color = (0,0,200)
 door_color = (150,150,0)
 grid_line_color = (80,80,80)
 door_color_line = (180,180,0)
-first_wall_cone_color = (200,200,0)
-second_wall_cone_color = (0,200,200)
+front_wall_cone_color = (200,200,0)
+back_wall_cone_color = (0,200,200)
+
 
 WALL_FACING_NORTH = 0
 WALL_FACING_EAST = 1
@@ -59,11 +60,14 @@ def run():
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
     # FIXME: filter out walls that are 'inverted' (never visible from this viewpoint)
     potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
+#    print(potentially_visible_walls[0])
+#    return
+    
     mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
     # ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
     TMP_first_wall_index = 0
-    TMP_second_wall_index = 34
+    TMP_second_wall_index = 18
         
     running = True
     while running:
@@ -85,13 +89,14 @@ def run():
     
         draw_map(map_info, map_width, map_height)
         
-        draw_walls(all_walls)
+#        draw_walls(all_walls)
+        draw_walls(potentially_visible_walls)
         
         
-        #first_wall = walls[TMP_first_wall_index]
-        #second_wall = walls[TMP_second_wall_index]
-        #draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
-        #draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
+        first_wall = potentially_visible_walls[TMP_first_wall_index]
+        second_wall = potentially_visible_walls[TMP_second_wall_index]
+        draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, front_wall_cone_color)
+        draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, back_wall_cone_color)
         
         #first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
         #TMP_second_wall_index += 1
@@ -140,27 +145,33 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
             print(first_wall_index, second_wall_index)
             first_wall = walls[first_wall_index]
             second_wall = walls[second_wall_index]
-            
+          
             first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
+            
+            #print(first_wall)
+            #print(second_wall)
             
             if first_behind_second is None:
                 # We SKIP sets of walls where we can't (directly) determine whether they are in front or behind each other
                 continue
     
+            
             if first_behind_second:
                 screen.fill(background_color)
-                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
-                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
+                draw_walls(walls)
+                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, back_wall_cone_color)
+                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
                 pygame.display.update()
                 clock.tick(60)
-                time.sleep(1)
+                time.sleep(3)
             else:
                 screen.fill(background_color)
-                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
-                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
+                draw_walls(walls)
+                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, back_wall_cone_color)
+                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, front_wall_cone_color)
                 pygame.display.update()
                 clock.tick(60)
-                time.sleep(1)
+                time.sleep(3)
 
             # FIXME: *MARK* walls as being behind/in front of each other
             
@@ -183,15 +194,15 @@ def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
 
             # FIXME!
             #screen.fill(background_color)
-            #draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
-            #draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
+            #draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, first_wall_cone_color)
+            #draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, second_wall_cone_color)
             #pygame.display.update()
             #clock.tick(60)
             
             # FIXME: temp code!
             #if first_behind_second is None:
-            #    draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, True)
-            #    draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, False)
+            #    draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, first_wall_cone_color)
+            #    draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, second_wall_cone_color)
             #    pygame.display.update()
             #    break
                 
@@ -325,7 +336,7 @@ def calculate_distance_given_wall_and_angle(angle, viewpoint_x, viewpoint_y, wal
         normal_distance = wall['y_start'] - viewpoint_y
         normalized_angle = angle + 0
     elif wall['facing_dir'] == WALL_FACING_WEST or wall['facing_dir'] == DOOR_FACING_WEST:
-        normal_distance = wall['x_start'] = viewpoint_x
+        normal_distance = wall['x_start'] - viewpoint_x
         normalized_angle = angle + 270
 
     if normalized_angle > 360:
@@ -337,16 +348,13 @@ def calculate_distance_given_wall_and_angle(angle, viewpoint_x, viewpoint_y, wal
     return distance
 
     
-def draw_wall_cone(viewpoint_x, viewpoint_y, wall, is_first_wall):
+def draw_wall_cone(viewpoint_x, viewpoint_y, wall, wall_cone_color):
     
     viewpoint = (viewpoint_x*grid_size, screen_height-viewpoint_y*grid_size)
     start_point = (wall['x_start']*grid_size, screen_height-wall['y_start']*grid_size)
     end_point = (wall['x_end']*grid_size, screen_height-wall['y_end']*grid_size)
 
-    if is_first_wall:
-        pygame.draw.polygon(screen, first_wall_cone_color, (viewpoint, start_point, end_point))
-    else:
-        pygame.draw.polygon(screen, second_wall_cone_color, (viewpoint, start_point, end_point))
+    pygame.draw.polygon(screen, wall_cone_color, (viewpoint, start_point, end_point))
     
     
 
