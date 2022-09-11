@@ -63,19 +63,19 @@ def run():
     # Filtering out walls that are 'inverted' (never visible from this viewpoint)
     potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
     mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
+    
+    # print(potentially_visible_walls)
+    
     # ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
-    TMP_first_wall_index = 0
-    TMP_second_wall_index = 18
+    TMP_first_wall_index = 17
+    # TMP_second_wall_index = 18
         
     running = True
     while running:
         # TODO: We might want to set this to max?
         clock.tick(60)
         
-# FIXME
-#        time.sleep(1)
-
         for event in pygame.event.get():
 
             if event.type == pygame.QUIT: 
@@ -89,20 +89,29 @@ def run():
         draw_map(map_info, map_width, map_height)
         
 #        draw_walls(all_walls)
-        draw_walls(potentially_visible_walls)
+
+#        draw_walls(potentially_visible_walls)
         
         
         first_wall = potentially_visible_walls[TMP_first_wall_index]
-        second_wall = potentially_visible_walls[TMP_second_wall_index]
-        draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, front_wall_cone_color)
-        draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, back_wall_cone_color)
+        draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, back_wall_cone_color)
+        
+        for wall_in_front_index in first_wall['is_behind_these_walls']:
+            wall_in_front = potentially_visible_walls[wall_in_front_index]
+            draw_wall(wall_in_front)
+            # draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, back_wall_cone_color)
         
         #first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
         #TMP_second_wall_index += 1
         #if (TMP_second_wall_index >= len(walls)):
         #    TMP_second_wall_index = 0
-    
+        
         pygame.display.update()
+    
+        # FIXME: (this will overflow the array!)
+#        TMP_first_wall_index += 1
+# FIXME
+#        time.sleep(1)
     
         
     pygame.quit()
@@ -632,65 +641,67 @@ def create_new_wall_or_door(x_start, y_start, x_end, y_end, facing_dir):
 
 
 def draw_walls(walls):
-    wall_thickness = 2
-
     for wall in walls:
-        if (wall['facing_dir'] == WALL_FACING_WEST):
-            length_of_wall = wall['y_start']-wall['y_end']
-            for y_offset_south in range(length_of_wall):
-                texture = wall['textures'][y_offset_south]
-                pygame.draw.line(
-                    screen, 
-                    texture_to_color(texture), 
-                    (wall['x_start'] * grid_size, screen_height-(wall['y_start'] - y_offset_south    ) * grid_size), 
-                    (wall['x_end']   * grid_size, screen_height-(wall['y_start'] - y_offset_south - 1) * grid_size), 
-                    width=wall_thickness)
-            
-        elif (wall['facing_dir'] == DOOR_FACING_WEST):
-            pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size-wall_thickness/2+grid_size/2, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size-wall_thickness/2+grid_size/2, screen_height-wall['y_end']*grid_size), width=wall_thickness)
+        draw_wall(wall)
+        
+def draw_wall(wall):
+    wall_thickness = 2
+    if (wall['facing_dir'] == WALL_FACING_WEST):
+        length_of_wall = wall['y_start']-wall['y_end']
+        for y_offset_south in range(length_of_wall):
+            texture = wall['textures'][y_offset_south]
+            pygame.draw.line(
+                screen, 
+                texture_to_color(texture), 
+                (wall['x_start'] * grid_size, screen_height-(wall['y_start'] - y_offset_south    ) * grid_size), 
+                (wall['x_end']   * grid_size, screen_height-(wall['y_start'] - y_offset_south - 1) * grid_size), 
+                width=wall_thickness)
+        
+    elif (wall['facing_dir'] == DOOR_FACING_WEST):
+        pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size-wall_thickness/2+grid_size/2, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size-wall_thickness/2+grid_size/2, screen_height-wall['y_end']*grid_size), width=wall_thickness)
 
-        if (wall['facing_dir'] == WALL_FACING_EAST):
+    if (wall['facing_dir'] == WALL_FACING_EAST):
 
-            length_of_wall = wall['y_end']-wall['y_start']
-            for y_offset_north in range(length_of_wall):
-                texture = wall['textures'][y_offset_north]
-                pygame.draw.line(
-                    screen, 
-                    texture_to_color(texture), 
-                    (wall['x_start'] * grid_size, screen_height-(wall['y_start'] + y_offset_north    ) * grid_size), 
-                    (wall['x_end']   * grid_size, screen_height-(wall['y_start'] + y_offset_north + 1) * grid_size), 
-                    width=wall_thickness)
-                    
-        elif (wall['facing_dir'] == DOOR_FACING_EAST):
-            pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size+wall_thickness/2-grid_size/2, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size+wall_thickness/2-grid_size/2, screen_height-wall['y_end']*grid_size), width=wall_thickness)
+        length_of_wall = wall['y_end']-wall['y_start']
+        for y_offset_north in range(length_of_wall):
+            texture = wall['textures'][y_offset_north]
+            pygame.draw.line(
+                screen, 
+                texture_to_color(texture), 
+                (wall['x_start'] * grid_size, screen_height-(wall['y_start'] + y_offset_north    ) * grid_size), 
+                (wall['x_end']   * grid_size, screen_height-(wall['y_start'] + y_offset_north + 1) * grid_size), 
+                width=wall_thickness)
+                
+    elif (wall['facing_dir'] == DOOR_FACING_EAST):
+        pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size+wall_thickness/2-grid_size/2, screen_height-wall['y_start']*grid_size), (wall['x_end']*grid_size+wall_thickness/2-grid_size/2, screen_height-wall['y_end']*grid_size), width=wall_thickness)
 
-        elif (wall['facing_dir'] == WALL_FACING_SOUTH):
-            length_of_wall = wall['x_end']-wall['x_start']
-            for x_offset_east in range(length_of_wall):
-                texture = wall['textures'][x_offset_east]
-                pygame.draw.line(
-                    screen, 
-                    texture_to_color(texture), 
-                    ((wall['x_start'] + x_offset_east    ) * grid_size, screen_height-(wall['y_start'] * grid_size)), 
-                    ((wall['x_start'] + x_offset_east + 1) * grid_size, screen_height-(wall['y_end'] * grid_size)), 
-                    width=wall_thickness)
-            
-        elif (wall['facing_dir'] == DOOR_FACING_SOUTH):
-            pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size, screen_height-(wall['y_start']*grid_size-wall_thickness/2+grid_size/2)), (wall['x_end']*grid_size, screen_height-(wall['y_end']*grid_size-wall_thickness/2+grid_size/2)), width=wall_thickness)
+    elif (wall['facing_dir'] == WALL_FACING_SOUTH):
+        length_of_wall = wall['x_end']-wall['x_start']
+        for x_offset_east in range(length_of_wall):
+            texture = wall['textures'][x_offset_east]
+            pygame.draw.line(
+                screen, 
+                texture_to_color(texture), 
+                ((wall['x_start'] + x_offset_east    ) * grid_size, screen_height-(wall['y_start'] * grid_size)), 
+                ((wall['x_start'] + x_offset_east + 1) * grid_size, screen_height-(wall['y_end'] * grid_size)), 
+                width=wall_thickness)
+        
+    elif (wall['facing_dir'] == DOOR_FACING_SOUTH):
+        pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size, screen_height-(wall['y_start']*grid_size-wall_thickness/2+grid_size/2)), (wall['x_end']*grid_size, screen_height-(wall['y_end']*grid_size-wall_thickness/2+grid_size/2)), width=wall_thickness)
 
-        elif (wall['facing_dir'] == WALL_FACING_NORTH):
-            length_of_wall = wall['x_start']-wall['x_end']
-            for x_offset_west in range(length_of_wall):
-                texture = wall['textures'][x_offset_west]
-                pygame.draw.line(
-                    screen, 
-                    texture_to_color(texture), 
-                    ((wall['x_start'] - x_offset_west    ) * grid_size, screen_height-(wall['y_start'] * grid_size)), 
-                    ((wall['x_start'] - x_offset_west - 1) * grid_size, screen_height-(wall['y_end'] * grid_size)), 
-                    width=wall_thickness)
-            
-        elif (wall['facing_dir'] == DOOR_FACING_NORTH):
-            pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size, screen_height-(wall['y_start']*grid_size-wall_thickness/2+grid_size/2)), (wall['x_end']*grid_size, screen_height-(wall['y_end']*grid_size-wall_thickness/2+grid_size/2)), width=wall_thickness)
+    elif (wall['facing_dir'] == WALL_FACING_NORTH):
+        length_of_wall = wall['x_start']-wall['x_end']
+        for x_offset_west in range(length_of_wall):
+            texture = wall['textures'][x_offset_west]
+            pygame.draw.line(
+                screen, 
+                texture_to_color(texture), 
+                ((wall['x_start'] - x_offset_west    ) * grid_size, screen_height-(wall['y_start'] * grid_size)), 
+                ((wall['x_start'] - x_offset_west - 1) * grid_size, screen_height-(wall['y_end'] * grid_size)), 
+                width=wall_thickness)
+        
+    elif (wall['facing_dir'] == DOOR_FACING_NORTH):
+        pygame.draw.line(screen, door_color_line, (wall['x_start']*grid_size, screen_height-(wall['y_start']*grid_size-wall_thickness/2+grid_size/2)), (wall['x_end']*grid_size, screen_height-(wall['y_end']*grid_size-wall_thickness/2+grid_size/2)), width=wall_thickness)
             
 def draw_map(map_info, map_width, map_height):
 
