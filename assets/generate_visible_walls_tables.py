@@ -62,7 +62,7 @@ def run():
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
     # Filtering out walls that are 'inverted' (never visible from this viewpoint)
     potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
-    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
+#    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
     # print(potentially_visible_walls)
     
@@ -71,6 +71,19 @@ def run():
     current_wall_index = 17
     TMP_second_wall_index = 18
         
+# FIXME:
+    screen.fill(background_color)
+    draw_map(map_info, map_width, map_height)
+    current_wall = potentially_visible_walls[current_wall_index]
+    draw_wall_cone(viewpoint_x, viewpoint_y, current_wall, back_wall_cone_color)
+    second_wall = potentially_visible_walls[TMP_second_wall_index]
+    draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
+    first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, current_wall, second_wall)
+    pygame.display.update()
+    print(first_behind_second)
+    
+    
+    
     running = True
     while running:
         # TODO: We might want to set this to max?
@@ -91,7 +104,9 @@ def run():
                     
             #if event.type == pygame.MOUSEMOTION: 
                 # newrect.center = event.pos
-
+# FIXME
+        continue
+                
         screen.fill(background_color)
     
         draw_map(map_info, map_width, map_height)
@@ -108,10 +123,6 @@ def run():
             wall_in_front = potentially_visible_walls[wall_in_front_index]
             draw_wall(wall_in_front)
         
-        second_wall = potentially_visible_walls[TMP_second_wall_index]
-        draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
-        first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, current_wall, second_wall)
-        print(first_behind_second)
         #TMP_second_wall_index += 1
         #if (TMP_second_wall_index >= len(walls)):
         #    TMP_second_wall_index = 0
