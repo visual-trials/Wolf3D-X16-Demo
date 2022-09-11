@@ -152,7 +152,7 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
     for first_wall_index in range(len(walls) - 1):
     
         for second_wall_index in range(first_wall_index + 1, len(walls)):
-            print(first_wall_index, second_wall_index)
+            # print(first_wall_index, second_wall_index)
             first_wall = walls[first_wall_index]
             second_wall = walls[second_wall_index]
           
@@ -167,24 +167,28 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
     
             
             if first_behind_second:
+                # We mark the first wall as being behind the second wall
+                first_wall['is_behind_these_walls'][second_wall_index] = True
+                
                 screen.fill(background_color)
                 draw_walls(walls)
                 draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, back_wall_cone_color)
                 draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
                 pygame.display.update()
                 clock.tick(60)
-                time.sleep(3)
+                #time.sleep(1)
             else:
+                # We mark the second wall as being behind the first wall
+                second_wall['is_behind_these_walls'][first_wall_index] = True
+                
                 screen.fill(background_color)
                 draw_walls(walls)
                 draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, back_wall_cone_color)
                 draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, front_wall_cone_color)
                 pygame.display.update()
                 clock.tick(60)
-                time.sleep(3)
+                #time.sleep(1)
 
-            # FIXME: *MARK* walls as being behind/in front of each other
-            
             
     
 def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
@@ -621,6 +625,7 @@ def create_new_wall_or_door(x_start, y_start, x_end, y_end, facing_dir):
     wall['y_end'] = y_end
     wall['facing_dir'] = facing_dir
     wall['textures'] = []
+    wall['is_behind_these_walls'] = {}
     
     return wall
 
