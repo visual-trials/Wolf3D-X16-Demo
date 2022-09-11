@@ -57,10 +57,12 @@ def run():
     viewpoint_x = 3
     viewpoint_y = 7
 
+    # FIXME: right now doors still have the whole-number coordinates, which is NOT correct!
+    
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
-    # FIXME: filter out walls that are 'inverted' (never visible from this viewpoint)
+    # Filtering out walls that are 'inverted' (never visible from this viewpoint)
     potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
-#    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
+    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
     # ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
     TMP_first_wall_index = 0
