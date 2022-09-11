@@ -68,8 +68,8 @@ def run():
     
     # ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
-    TMP_first_wall_index = 17
-    # TMP_second_wall_index = 18
+    current_wall_index = 17
+    TMP_second_wall_index = 18
         
     running = True
     while running:
@@ -81,8 +81,16 @@ def run():
             if event.type == pygame.QUIT: 
                 running = False
 
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_LEFT:
+                    current_wall_index -= 1
+                    print(current_wall_index)
+                if event.key == pygame.K_RIGHT:
+                    current_wall_index += 1
+                    print(current_wall_index)
+                    
             #if event.type == pygame.MOUSEMOTION: 
-            #    newrect.center = event.pos
+                # newrect.center = event.pos
 
         screen.fill(background_color)
     
@@ -93,15 +101,17 @@ def run():
 #        draw_walls(potentially_visible_walls)
         
         
-        first_wall = potentially_visible_walls[TMP_first_wall_index]
-        draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, back_wall_cone_color)
+        current_wall = potentially_visible_walls[current_wall_index]
+        draw_wall_cone(viewpoint_x, viewpoint_y, current_wall, back_wall_cone_color)
         
-        for wall_in_front_index in first_wall['is_behind_these_walls']:
+        for wall_in_front_index in current_wall['is_behind_these_walls']:
             wall_in_front = potentially_visible_walls[wall_in_front_index]
             draw_wall(wall_in_front)
-            # draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, back_wall_cone_color)
         
-        #first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
+        second_wall = potentially_visible_walls[TMP_second_wall_index]
+        draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
+        first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, current_wall, second_wall)
+        print(first_behind_second)
         #TMP_second_wall_index += 1
         #if (TMP_second_wall_index >= len(walls)):
         #    TMP_second_wall_index = 0
@@ -109,7 +119,7 @@ def run():
         pygame.display.update()
     
         # FIXME: (this will overflow the array!)
-#        TMP_first_wall_index += 1
+#        current_wall_index += 1
 # FIXME
 #        time.sleep(1)
     
@@ -158,15 +168,15 @@ def filter_out_inverted_walls(viewpoint_x, viewpoint_y, walls):
 
 def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
 
-    for first_wall_index in range(len(walls) - 1):
+    for first_wall_index in range(len(walls)):
     
         for second_wall_index in range(first_wall_index + 1, len(walls)):
-            # print(first_wall_index, second_wall_index)
             first_wall = walls[first_wall_index]
             second_wall = walls[second_wall_index]
           
             first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
             
+            print(first_wall_index, second_wall_index, first_behind_second)
             #print(first_wall)
             #print(second_wall)
             
