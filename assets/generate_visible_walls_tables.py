@@ -66,7 +66,7 @@ def run():
     
     # print(potentially_visible_walls)
     
-    # ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
+    ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
     current_wall_index = 22
     TMP_second_wall_index = 18
@@ -209,6 +209,27 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
                 #time.sleep(1)
 
             
+def wall_is_behind_this_wall_index(walls, wall, wall_index_to_find, crumbpath):
+    if wall_index_to_find in wall['is_behind_these_walls']:
+        return True
+        
+    print(crumbpath)
+
+    for wall_index_to_check_deeper in wall['is_behind_these_walls']:
+        if wall_index_to_check_deeper in crumbpath:
+            # We have looped. We should stop here.
+            # FIXME: what to do here?
+            print("Looped!")
+            return False
+            
+        check_wall = walls[wall_index_to_check_deeper]
+        crumbpath_deeper = crumbpath.copy() 
+        crumbpath_deeper[wall_index_to_check_deeper] = True
+        if wall_is_behind_this_wall_index(walls, check_wall, wall_index_to_find, crumbpath_deeper):
+            return True
+        
+
+    
     
 def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
     ordered_walls = []
@@ -221,7 +242,17 @@ def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
         for inner_index in range(0, len(walls) - outer_index - 1):
         
             first_wall = walls[inner_index]
-            second_wall = walls[inner_index+1]
+            second_wall_index = inner_index+1
+            second_wall = walls[second_wall_index]
+
+            crumbpath = {}
+            crumbpath[inner_index] = True
+            print('---- Comparing', inner_index, 'with', second_wall_index)
+            first_behind_second = wall_is_behind_this_wall_index(walls, first_wall, second_wall_index, crumbpath)
+
+            if first_behind_second:
+                print('============= First behind second!!!!')
+
             
             # first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
 
