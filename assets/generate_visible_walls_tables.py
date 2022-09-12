@@ -105,17 +105,13 @@ def run():
                     
             #if event.type == pygame.MOUSEMOTION: 
                 # newrect.center = event.pos
-# FIXME
-#        continue
                 
         screen.fill(background_color)
     
         draw_map(map_info, map_width, map_height)
         
 #        draw_walls(all_walls)
-
 #        draw_walls(potentially_visible_walls)
-        
         
         current_wall = potentially_visible_walls[current_wall_index]
         draw_wall_cone(viewpoint_x, viewpoint_y, current_wall, back_wall_cone_color)
@@ -124,17 +120,8 @@ def run():
             wall_in_front = potentially_visible_walls[wall_in_front_index]
             draw_wall(wall_in_front)
         
-        #TMP_second_wall_index += 1
-        #if (TMP_second_wall_index >= len(walls)):
-        #    TMP_second_wall_index = 0
-        
         pygame.display.update()
-    
-        # FIXME: (this will overflow the array!)
-#        current_wall_index += 1
-# FIXME
-#        time.sleep(1)
-    
+   
         
     pygame.quit()
 
