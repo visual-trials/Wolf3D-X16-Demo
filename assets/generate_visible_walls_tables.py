@@ -62,25 +62,25 @@ def run():
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
     # Filtering out walls that are 'inverted' (never visible from this viewpoint)
     potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
-#    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
+    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
     # print(potentially_visible_walls)
     
     # ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
-    current_wall_index = 17
+    current_wall_index = 22
     TMP_second_wall_index = 18
         
 # FIXME:
-    screen.fill(background_color)
-    draw_map(map_info, map_width, map_height)
-    current_wall = potentially_visible_walls[current_wall_index]
-    draw_wall_cone(viewpoint_x, viewpoint_y, current_wall, back_wall_cone_color)
-    second_wall = potentially_visible_walls[TMP_second_wall_index]
-    draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
-    first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, current_wall, second_wall)
-    pygame.display.update()
-    print(first_behind_second)
+#    screen.fill(background_color)
+#    draw_map(map_info, map_width, map_height)
+#    current_wall = potentially_visible_walls[current_wall_index]
+#    draw_wall_cone(viewpoint_x, viewpoint_y, current_wall, back_wall_cone_color)
+#    second_wall = potentially_visible_walls[TMP_second_wall_index]
+#    draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
+#    first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, current_wall, second_wall)
+#    pygame.display.update()
+#    print(first_behind_second)
     
     
     
@@ -104,8 +104,6 @@ def run():
                     
             #if event.type == pygame.MOUSEMOTION: 
                 # newrect.center = event.pos
-# FIXME
-        continue
                 
         screen.fill(background_color)
     
@@ -295,11 +293,30 @@ def first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, 
     normalized_angle_start_second_wall = angle_start_second_wall - angle_start_first_wall
     normalized_angle_end_second_wall = angle_end_second_wall - angle_start_first_wall
     
+    # TODO: is there a more elegant way to do this?
+    
+    # Making sure the angles are within 0 and 360 degrees
+    if normalized_angle_start_second_wall < 0:
+        normalized_angle_start_second_wall += 360
+    if normalized_angle_end_second_wall < 0:
+        normalized_angle_end_second_wall += 360
+    
     # We make sure the start and end of the second wall is between -180 and 180 degrees to the normal of the start of the first wall
     if normalized_angle_start_second_wall > 180:
         normalized_angle_start_second_wall -= 360
     if normalized_angle_end_second_wall > 180:
         normalized_angle_end_second_wall -= 360
+
+    #print('FIRST')
+    #print(first_wall)
+    #print(angle_start_first_wall, angle_end_first_wall)
+    #print(normalized_angle_start_first_wall, normalized_angle_end_first_wall)
+    #print('SECOND')
+    #print(second_wall)
+    #print(angle_start_second_wall, angle_end_second_wall)
+    #print(normalized_angle_start_second_wall, normalized_angle_end_second_wall)
+    
+
     
     walls_are_overlapping = False
     
