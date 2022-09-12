@@ -209,11 +209,12 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
                 #time.sleep(1)
 
             
-def wall_is_behind_this_wall_index(walls, wall, wall_index_to_find, crumbpath):
+def wall_is_behind_this_wall_index(walls, wall, wall_index_to_find, crumbpath, depth):
     if wall_index_to_find in wall['is_behind_these_walls']:
         return True
         
-    print(crumbpath)
+    # print(depth*' ', crumbpath)
+    #print(depth*' ', wall['is_behind_these_walls'])
 
     for wall_index_to_check_deeper in wall['is_behind_these_walls']:
         if wall_index_to_check_deeper in crumbpath:
@@ -225,8 +226,11 @@ def wall_is_behind_this_wall_index(walls, wall, wall_index_to_find, crumbpath):
         check_wall = walls[wall_index_to_check_deeper]
         crumbpath_deeper = crumbpath.copy() 
         crumbpath_deeper[wall_index_to_check_deeper] = True
-        if wall_is_behind_this_wall_index(walls, check_wall, wall_index_to_find, crumbpath_deeper):
+        if wall_is_behind_this_wall_index(walls, check_wall, wall_index_to_find, crumbpath_deeper, depth+1):
             return True
+            
+    # FIXME: what should be the default if we don't find it? None?
+    return False
         
 
     
@@ -235,55 +239,91 @@ def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
     ordered_walls = []
     
     # FIXME: we need the viewpoint to be able to contain x.5 values!
+
+    # Add 'index' key to each wall
+    for wall_index in range(1, len(walls)):
+        walls[wall_index]['index'] = wall_index
+
     
-    # Bubble sorting the walls for this viewpoint
-    for outer_index in range(len(walls) - 1):
-    
-        for inner_index in range(0, len(walls) - outer_index - 1):
+    # Insert sorting the walls for this viewpoint
+    for wall_to_insert_index in range(1, len(walls)):
+        wall_to_insert = walls[wall_to_insert_index]
         
-            first_wall = walls[inner_index]
-            second_wall_index = inner_index+1
-            second_wall = walls[second_wall_index]
-
+        # Find place to insert it
+        index_to_insert = 0
+        for index_to_check in range(len(ordered_walls)):
+            check_wall = ordered_walls[index_to_check]
             crumbpath = {}
-            crumbpath[inner_index] = True
-            print('---- Comparing', inner_index, 'with', second_wall_index)
-            first_behind_second = wall_is_behind_this_wall_index(walls, first_wall, second_wall_index, crumbpath)
-
+            crumbpath[wall_to_insert_index] = True
+            first_behind_second = wall_is_behind_this_wall_index(walls, wall_to_insert, check_wall['index'], crumbpath, 0)
             if first_behind_second:
-                print('============= First behind second!!!!')
-
-            
-            # first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
-
-            # FIXME!
-            #screen.fill(background_color)
-            #draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, first_wall_cone_color)
-            #draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, second_wall_cone_color)
-            #pygame.display.update()
-            #clock.tick(60)
-            
-            # FIXME: temp code!
-            #if first_behind_second is None:
-            #    draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, first_wall_cone_color)
-            #    draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, second_wall_cone_color)
-            #    pygame.display.update()
-            #    break
+                index_to_insert = index_to_check
+                break
                 
-            # FIXME: enable this!
-            if first_behind_second:
-                # Swap the two walls in the array
-                tmp_wall = walls[inner_index+1]
-                walls[inner_index+1] = walls[inner_index]
-                walls[inner_index] = tmp_wall
+        # FIXME: insert wall into ordered_walls!
+        for index_to_move in range(len(ordered_walls)-1, index_to_insert, -1):
+            ordered_walls[index_to_move] = ordered_walls[index_to_move-1]
+        
+        if index_to_insert >= len(ordered_walls):
+            ordered_walls.append(wall_to_insert)
+        else:
+            ordered_walls[index_to_insert] = wall_to_insert
+        
+        print(ordered_walls)
+                
+            
+    
+    
+    if False:
+        for outer_index in range(len(walls) - 1):
+        
+            for inner_index in range(0, len(walls) - outer_index - 1):
+            
+                first_wall = walls[inner_index]
+                second_wall_index = inner_index+1
+                second_wall = walls[second_wall_index]
+
+                crumbpath = {}
+                crumbpath[inner_index] = True
+                print('---- Comparing', inner_index, 'with', second_wall_index)
+                first_behind_second = wall_is_behind_this_wall_index(walls, first_wall, second_wall_index, crumbpath, 0)
+
+                if first_behind_second:
+                    print('============= First behind second!!!!')
+
+                
+                # first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
+
+                # FIXME!
+                #screen.fill(background_color)
+                #draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, first_wall_cone_color)
+                #draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, second_wall_cone_color)
+                #pygame.display.update()
+                #clock.tick(60)
+                
+                # FIXME: temp code!
+                #if first_behind_second is None:
+                #    draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, first_wall_cone_color)
+                #    draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, second_wall_cone_color)
+                #    pygame.display.update()
+                #    break
+                    
+                # FIXME: enable this!
+                if first_behind_second:
+                    # Swap the two walls in the array
+                    tmp_wall = walls[inner_index+1]
+                    walls[inner_index+1] = walls[inner_index]
+                    walls[inner_index] = tmp_wall
+                
+                # FIXME
+                #break
+                
+                
+                
+            pygame.display.update()
             
             # FIXME
-            #break
-            
-        pygame.display.update()
-        
-        # FIXME
-        break
+            break
 
 
     
