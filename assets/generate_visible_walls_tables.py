@@ -68,7 +68,7 @@ def run():
     
     ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
-    current_wall_index = 22
+    current_wall_index = 0
     TMP_second_wall_index = 18
         
 # FIXME:
@@ -112,8 +112,10 @@ def run():
         
 #        draw_walls(all_walls)
 #        draw_walls(potentially_visible_walls)
+#        draw_walls(potentially_visible_walls)
         
-        current_wall = potentially_visible_walls[current_wall_index]
+#        current_wall = potentially_visible_walls[current_wall_index]
+        current_wall = ordered_walls[current_wall_index]
         draw_wall_cone(viewpoint_x, viewpoint_y, current_wall, back_wall_cone_color)
         
         for wall_in_front_index in current_wall['is_behind_these_walls']:
@@ -241,35 +243,49 @@ def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
     # FIXME: we need the viewpoint to be able to contain x.5 values!
 
     # Add 'index' key to each wall
-    for wall_index in range(1, len(walls)):
+    for wall_index in range(len(walls)):
         walls[wall_index]['index'] = wall_index
 
     
     # Insert sorting the walls for this viewpoint
-    for wall_to_insert_index in range(1, len(walls)):
+    for wall_to_insert_index in range(len(walls)):
         wall_to_insert = walls[wall_to_insert_index]
         
         # Find place to insert it
-        index_to_insert = 0
-        for index_to_check in range(len(ordered_walls)):
-            check_wall = ordered_walls[index_to_check]
+        ordered_index_to_insert = None
+        for ordered_index_to_check in range(len(ordered_walls)):
+#            print(wall_to_insert_index, ordered_index_to_check)
+            check_wall = ordered_walls[ordered_index_to_check]
             crumbpath = {}
-            crumbpath[wall_to_insert_index] = True
-            first_behind_second = wall_is_behind_this_wall_index(walls, wall_to_insert, check_wall['index'], crumbpath, 0)
-            if first_behind_second:
-                index_to_insert = index_to_check
+            crumbpath[check_wall['index']] = True
+            # We start with the check_wall (= wall that has already been sorted) and look if that wall is behind (recursively)
+            # the wall we want to insert. If its not behind it, we keep looking further for a sorted wall that *is* behind the
+            # wall we want to insert
+            check_wall_behind_to_be_inserted_wall = wall_is_behind_this_wall_index(walls, check_wall, wall_to_insert_index, crumbpath, 0)
+            if check_wall_behind_to_be_inserted_wall:
+                ordered_index_to_insert = ordered_index_to_check  # the index of the to-be inserted wall is going to be the index of the checked wall (which has to be moved to make room)
                 break
                 
-        # FIXME: insert wall into ordered_walls!
-        for index_to_move in range(len(ordered_walls)-1, index_to_insert, -1):
-            ordered_walls[index_to_move] = ordered_walls[index_to_move-1]
-        
-        if index_to_insert >= len(ordered_walls):
+        if ordered_index_to_insert is None:
+#            print('inserting at the end', len(ordered_walls))
+            
+            # If we didnt find a wall that was behind the wall that we want to insert (is None) we append the wall at the end
             ordered_walls.append(wall_to_insert)
         else:
-            ordered_walls[index_to_insert] = wall_to_insert
         
-        print(ordered_walls)
+#            print('inserting into index', ordered_index_to_insert, len(ordered_walls))
+
+            # We take the last wall and insert it (again) at the end
+            ordered_walls.append(ordered_walls[len(ordered_walls)-1])
+            
+            # We move all the walls behind the to be inserted wall to make room (from back to front)
+            for ordered_index_to_move in range(len(ordered_walls)-1, ordered_index_to_insert, -1):
+                ordered_walls[ordered_index_to_move] = ordered_walls[ordered_index_to_move-1]
+            
+            # We place the to-be-inserted wall into the index that was just freed
+            ordered_walls[ordered_index_to_insert] = wall_to_insert
+        
+        # print(ordered_walls)
                 
             
     
