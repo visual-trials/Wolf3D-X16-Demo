@@ -266,7 +266,7 @@ wall_doorness_determined:
     
     inc CURRENT_WALL_INDEX
     lda CURRENT_WALL_INDEX
-    cmp #8
+    cmp NR_OF_WALLS
     bne draw_next_wall
     
     rts
