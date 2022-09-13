@@ -37,6 +37,13 @@ TEXTURE_BS2 = 1  # Blue stone 2
 TEXTURE_DRF = 2  # Door front
 TEXTURE_DRS = 3  # Door side
 
+texture_index_to_name = {
+    0 : 'BS1',
+    1 : 'BS2',
+    2 : 'CLD',   # FIXME! We want to use DRF!
+    3 : 'BS1',   # FIXME! We want to use DRS!
+}
+
 screen_width = grid_size*nr_of_sqaures_horizontal
 screen_height = grid_size*nr_of_sqaures_vertical
 
@@ -52,21 +59,24 @@ def run():
     map_height = 14
     map_info = get_map_info()
     
-    
-    # FIXME: hardcoded, we should iterate through all grid elements
-    viewpoint_x = 3
-    viewpoint_y = 7
-
     # FIXME: right now doors still have the whole-number coordinates, which is NOT correct!
     
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
+
+
+    # FIXME: hardcoded, we should iterate through all grid elements
+    
+    viewpoint_x = 3
+    viewpoint_y = 7
+    
+    # FIXME: we should use the *index* of all_walls (actually the *set of walls* of a sections).
+    
     # Filtering out walls that are 'inverted' (never visible from this viewpoint)
     potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
     mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
-    
-    # print(potentially_visible_walls)
-    
     ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
+    
+    dump_wall_info_as_asm(potentially_visible_walls)
     
     current_wall_index = 0
     TMP_second_wall_index = 18
@@ -189,7 +199,7 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
           
             first_behind_second = first_wall_is_behind_than_second_wall(viewpoint_x, viewpoint_y, first_wall, second_wall)
             
-            print(first_wall_index, second_wall_index, first_behind_second)
+            #print(first_wall_index, second_wall_index, first_behind_second)
             #print(first_wall)
             #print(second_wall)
             
@@ -862,7 +872,22 @@ def draw_map(map_info, map_width, map_height):
                 
             pygame.draw.rect(screen, square_color, pygame.Rect(x*grid_size+4, (screen_height-grid_size)-y*grid_size+4, grid_size-8, grid_size-8), width=border_width)
 
+def dump_wall_info_as_asm(walls):
 
+    print('wall_info:')
+    print('    .byte', len(walls), '; number of walls')
+    
+    for wall_index in range(len(walls)):
+        wall = walls[wall_index]
+        print('wall_'+str(wall_index)+'_info:')
+        print('    .byte', wall['x_start'], ',' ,wall['y_start'], ' ; start x, y')
+        print('    .byte', wall['x_end'], ',' ,wall['y_end'], ' ; end x, y')
+        print('    .byte', wall['facing_dir'], '     ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)')
+        texture_indexes = ', '.join(texture_index_to_name[texture_index] for texture_index in wall['textures'])
+        print('    .byte', texture_indexes) 
+        
+            
+            
 
 def get_map_info():
     return list(reversed([
