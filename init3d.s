@@ -20,6 +20,9 @@ CLD = $20+$30 ; closed door
 ;   |___|
 ;     7
 
+wall_info:
+    .byte 8    ; number of walls
+
 wall_0_info:
     .byte 0, 0 ; start x, y
     .byte 0, 4 ; end x, y
@@ -85,7 +88,10 @@ wall_7_info:
     
 
 ; Square room
-    .if 0    
+    .if 0 
+    
+wall_info:
+    .byte 4    ; number of walls
     
 wall_0_info:
     .byte 0, 4 ; start x, y
@@ -135,146 +141,120 @@ setup_player:
     
     rts
     
-setup_wall_info:
+load_wall_info:
+
+    lda #<wall_info
+    sta LOAD_ADDRESS
+    lda #>wall_info
+    sta LOAD_ADDRESS+1
 
     ldy #0
+    lda (LOAD_ADDRESS),y
+    sta NR_OF_WALLS
     
-    lda wall_0_info
-    sta WALL_INFO_START_X, y
-    lda wall_0_info+1
-    sta WALL_INFO_START_Y, y
-    lda wall_0_info+2
-    sta WALL_INFO_END_X, y
-    lda wall_0_info+3
-    sta WALL_INFO_END_Y, y
-    lda wall_0_info+4
-    sta WALL_INFO_FACING_DIR, y
-    lda #<(wall_0_info+5)
-    sta WALL_INFO_TEXTURE_LOW,y
-    lda #>(wall_0_info+5)
-    sta WALL_INFO_TEXTURE_HIGH,y
+    inc LOAD_ADDRESS
+    bne load_wall_address_incremented
+    inc LOAD_ADDRESS+1
+load_wall_address_incremented:
 
-    ldy #1
 
-    lda wall_1_info
-    sta WALL_INFO_START_X, y
-    lda wall_1_info+1
-    sta WALL_INFO_START_Y, y
-    lda wall_1_info+2
-    sta WALL_INFO_END_X, y
-    lda wall_1_info+3
-    sta WALL_INFO_END_Y, y
-    lda wall_1_info+4
-    sta WALL_INFO_FACING_DIR, y
-    lda #<(wall_1_info+5)
-    sta WALL_INFO_TEXTURE_LOW,y
-    lda #>(wall_1_info+5)
-    sta WALL_INFO_TEXTURE_HIGH,y
+    ldx #0          ; wall index
+next_wall_to_load:
+
+    lda (LOAD_ADDRESS),y
+    sta WALL_INFO_START_X, x
+    iny
+
+    lda (LOAD_ADDRESS),y
+    sta WALL_INFO_START_Y, x
+    iny
     
-    ldy #2
-
-    lda wall_2_info
-    sta WALL_INFO_START_X, y
-    lda wall_2_info+1
-    sta WALL_INFO_START_Y, y
-    lda wall_2_info+2
-    sta WALL_INFO_END_X, y
-    lda wall_2_info+3
-    sta WALL_INFO_END_Y, y
-    lda wall_2_info+4
-    sta WALL_INFO_FACING_DIR, y
-    lda #<(wall_2_info+5)
-    sta WALL_INFO_TEXTURE_LOW,y
-    lda #>(wall_2_info+5)
-    sta WALL_INFO_TEXTURE_HIGH,y
+    lda (LOAD_ADDRESS),y
+    sta WALL_INFO_END_X, x
+    iny
     
-    ldy #3
-
-    lda wall_3_info
-    sta WALL_INFO_START_X, y
-    lda wall_3_info+1
-    sta WALL_INFO_START_Y, y
-    lda wall_3_info+2
-    sta WALL_INFO_END_X, y
-    lda wall_3_info+3
-    sta WALL_INFO_END_Y, y
-    lda wall_3_info+4
-    sta WALL_INFO_FACING_DIR, y
-    lda #<(wall_3_info+5)
-    sta WALL_INFO_TEXTURE_LOW,y
-    lda #>(wall_3_info+5)
-    sta WALL_INFO_TEXTURE_HIGH,y
+    lda (LOAD_ADDRESS),y
+    sta WALL_INFO_END_Y, x
+    iny
     
-    ldy #4
-
-    lda wall_4_info
-    sta WALL_INFO_START_X, y
-    lda wall_4_info+1
-    sta WALL_INFO_START_Y, y
-    lda wall_4_info+2
-    sta WALL_INFO_END_X, y
-    lda wall_4_info+3
-    sta WALL_INFO_END_Y, y
-    lda wall_4_info+4
-    sta WALL_INFO_FACING_DIR, y
-    lda #<(wall_4_info+5)
-    sta WALL_INFO_TEXTURE_LOW,y
-    lda #>(wall_4_info+5)
-    sta WALL_INFO_TEXTURE_HIGH,y
+    lda (LOAD_ADDRESS),y
+    sta WALL_INFO_FACING_DIR, x
+    iny
     
-    ldy #5
-
-    lda wall_5_info
-    sta WALL_INFO_START_X, y
-    lda wall_5_info+1
-    sta WALL_INFO_START_Y, y
-    lda wall_5_info+2
-    sta WALL_INFO_END_X, y
-    lda wall_5_info+3
-    sta WALL_INFO_END_Y, y
-    lda wall_5_info+4
-    sta WALL_INFO_FACING_DIR, y
-    lda #<(wall_5_info+5)
-    sta WALL_INFO_TEXTURE_LOW,y
-    lda #>(wall_5_info+5)
-    sta WALL_INFO_TEXTURE_HIGH,y
+    jsr determine_length_of_wall_using_facing_dir
     
-    ldy #6
+    ; Set texture index table address for this wall
+    clc
+    lda LOAD_ADDRESS
+    adc #<(5)
+    sta WALL_INFO_TEXTURE_LOW,x
+    lda LOAD_ADDRESS+1
+    adc #>(5)             ; = 0
+    sta WALL_INFO_TEXTURE_HIGH,x
 
-    lda wall_6_info
-    sta WALL_INFO_START_X, y
-    lda wall_6_info+1
-    sta WALL_INFO_START_Y, y
-    lda wall_6_info+2
-    sta WALL_INFO_END_X, y
-    lda wall_6_info+3
-    sta WALL_INFO_END_Y, y
-    lda wall_6_info+4
-    sta WALL_INFO_FACING_DIR, y
-    lda #<(wall_6_info+5)
-    sta WALL_INFO_TEXTURE_LOW,y
-    lda #>(wall_6_info+5)
-    sta WALL_INFO_TEXTURE_HIGH,y
+    ; Increment the LOAD_ADDRESS to be just after the textture address, which is the start address of the next wall
+    clc
+    lda WALL_INFO_TEXTURE_LOW,x
+    adc WALL_LENGTH
+    sta LOAD_ADDRESS
+    lda WALL_INFO_TEXTURE_HIGH,x
+    adc #0
+    sta LOAD_ADDRESS+1
     
-    ldy #7
+    ; Reset y 
+    ldy #0
+    
+    inx
+    cpx NR_OF_WALLS
+    bne next_wall_to_load
 
-    lda wall_7_info
-    sta WALL_INFO_START_X, y
-    lda wall_7_info+1
-    sta WALL_INFO_START_Y, y
-    lda wall_7_info+2
-    sta WALL_INFO_END_X, y
-    lda wall_7_info+3
-    sta WALL_INFO_END_Y, y
-    lda wall_7_info+4
-    sta WALL_INFO_FACING_DIR, y
-    lda #<(wall_7_info+5)
-    sta WALL_INFO_TEXTURE_LOW,y
-    lda #>(wall_7_info+5)
-    sta WALL_INFO_TEXTURE_HIGH,y
     
     rts
 
+determine_length_of_wall_using_facing_dir:
+
+    ; We remove the doorness of the wall (this doesnt matter for the wall length)
+    and #%11111011
+    
+    ; lda WALL_INFO_FACING_DIR, x
+    cmp #3  ; west
+    beq length_wall_facing_west
+    cmp #2  ; south
+    beq length_wall_facing_south
+    cmp #1  ; east
+    beq length_wall_facing_east
+    ;cmp #0  ; north
+    ;beq length_wall_facing_north
+
+length_wall_facing_north:
+    sec
+    lda WALL_INFO_START_X, x
+    sbc WALL_INFO_END_X, x
+    sta WALL_LENGTH
+    ; bra done_length_of_wall_using_facing_dir
+length_wall_facing_east:
+    sec
+    lda WALL_INFO_END_Y, x
+    sbc WALL_INFO_START_Y, x
+    sta WALL_LENGTH
+    bra done_length_of_wall_using_facing_dir
+length_wall_facing_south:
+    sec
+    lda WALL_INFO_END_X, x
+    sbc WALL_INFO_START_X, x
+    sta WALL_LENGTH
+    bra done_length_of_wall_using_facing_dir
+length_wall_facing_west:
+    sec
+    lda WALL_INFO_START_Y, x
+    sbc WALL_INFO_END_Y, x
+    sta WALL_LENGTH
+    ; bra done_length_of_wall_using_facing_dir
+    
+done_length_of_wall_using_facing_dir:
+    rts
+
+    
 
 ; FIXME: we are now using ROM banks to contain textures. We need to copy those textures to vram, but have to run that copy-code in RAM. This is all deprecated once we use the SD card!
     

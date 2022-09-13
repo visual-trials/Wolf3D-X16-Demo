@@ -36,6 +36,7 @@ LOAD_ADDRESS              = $14 ; 15
 VRAM_ADDRESS              = $16 ; 17 ; only two bytes, because bit 16 is assumed to be 1
 CODE_ADDRESS              = $18 ; 18 ; TODO: this can probably share the address of LOAD_ADDRESS
 NR_OF_PALETTE_BYTES       = $1A
+NR_OF_WALLS               = $1B ;     TODO: only used during wall loading?
 
 ; Used for draw column code generation (can be re-used after code has been generated)
 TEXTURE_INCREMENT         = $20 ; 21 ; 22
@@ -229,10 +230,13 @@ reset:
     jsr generate_draw_column_code
     
     jsr setup_player
-    jsr setup_wall_info
     
     jsr clear_3d_view_fast
+
+    ; TODO: we want to load a "wall set" the moment we enter a new section of the map (including new textures and pallete).
+    ;       this way the number of walls can stay below 256
     
+    jsr load_wall_info
     
     ; -----------------------------------------------------------------
     ;                             Turn around
