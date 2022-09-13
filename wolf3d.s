@@ -284,6 +284,7 @@ do_not_turn_around:
 ; FIXME: back to RED background!!
 ; FIXME: back to RED background!!
 ; FIXME: back to RED background!!
+    bra skip_big_loop
 run_big_loop:
 
     ; FIXME: put this somewhere else!
@@ -292,6 +293,7 @@ run_big_loop:
     sta TMP_DOOR_OPENED_STATUS+1
     sta LOOKING_DIR_ANGLE
     sta LOOKING_DIR_ANGLE+1
+skip_big_loop:
 
     ; -----------------------------------------------------------------
     ;                             Move forward

@@ -1,6 +1,5 @@
-
 ordered_list_of_wall_indexes:
-    .byte 18, 0, 1, 2, 3, 4, 5, 24, 6, 7, 8, 9, 10, 31, 11, 12, 30, 13, 28, 14, 29, 15, 16, 17, 19, 20, 21, 22, 23, 25, 26, 27
+    .byte 20, 0, 1, 2, 3, 4, 5, 26, 6, 7, 8, 18, 9, 10, 11, 21, 12, 19, 13, 14, 31, 15, 16, 17, 22, 23, 24, 25, 27, 28, 29, 30
 
 wall_info:
     .byte 32 ; number of walls
@@ -95,72 +94,72 @@ wall_17_info:
     .byte 1      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS2, BS1, BS1, BS2
 wall_18_info:
+    .byte 5 , 7  ; start x, y
+    .byte 6 , 7  ; end x, y
+    .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
+    .byte BS1
+wall_19_info:
+    .byte 9 , 7  ; start x, y
+    .byte 10 , 7  ; end x, y
+    .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
+    .byte BS1
+wall_20_info:
     .byte 1 , 8  ; start x, y
     .byte 5 , 8  ; end x, y
     .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1, BS2, BS1, BS1
-wall_19_info:
+wall_21_info:
     .byte 10 , 8  ; start x, y
     .byte 14 , 8  ; end x, y
     .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1, BS1, BS1, BS1
-wall_20_info:
+wall_22_info:
     .byte 5 , 12  ; start x, y
     .byte 6 , 12  ; end x, y
     .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1
-wall_21_info:
+wall_23_info:
     .byte 9 , 12  ; start x, y
     .byte 10 , 12  ; end x, y
     .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1
-wall_22_info:
+wall_24_info:
     .byte 1 , 13  ; start x, y
     .byte 5 , 13  ; end x, y
     .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1, BS2, BS1, BS2
-wall_23_info:
+wall_25_info:
     .byte 6 , 13  ; start x, y
     .byte 7 , 13  ; end x, y
     .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1
-wall_24_info:
+wall_26_info:
     .byte 7 , 13  ; start x, y
     .byte 8 , 13  ; end x, y
     .byte 6      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte CLD
-wall_25_info:
+wall_27_info:
     .byte 8 , 13  ; start x, y
     .byte 9 , 13  ; end x, y
     .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1
-wall_26_info:
+wall_28_info:
     .byte 10 , 13  ; start x, y
     .byte 14 , 13  ; end x, y
     .byte 2      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1, BS1, BS1, BS2
-wall_27_info:
+wall_29_info:
     .byte 14 , 1  ; start x, y
     .byte 1 , 1  ; end x, y
     .byte 0      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1, BS1, BS2, BS1, BS2, BS1, BS1, BS2, BS1, BS1, BS1, BS2, BS1
-wall_28_info:
+wall_30_info:
     .byte 14 , 5  ; start x, y
     .byte 10 , 5  ; end x, y
     .byte 0      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1, BS2, BS1, BS1
-wall_29_info:
+wall_31_info:
     .byte 5 , 5  ; start x, y
     .byte 1 , 5  ; end x, y
     .byte 0      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
     .byte BS1, BS1, BS2, BS2
-wall_30_info:
-    .byte 10 , 6  ; start x, y
-    .byte 9 , 6  ; end x, y
-    .byte 0      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
-    .byte BS1
-wall_31_info:
-    .byte 6 , 6  ; start x, y
-    .byte 5 , 6  ; end x, y
-    .byte 0      ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)
-    .byte BS1

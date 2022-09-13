@@ -67,7 +67,7 @@ def run():
     # FIXME: hardcoded, we should iterate through all grid elements
     
     viewpoint_x = 3
-    viewpoint_y = 7
+    viewpoint_y = 6
     
     # FIXME: we should use the *index* of all_walls (actually the *set of walls* of a sections).
     
@@ -76,7 +76,7 @@ def run():
     mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
     ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
     
-    dump_wall_info_as_asm(potentially_visible_walls)
+    dump_wall_info_as_asm(potentially_visible_walls, ordered_walls, viewpoint_x, viewpoint_y)
     
     current_wall_index = 0
     TMP_second_wall_index = 18
@@ -872,7 +872,16 @@ def draw_map(map_info, map_width, map_height):
                 
             pygame.draw.rect(screen, square_color, pygame.Rect(x*grid_size+4, (screen_height-grid_size)-y*grid_size+4, grid_size-8, grid_size-8), width=border_width)
 
-def dump_wall_info_as_asm(walls):
+def dump_wall_info_as_asm(walls, ordered_walls, viewpoint_x, viewpoint_y):
+
+    print()
+    print('viewpoint_x = ', viewpoint_x) 
+    print('viewpoint_y = ', viewpoint_y)
+    print()
+    print('ordered_list_of_wall_indexes:')
+    ordered_wall_indexes = ', '.join(str(wall['index']) for wall in ordered_walls)
+    print('    .byte', ordered_wall_indexes) 
+    print()
 
     print('wall_info:')
     print('    .byte', len(walls), '; number of walls')
