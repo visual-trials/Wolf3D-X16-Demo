@@ -20,6 +20,11 @@ CLD = $20+$30 ; closed door
 ;   |___|
 ;     7
 
+; FIXME: we want this to be loaded on-the-fly!!
+ordered_list_of_wall_indexes:
+    .byte 0, 1, 2, 3, 4, 5, 6, 7
+
+
 wall_info:
     .byte 8    ; number of walls
 

@@ -1127,65 +1127,11 @@ to_screen_angle_is_on_right_of_screen:
     
 to_screen_angle_is_not_right_of_screen:
 
-
-
-
-
-
-    ; FIXME: Actually *split* (not just *cut-off*) into wall parts here!
-
-; FIXME: remove this!    
-    lda CURRENT_WALL_INDEX
-    cmp #3
-    beq tmp_dont_skip_occlusion
-    cmp #4
-    beq tmp_dont_skip_occlusion
-; FIXME
-;    jmp tmp_skip_occlusion
-tmp_dont_skip_occlusion:
-
-
-    lda CURRENT_WALL_INDEX
-    cmp #2
-    bne tmp_draw_this_wall
-;    jmp done_with_occluders
-tmp_draw_this_wall:
-
-
-; FIXME: remove this! (we are adding a temp occluder here)
-    .if 0
-    lda #1
-    sta OCCLUDER_NEXT, y
-    iny
-    ; We now have 2 occluder
-    inc NR_OF_OCCLUDERS
-
-; FIXME: remove this!
-    lda #(<$5F)
-    sta OCCLUDER_FROM_ANGLE_LOW, y
-    lda #(>$5F)
-    sta OCCLUDER_FROM_ANGLE_HIGH, y
-    
-; FIXME: remove this!
-    lda #(<$D0)
-    sta OCCLUDER_TO_ANGLE_LOW, y
-    lda #(>$D0)
-    sta OCCLUDER_TO_ANGLE_HIGH, y
-    lda #0
-    sta OCCLUDER_NEXT, y
-    .endif
-    
-
-    
     ; Start at first occluder in linked list
     ldy #0
     sty CURRENT_OCCLUDER_INDEX
     
 next_occluder_to_check:
-
-;    stp
-; FIXME    
-    lda CURRENT_WALL_INDEX
 
     ; SPEED: isnt this already set, always?
     ldy CURRENT_OCCLUDER_INDEX

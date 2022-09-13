@@ -38,6 +38,8 @@ CODE_ADDRESS              = $18 ; 18 ; TODO: this can probably share the address
 NR_OF_PALETTE_BYTES       = $1A
 NR_OF_WALLS               = $1B ;     TODO: only used during wall loading?
 
+; $1C-1F available
+
 ; Used for draw column code generation (can be re-used after code has been generated)
 TEXTURE_INCREMENT         = $20 ; 21 ; 22
 TEXTURE_CURSOR            = $23 ; 24 ; 25
@@ -70,7 +72,7 @@ START_SCREEN_X            = $4B ; 4C  ; the x-position of the wall starting on s
 TEXTURE_COLUMN_OFFSET     = $4D
 TEXTURE_INDEX_OFFSET      = $4E
 
-; $4f available
+CURRENT_WALL_NR           = $4F       ; When we look through an ordered list of wall indexes, this is the index in that ordered list of indexes
 
 PLAYER_POS_X              = $50 ; 51  ; x-position of the player (8.8 bits)
 PLAYER_POS_Y              = $52 ; 53  ; y-position of the player (8.8 bits)
@@ -81,7 +83,7 @@ LOOKING_DIR_QUANDRANT     = $5A       ; Two bits: 00 = q0 (ne), 01 = q1 (se), 11
 LOOKING_DIR_SINE          = $5B ; 5C
 LOOKING_DIR_COSINE        = $5D ; 5E
 
-CURRENT_WALL_INDEX        = $5F
+; CURRENT_WALL_INDEX        = $5F     ; FIXME: not need anymore?
 WALL_START_X              = $60       ; x-coordinate of start of wall
 WALL_START_Y              = $61       ; y-coordinate of start of wall)
 WALL_END_X                = $62       ; x-coordinate of end of wall)

@@ -203,13 +203,15 @@ draw_walls:
     inc NR_OF_OCCLUDERS
 
 
-    ; Iterating over all walls
+    ; Iterating over a ordered list of all wall indexes
 
     lda #0
-    sta CURRENT_WALL_INDEX
+    sta CURRENT_WALL_NR
 
 draw_next_wall:
-    ldy CURRENT_WALL_INDEX
+    ldx CURRENT_WALL_NR
+    lda ordered_list_of_wall_indexes, x
+    tay
     
     lda WALL_INFO_START_X, y   ; x-coordinate of start of wall
     sta WALL_START_X
@@ -264,8 +266,8 @@ wall_doorness_determined:
     
     jsr draw_wall
     
-    inc CURRENT_WALL_INDEX
-    lda CURRENT_WALL_INDEX
+    inc CURRENT_WALL_NR
+    lda CURRENT_WALL_NR
     cmp NR_OF_WALLS
     bne draw_next_wall
     
