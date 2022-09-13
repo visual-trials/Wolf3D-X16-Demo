@@ -112,6 +112,18 @@ wall_facing_north_screen_start_angle_calculated:
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_Y+1
     
+; FIXME: VERY ugly solution: we are subtracting one more if WALL_POSITION_IN_TILE is 128!
+    lda WALL_POSITION_IN_TILE
+    cmp #128
+    bne wall_facing_north_normal_distance_ok
+    sec
+    lda NORMAL_DISTANCE_TO_WALL+1
+    sbc #1
+    sta NORMAL_DISTANCE_TO_WALL+1
+    sta DELTA_Y+1
+wall_facing_north_normal_distance_ok:
+
+    
     ; Since the NORMAL_DISTANCE_TO_WALL has now been determined, we can prepare the multiplier that uses it
     jsr setup_multiply_with_normal_distance_16bit
 
@@ -784,6 +796,17 @@ wall_facing_east_screen_start_angle_calculated:
     sbc WALL_START_X            ; it doesnt matter if we use WALL_START_X or WALL_END_X here
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_X+1
+
+; FIXME: VERY ugly solution: we are subtracting one more if WALL_POSITION_IN_TILE is 128!
+    lda WALL_POSITION_IN_TILE
+    cmp #128
+    bne wall_facing_east_normal_distance_ok
+    sec
+    lda NORMAL_DISTANCE_TO_WALL+1
+    sbc #1
+    sta NORMAL_DISTANCE_TO_WALL+1
+    sta DELTA_X+1
+wall_facing_east_normal_distance_ok:
     
     ; Since the NORMAL_DISTANCE_TO_WALL has now been determined, we can prepare the multiplier that uses it
     jsr setup_multiply_with_normal_distance_16bit

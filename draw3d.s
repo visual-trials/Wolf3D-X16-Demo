@@ -213,6 +213,8 @@ draw_next_wall:
     lda ordered_list_of_wall_indexes, x
     tay
     
+    ; FIXME: we should use 16 bits for WALL_START_X/Y and WALL_END_X/Y due to the fact that doors can be in the middle of a square! (determining the normal_distance/delta_x/y is quite inconvenient right now)
+    
     lda WALL_INFO_START_X, y   ; x-coordinate of start of wall
     sta WALL_START_X
     
