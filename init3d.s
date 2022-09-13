@@ -8,8 +8,15 @@ BS1 = $00+$30 ; blue stone 1
 BS2 = $10+$30 ; blue stone 2
 CLD = $20+$30 ; closed door
 
+
+
 ; FIXME: this is temporary data to get some wall information into the engine
 
+    .if 1
+    .include wall_map.s
+    .endif
+    
+    .if 0
 ; Starting room of Wolf3D (sort of)
 
 ;     2           ; Note: this door is rendered *before* the walls beside it! (it is also position at y = 4, not y = 5)
@@ -23,7 +30,6 @@ CLD = $20+$30 ; closed door
 ; FIXME: we want this to be loaded on-the-fly!!
 ordered_list_of_wall_indexes:
     .byte 0, 1, 2, 3, 4, 5, 6, 7
-
 
 wall_info:
     .byte 8    ; number of walls
@@ -90,7 +96,7 @@ wall_7_info:
 ;    .byte 0, 0 ; end x, y
 ;    .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
 ;    .byte BS1, BS2, BS1
-    
+    .endif
 
 ; Square room
     .if 0 
@@ -125,23 +131,27 @@ setup_player:
     ; TODO: this is now hardcoded, but this should to taken from a map
 
     ; x-position of the viewpoint (8.8 bits)
-    lda #128
+;    lda #128
+    lda #0
     sta PLAYER_POS_X 
-    lda #1
+;    lda #1
+    lda #7
     sta PLAYER_POS_X+1
     
     ; y-position of the viewpoint (8.8 bits)
-    lda #0
+;    lda #0
+    lda #128
     sta PLAYER_POS_Y
-    lda #1
+;    lda #1
+    lda #3
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
     lda #0
-    ;lda #<(1824/2)
+    ;lda #<(1824/4)
     sta LOOKING_DIR_ANGLE
     lda #0
-    ;lda #>(1824/2)
+    ;lda #>(1824/4)
     sta LOOKING_DIR_ANGLE+1
     
     rts

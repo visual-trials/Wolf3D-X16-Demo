@@ -297,7 +297,7 @@ run_big_loop:
     ;                             Move forward
     ; -----------------------------------------------------------------
 
-    ; bra do_not_move_forward
+    bra do_not_move_forward
     
 keep_moving_forward:
     lda #0
@@ -343,7 +343,7 @@ do_not_move_forward:
     ;                             Opening door
     ; -----------------------------------------------------------------
 
-;    bra do_not_open_door
+    bra do_not_open_door
     
 move_door:
     jsr update_viewpoint
@@ -374,7 +374,7 @@ do_not_open_door:
     ;                             Move forward 2
     ; -----------------------------------------------------------------
 
-    ; bra do_not_move_forward2
+    bra do_not_move_forward2
     
 move_forward2:
     jsr update_viewpoint
