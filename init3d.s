@@ -147,11 +147,11 @@ setup_player:
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
-    lda #228
-    ;lda #<(1824/4)
+    ;lda #228
+    lda #<(1824/4)
     sta LOOKING_DIR_ANGLE
-    lda #0
-    ;lda #>(1824/4)
+    ;lda #0
+    lda #>(1824/4)
     sta LOOKING_DIR_ANGLE+1
     
     rts

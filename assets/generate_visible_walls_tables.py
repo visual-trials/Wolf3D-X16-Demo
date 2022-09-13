@@ -112,10 +112,10 @@ def run():
                     
                 if event.key == pygame.K_LEFT:
                     current_wall_index -= 1
-                    print(current_wall_index)
+                    print(ordered_walls[current_wall_index]['index'])
                 if event.key == pygame.K_RIGHT:
                     current_wall_index += 1
-                    print(current_wall_index)
+                    print(ordered_walls[current_wall_index]['index'])
                     
             #if event.type == pygame.MOUSEMOTION: 
                 # newrect.center = event.pos
