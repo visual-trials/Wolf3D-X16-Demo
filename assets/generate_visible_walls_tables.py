@@ -84,6 +84,7 @@ def run():
         print(first_behind_second)
     
     
+    rotating = False
     
     running = True
     while running:
@@ -96,6 +97,9 @@ def run():
                 running = False
 
             if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    rotating = True
+                    
                 if event.key == pygame.K_LEFT:
                     current_wall_index -= 1
                     print(current_wall_index)
@@ -123,6 +127,14 @@ def run():
             draw_wall(wall_in_front)
         
         pygame.display.update()
+        
+        if rotating:
+            current_wall_index += 1
+        if current_wall_index >= len(ordered_walls):
+            running = False
+            # current_wall_index = 0
+            
+        time.sleep(0.5)
    
         
     pygame.quit()
@@ -191,23 +203,23 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
                 # We mark the first wall as being behind the second wall
                 first_wall['is_behind_these_walls'][second_wall_index] = True
                 
-                screen.fill(background_color)
-                draw_walls(walls)
-                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, back_wall_cone_color)
-                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
-                pygame.display.update()
-                clock.tick(60)
+                #screen.fill(background_color)
+                #draw_walls(walls)
+                #draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, back_wall_cone_color)
+                #draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
+                #pygame.display.update()
+                #clock.tick(60)
                 #time.sleep(1)
             else:
                 # We mark the second wall as being behind the first wall
                 second_wall['is_behind_these_walls'][first_wall_index] = True
                 
-                screen.fill(background_color)
-                draw_walls(walls)
-                draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, back_wall_cone_color)
-                draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, front_wall_cone_color)
-                pygame.display.update()
-                clock.tick(60)
+                #screen.fill(background_color)
+                #draw_walls(walls)
+                #draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, back_wall_cone_color)
+                #draw_wall_cone(viewpoint_x, viewpoint_y, first_wall, front_wall_cone_color)
+                #pygame.display.update()
+                #clock.tick(60)
                 #time.sleep(1)
 
             
