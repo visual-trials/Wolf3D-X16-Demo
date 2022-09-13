@@ -66,8 +66,8 @@ def run():
 
     # FIXME: hardcoded, we should iterate through all grid elements
     
-    viewpoint_x = 3
-    viewpoint_y = 6
+    viewpoint_x = 7
+    viewpoint_y = 2
     
     # FIXME: we should use the *index* of all_walls (actually the *set of walls* of a sections).
     
