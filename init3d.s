@@ -13,6 +13,15 @@ CLD = $20+$30 ; closed door
 ; FIXME: this is temporary data to get some wall information into the engine
 
     .if 1
+    
+STARTING_PLAYER_POS_X_HIGH = 7
+STARTING_PLAYER_POS_X_LOW = 0
+
+STARTING_PLAYER_POS_Y_HIGH = 2
+STARTING_PLAYER_POS_Y_LOW = 128
+
+STARTING_LOOKING_DIR_ANGLE = 100   ; 0 - 1823
+
     .include wall_map.s
     .endif
     
@@ -26,6 +35,14 @@ CLD = $20+$30 ; closed door
 ;   |   |
 ;   |___|
 ;     7
+
+STARTING_PLAYER_POS_X_HIGH = 1
+STARTING_PLAYER_POS_X_LOW = 128
+
+STARTING_PLAYER_POS_Y_HIGH = 1
+STARTING_PLAYER_POS_Y_LOW = 0
+
+STARTING_LOOKING_DIR_ANGLE = 100   ; 0 - 1823
 
 ; FIXME: we want this to be loaded on-the-fly!!
 ordered_list_of_wall_indexes:
@@ -99,7 +116,19 @@ wall_7_info:
     .endif
 
 ; Square room
-    .if 0 
+    .if 0
+    
+STARTING_PLAYER_POS_X_HIGH = 1
+STARTING_PLAYER_POS_X_LOW = 128
+
+STARTING_PLAYER_POS_Y_HIGH = 1
+STARTING_PLAYER_POS_Y_LOW = 128
+
+STARTING_LOOKING_DIR_ANGLE = 100   ; 0 - 1823
+    
+; FIXME: we want this to be loaded on-the-fly!!
+ordered_list_of_wall_indexes:
+    .byte 0, 1, 2, 3
     
 wall_info:
     .byte 4    ; number of walls
@@ -108,21 +137,25 @@ wall_0_info:
     .byte 0, 4 ; start x, y
     .byte 4, 4 ; end x, y
     .byte 2    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS2, BS2, BS2, BS2
 
 wall_1_info:
     .byte 4, 4 ; start x, y
     .byte 4, 0 ; end x, y
     .byte 3    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1, BS2, BS2, BS2
 
 wall_2_info:
     .byte 4, 0 ; start x, y
     .byte 0, 0 ; end x, y
     .byte 0    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1, BS1, BS1, BS2
 
 wall_3_info:
     .byte 0, 0 ; start x, y
     .byte 0, 4 ; end x, y
     .byte 1    ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west
+    .byte BS1, BS1, BS1, BS1
     
     .endif
 
@@ -131,27 +164,21 @@ setup_player:
     ; TODO: this is now hardcoded, but this should to taken from a map
 
     ; x-position of the viewpoint (8.8 bits)
-;    lda #128
-    lda #0
+    lda #STARTING_PLAYER_POS_X_LOW
     sta PLAYER_POS_X 
-;    lda #1
-    lda #7
+    lda #STARTING_PLAYER_POS_X_HIGH
     sta PLAYER_POS_X+1
     
     ; y-position of the viewpoint (8.8 bits)
-;    lda #0
-    lda #128
+    lda #STARTING_PLAYER_POS_Y_LOW
     sta PLAYER_POS_Y
-;    lda #1
-    lda #2
+    lda #STARTING_PLAYER_POS_Y_HIGH
     sta PLAYER_POS_Y+1
     
     ; looking direction of the player/view (0-1823)
-    lda #100
-    ;lda #<(1824/4-100)
+    lda #<(STARTING_LOOKING_DIR_ANGLE)
     sta LOOKING_DIR_ANGLE
-    lda #0
-    ;lda #>(1824/4-100)
+    lda #>(STARTING_LOOKING_DIR_ANGLE)
     sta LOOKING_DIR_ANGLE+1
     
     rts
@@ -223,7 +250,6 @@ next_wall_to_load:
     cpx NR_OF_WALLS
     bne next_wall_to_load
 
-    
     rts
 
 determine_length_of_wall_using_facing_dir:
