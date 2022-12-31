@@ -32,13 +32,17 @@ TIMING_COUNTER            = $10 ; 11
 TIME_ELAPSED_MS           = $12
 TIME_ELAPSED_SUB_MS       = $13 ; one nibble of sub-milliseconds
 
-LOAD_ADDRESS              = $14 ; 15
-VRAM_ADDRESS              = $16 ; 17 ; only two bytes, because bit 16 is assumed to be 1
-CODE_ADDRESS              = $18 ; 18 ; TODO: this can probably share the address of LOAD_ADDRESS
-NR_OF_PALETTE_BYTES       = $1A
-NR_OF_WALLS               = $1B ;     TODO: only used during wall loading?
+NR_OF_KBD_SCANCODE_BYTES  = $14
 
-; $1C-1F available
+; $15 available
+
+LOAD_ADDRESS              = $16 ; 17
+VRAM_ADDRESS              = $18 ; 19 ; only two bytes, because bit 16 is assumed to be 1
+CODE_ADDRESS              = $1A ; 1B ; TODO: this can probably share the address of LOAD_ADDRESS
+NR_OF_PALETTE_BYTES       = $1C
+NR_OF_WALLS               = $1D ;     TODO: only used during wall loading?
+
+; $1E-1F available
 
 ; Used for draw column code generation (can be re-used after code has been generated)
 TEXTURE_INCREMENT         = $20 ; 21 ; 22
@@ -174,6 +178,8 @@ COSINE_HIGH              = $7C00    ; 456 bytes (whole number)   ; FIXME: do we 
 
 CLEAR_COLUMN_CODE        = $7E00    ; 152 * 3 bytes + 1 byte = 457 bytes
 
+KEYBOARD_SCANCODE_BUFFER = $7FE0    ; 32 bytes
+
 SQUARE1_LOW              = $8000    ; 512 bytes
 SQUARE1_HIGH             = $8200    ; 512 bytes
 SQUARE2_LOW              = $8400    ; 512 bytes
@@ -209,6 +215,7 @@ reset:
     jsr copy_petscii_charset
     jsr clear_tilemap_screen
     jsr init_cursor
+    jsr init_scancode_buffer
     
     jsr clear_bitmap_screen
     jsr clear_sprite_data
@@ -495,6 +502,7 @@ wait_for_vsync:
     .include utils/x16.s
     .include utils/utils.s
     .include utils/i2c.s
+    .include utils/keyboard.s
     .include utils/timing.s
     .include utils/setup_vera_for_bitmap_and_tilemap.s
     .include math.s
