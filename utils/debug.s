@@ -38,7 +38,7 @@ debug_print_wall_info_on_screen:
     lda #DEBUG_TOP_MARGIN
     sta CURSOR_Y
     
-    ; FIXME: add player position!
+    ; ======== Player/viewpoint info ========
     
     ; ---- Viewpoint ----
     
@@ -97,6 +97,8 @@ debug_print_wall_info_on_screen:
     
     inc CURSOR_Y
     inc CURSOR_Y
+    
+    ; ======== Wall info ========
     
     ; ---- Wall index ----
     lda #DEBUG_INDENT
@@ -222,7 +224,12 @@ debug_print_wall_info_on_screen:
     jsr print_fixed_point_word_as_decimal_fraction
     
     inc CURSOR_Y
+    inc CURSOR_Y
     
+    ; FIXME: do we also want to print the from/to angle for the *wall* (not just the wall part)?
+    
+    ; ======== Wall part info ========
+
     ; ---- From angle ----
     
     lda #DEBUG_INDENT
@@ -264,7 +271,7 @@ debug_print_wall_info_on_screen:
     jsr print_word_as_decimal
     
     inc CURSOR_Y
-
+    
     ; ---- From distance ----
     
     lda #DEBUG_INDENT
