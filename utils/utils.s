@@ -84,6 +84,33 @@ done_print_text:
 
     rts
     
+; Input: WORD_TO_PRINT (as 8.8 bit fixed point number)
+print_fixed_point_word_as_decimal_fraction:
+
+    ; First we print the whole number part of the 8.8 bit fixed point number
+    lda WORD_TO_PRINT+1
+    jsr print_byte_as_decimal
+    
+    ; We then print the period
+    jsr setup_cursor
+    lda #'.'
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    inc CURSOR_X
+    
+    ; Lastly we print the high-nibble of the fraction part of the fixed point number as a decimal fraction
+    lda WORD_TO_PRINT
+    lsr
+    lsr
+    lsr
+    lsr
+    tax
+    ; FIXME: rename this table
+    lda sub_ms_nibble_as_decimal, x
+    jsr print_byte_as_decimal
+
+    rts
     
 ; Input: WORD_TO_PRINT
 print_word_as_decimal:
@@ -161,19 +188,20 @@ skip_printing_digit_word:
 
 
     ; TODO: we are clearing the screen at the end of the decimal, but this might not always be needed! (if we do tens of thousands for example)
-    lda ' '
+    ; Note: not incrementing the cursor here
+    lda #' '
     sta VERA_DATA0
     lda TEXT_COLOR
     sta VERA_DATA0
-    lda ' '
+    lda #' '
     sta VERA_DATA0
     lda TEXT_COLOR
     sta VERA_DATA0
-    lda ' '
+    lda #' '
     sta VERA_DATA0
     lda TEXT_COLOR
     sta VERA_DATA0
-    lda ' '
+    lda #' '
     sta VERA_DATA0
     lda TEXT_COLOR
     sta VERA_DATA0
@@ -228,16 +256,15 @@ print_ones:
     inc CURSOR_X
     
     ; TODO: we are clearing the screen at the end of the decimal, but this might not always be needed! (if we do hundreds for example)
-    lda ' '
+    ; Note: not incrementing the cursor here
+    lda #' '
     sta VERA_DATA0
     lda TEXT_COLOR
     sta VERA_DATA0
-    ; inc CURSOR_X   ; not incrementing the cursor
-    lda ' '
+    lda #' '
     sta VERA_DATA0
     lda TEXT_COLOR
     sta VERA_DATA0
-    ; inc CURSOR_X   ; not incrementing the cursor
     
     rts
     

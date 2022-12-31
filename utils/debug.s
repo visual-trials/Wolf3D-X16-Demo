@@ -1,6 +1,6 @@
 
 
-DEBUG_INDENT = 20
+DEBUG_INDENT = 15
 DEBUG_TOP_MARGIN = 2
 
 debug_wall_index_message: 
@@ -10,13 +10,21 @@ debug_wall_start_message:
 debug_wall_end_message: 
     .asciiz "Wall end:    "
 debug_screen_start_angle_message:
-    .asciiz "Start angle: "
+    .asciiz "Screen start angle: "
+debug_looking_dir_angle_message:
+    .asciiz "Looking dir angle: "
+debug_normal_distance_message:
+    .asciiz "Normal distance: "
 
 
 debug_print_wall_info_on_screen:
 
     lda #COLOR_NORMAL
     sta TEXT_COLOR
+    
+    
+    ; FIXME: add player position!
+    
     
     ; ---- Wall index ----
     lda #DEBUG_INDENT
@@ -101,11 +109,34 @@ debug_print_wall_info_on_screen:
     
     jsr print_byte_as_decimal
     
-    ; ---- Screen start angle ----
+    
+    ; ---- Looking dir angle ----
+    
     
     lda #DEBUG_INDENT
     sta CURSOR_X
     lda #DEBUG_TOP_MARGIN+3
+    sta CURSOR_Y
+    
+    lda #<debug_looking_dir_angle_message
+    sta TEXT_TO_PRINT
+    lda #>debug_looking_dir_angle_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+
+    lda LOOKING_DIR_ANGLE
+    sta WORD_TO_PRINT
+    lda LOOKING_DIR_ANGLE+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_word_as_decimal
+    
+    ; ---- Screen start angle ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    lda #DEBUG_TOP_MARGIN+4
     sta CURSOR_Y
     
     lda #<debug_screen_start_angle_message
@@ -121,6 +152,28 @@ debug_print_wall_info_on_screen:
     sta WORD_TO_PRINT+1
     
     jsr print_word_as_decimal
+    
+    
+    ; ---- Screen normal distance ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    lda #DEBUG_TOP_MARGIN+5
+    sta CURSOR_Y
+    
+    lda #<debug_normal_distance_message
+    sta TEXT_TO_PRINT
+    lda #>debug_normal_distance_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda NORMAL_DISTANCE_TO_WALL
+    sta WORD_TO_PRINT
+    lda NORMAL_DISTANCE_TO_WALL+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_fixed_point_word_as_decimal_fraction
     
     
     rts
