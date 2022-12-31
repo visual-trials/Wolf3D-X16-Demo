@@ -13,7 +13,17 @@ CLD = $20+$30 ; closed door
 ; FIXME: this is temporary data to get some wall information into the engine
 
     .if 1
-    
+
+; BUG: this shows a BUG!    
+;STARTING_PLAYER_POS_X_HIGH = 7
+;STARTING_PLAYER_POS_X_LOW = 0
+
+;STARTING_PLAYER_POS_Y_HIGH = 2
+;STARTING_PLAYER_POS_Y_LOW = 128
+
+;STARTING_LOOKING_DIR_ANGLE = 100   ; 0 - 1823
+
+
 STARTING_PLAYER_POS_X_HIGH = 7
 STARTING_PLAYER_POS_X_LOW = 0
 
@@ -21,6 +31,8 @@ STARTING_PLAYER_POS_Y_HIGH = 2
 STARTING_PLAYER_POS_Y_LOW = 128
 
 STARTING_LOOKING_DIR_ANGLE = 100   ; 0 - 1823
+
+
 
     .include wall_map.s
     .endif

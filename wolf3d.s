@@ -494,6 +494,7 @@ wait_for_vsync:
     
     .include utils/x16.s
     .include utils/utils.s
+    .include utils/i2c.s
     .include utils/timing.s
     .include utils/setup_vera_for_bitmap_and_tilemap.s
     .include math.s
