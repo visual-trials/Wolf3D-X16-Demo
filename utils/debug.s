@@ -4,11 +4,13 @@ DEBUG_INDENT = 20
 DEBUG_TOP_MARGIN = 2
 
 debug_wall_index_message: 
-    .asciiz "Wall index: "
+    .asciiz "Wall index:  "
 debug_wall_start_message: 
-    .asciiz "Wall start: "
+    .asciiz "Wall start:  "
 debug_wall_end_message: 
-    .asciiz "Wall end:   "
+    .asciiz "Wall end:    "
+debug_screen_start_angle_message:
+    .asciiz "Start angle: "
 
 
 debug_print_wall_info_on_screen:
@@ -98,6 +100,27 @@ debug_print_wall_info_on_screen:
     sta BYTE_TO_PRINT
     
     jsr print_byte_as_decimal
+    
+    ; ---- Screen start angle ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    lda #DEBUG_TOP_MARGIN+3
+    sta CURSOR_Y
+    
+    lda #<debug_screen_start_angle_message
+    sta TEXT_TO_PRINT
+    lda #>debug_screen_start_angle_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+
+    lda SCREEN_START_ANGLE
+    sta WORD_TO_PRINT
+    lda SCREEN_START_ANGLE+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_word_as_decimal
     
     
     rts

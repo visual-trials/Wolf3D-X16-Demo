@@ -84,7 +84,102 @@ done_print_text:
 
     rts
     
+    
+; Input: WORD_TO_PRINT
+print_word_as_decimal:
 
+    jsr setup_cursor
+    
+    jsr mod10_word
+    clc
+    adc #'0'
+    sta DECIMAL_STRING+4
+    
+    lda DIVIDEND
+    sta WORD_TO_PRINT
+    lda DIVIDEND+1
+    sta WORD_TO_PRINT+1
+    jsr mod10_word
+    clc
+    adc #'0'
+    sta DECIMAL_STRING+3
+    
+    lda DIVIDEND
+    sta WORD_TO_PRINT
+    lda DIVIDEND+1
+    sta WORD_TO_PRINT+1
+    jsr mod10_word
+    clc
+    adc #'0'
+    sta DECIMAL_STRING+2
+    
+    lda DIVIDEND
+    sta WORD_TO_PRINT
+    lda DIVIDEND+1
+    sta WORD_TO_PRINT+1
+    jsr mod10_word
+    clc
+    adc #'0'
+    sta DECIMAL_STRING+1
+    
+    lda DIVIDEND
+    sta WORD_TO_PRINT
+    lda DIVIDEND+1
+    sta WORD_TO_PRINT+1
+    jsr mod10_word
+    clc
+    adc #'0'
+    sta DECIMAL_STRING+0
+    
+    ldy #0 ; we havent reached a non-zero yet
+    ldx #0 ; we start at digit index 0
+print_next_digit_word:
+
+    cpx #4
+    beq do_print_digit_word  ; always print the last digit (even if its a zero)
+    
+    cpy #1
+    beq do_print_digit_word  ; if we have seen an non-zero digit, we wont skip digits anymore
+
+    lda DECIMAL_STRING, x
+    cmp #'0'
+    beq skip_printing_digit_word  ; we skip a zero-digit
+    
+    ldy #1   ; we remember we saw a non-zero digit
+
+do_print_digit_word:
+    lda DECIMAL_STRING, x
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    inc CURSOR_X
+skip_printing_digit_word:
+    
+    inx
+    cpx #5
+    bne print_next_digit_word
+
+
+    ; TODO: we are clearing the screen at the end of the decimal, but this might not always be needed! (if we do tens of thousands for example)
+    lda ' '
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    lda ' '
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    lda ' '
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    lda ' '
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    
+    rts
+    
 print_byte_as_decimal:
 
     sta BYTE_TO_PRINT
@@ -173,7 +268,7 @@ mod10:
     lsr
     
     sta TMP1  ; number divided by 10 is in TMP1
-    tax      ; a = a / 10
+    tax      ; x = a / 10
     
     ; We multiply the divided number by 10 again
     
@@ -190,3 +285,49 @@ mod10:
     sbc TMP1 ; a - ((a / 10) * 10) = a % 10
     
     rts
+
+    
+; Input
+;   WORD_TO_PRINT : 16-bit word to do modulus once
+; Result
+;   a : WORD_TO_PRINT % 10
+;   WORD_TO_PRINT : WORD_TO_PRINT / 10
+    
+mod10_word:
+    
+    ; We do division and by multiplication 10, so we store the DIVISOR and MULTIPLIER first
+    lda #10
+    sta DIVISOR
+    sta MULTIPLIER
+    lda #0
+    sta DIVISOR+1
+    sta MULTIPLIER+1
+    
+    ; First we divide the (16 bit) word by 10
+    lda WORD_TO_PRINT
+    sta DIVIDEND
+    lda WORD_TO_PRINT+1
+    sta DIVIDEND+1
+    
+    jsr divide_16bits   ; Note: the result is stored in DIVIDEND
+    
+    ; We multiply the result by 10
+    
+    lda DIVIDEND
+    sta MULTIPLICAND
+    lda DIVIDEND+1
+    sta MULTIPLICAND+1
+    
+    jsr multply_16bits  ; Note: the result is stored in PRODUCT
+    
+    ; We subtract the original 16-bit word with the one divided and multiplied by 10 and put it in a   -->  a - ((a / 10) * 10) = a % 10
+    
+    sec
+	lda WORD_TO_PRINT
+	sbc PRODUCT
+    
+    ; Note: we are ignoring the high byte of the words, since we know this is not relevant here (since the result is always < 10)
+
+    rts
+    
+    

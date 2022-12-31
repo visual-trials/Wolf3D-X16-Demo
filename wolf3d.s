@@ -28,23 +28,20 @@ CURSOR_X                  = $09
 CURSOR_Y                  = $0A
 INDENTATION               = $0B
 BYTE_TO_PRINT             = $0C
-DECIMAL_STRING            = $0D ; 0E ; 0F
+WORD_TO_PRINT             = $0C ; 0D
+DECIMAL_STRING            = $0E ; 0F ; 10 ; 11; 12
 
-TIMING_COUNTER            = $10 ; 11
-TIME_ELAPSED_MS           = $12
-TIME_ELAPSED_SUB_MS       = $13 ; one nibble of sub-milliseconds
+TIMING_COUNTER            = $13 ; 14
+TIME_ELAPSED_MS           = $15
+TIME_ELAPSED_SUB_MS       = $16 ; one nibble of sub-milliseconds
 
-NR_OF_KBD_SCANCODE_BYTES  = $14
+NR_OF_KBD_SCANCODE_BYTES  = $17
 
-; $15 available
-
-LOAD_ADDRESS              = $16 ; 17
-VRAM_ADDRESS              = $18 ; 19 ; only two bytes, because bit 16 is assumed to be 1
-CODE_ADDRESS              = $1A ; 1B ; TODO: this can probably share the address of LOAD_ADDRESS
-NR_OF_PALETTE_BYTES       = $1C
-NR_OF_WALLS               = $1D ;     TODO: only used during wall loading?
-
-; $1E-1F available
+LOAD_ADDRESS              = $18 ; 19
+VRAM_ADDRESS              = $1A ; 1B ; only two bytes, because bit 16 is assumed to be 1
+CODE_ADDRESS              = $1C ; 1D ; TODO: this can probably share the address of LOAD_ADDRESS
+NR_OF_PALETTE_BYTES       = $1E
+NR_OF_WALLS               = $1F ;     TODO: only used during wall loading?
 
 ; Used for draw column code generation (can be re-used after code has been generated)
 TEXTURE_INCREMENT         = $20 ; 21 ; 22
