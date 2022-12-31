@@ -25,7 +25,10 @@ debug_from_distance_message:
     .asciiz "From distance: "
 debug_to_distance_message:
     .asciiz "To distance: "
-
+debug_from_half_height_message:
+    .asciiz "From half height: "
+debug_to_half_height_message:
+    .asciiz "To half height: "
 
 debug_print_wall_info_on_screen:
 
@@ -311,6 +314,44 @@ debug_print_wall_info_on_screen:
     sta WORD_TO_PRINT+1
     
     jsr print_fixed_point_word_as_decimal_fraction
+    
+    inc CURSOR_Y
+    
+    ; ---- From half height ----
+
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_from_half_height_message
+    sta TEXT_TO_PRINT
+    lda #>debug_from_half_height_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda FROM_HALF_WALL_HEIGHT
+    sta BYTE_TO_PRINT
+    
+    jsr print_byte_as_decimal
+    
+    inc CURSOR_Y
+    
+    ; ---- To half height ----
+
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_to_half_height_message
+    sta TEXT_TO_PRINT
+    lda #>debug_to_half_height_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda TO_HALF_WALL_HEIGHT
+    sta BYTE_TO_PRINT
+    
+    jsr print_byte_as_decimal
     
     inc CURSOR_Y
     
