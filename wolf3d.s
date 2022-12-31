@@ -6,6 +6,8 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
+DEBUG_WALL_INFO = 1
+
 
 ; == Zero page addresses
 
@@ -503,6 +505,12 @@ wait_for_vsync:
     .include utils/utils.s
     .include utils/i2c.s
     .include utils/keyboard.s
+    
+    ; FIXME: also include debug.s when other debug settings are enabled
+    .if DEBUG_WALL_INFO
+    .include utils/debug.s
+    .endif
+    
     .include utils/timing.s
     .include utils/setup_vera_for_bitmap_and_tilemap.s
     .include math.s

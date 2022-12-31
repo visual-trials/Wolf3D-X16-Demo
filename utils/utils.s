@@ -132,6 +132,18 @@ print_ones:
     sta VERA_DATA0
     inc CURSOR_X
     
+    ; TODO: we are clearing the screen at the end of the decimal, but this might not always be needed! (if we do hundreds for example)
+    lda ' '
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    ; inc CURSOR_X   ; not incrementing the cursor
+    lda ' '
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    ; inc CURSOR_X   ; not incrementing the cursor
+    
     rts
     
     
