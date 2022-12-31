@@ -209,9 +209,6 @@ draw_walls:
     sta CURRENT_WALL_NR
 
 draw_next_wall:
-; FIXME
-    jsr wait_until_key_press
-
     ldx CURRENT_WALL_NR
     lda ordered_list_of_wall_indexes, x
     tay
@@ -271,6 +268,9 @@ wall_doorness_determined:
     
     jsr draw_wall
     
+; FIXME
+    jsr wait_until_key_press
+
     inc CURRENT_WALL_NR
     lda CURRENT_WALL_NR
     cmp NR_OF_WALLS
