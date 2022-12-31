@@ -1354,6 +1354,12 @@ wall_part_has_positive_length:
     phy
     ; We draw the wall part
     jsr prep_and_draw_wall_part
+
+    .if DEBUG_WALL_INFO
+    jsr debug_print_wall_info_on_screen
+    jsr wait_until_key_press
+    .endif
+
     ply
 
 

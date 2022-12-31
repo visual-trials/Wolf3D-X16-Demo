@@ -21,6 +21,10 @@ debug_from_angle_message:
     .asciiz "From angle: "
 debug_to_angle_message:
     .asciiz "To angle: "
+debug_from_distance_message:
+    .asciiz "From distance: "
+debug_to_distance_message:
+    .asciiz "To distance: "
 
 
 debug_print_wall_info_on_screen:
@@ -260,5 +264,48 @@ debug_print_wall_info_on_screen:
     jsr print_word_as_decimal
     
     inc CURSOR_Y
+
+    ; ---- From distance ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_from_distance_message
+    sta TEXT_TO_PRINT
+    lda #>debug_from_distance_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda FROM_DISTANCE
+    sta WORD_TO_PRINT
+    lda FROM_DISTANCE+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_fixed_point_word_as_decimal_fraction
+    
+    inc CURSOR_Y
+    
+    ; ---- To distance ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_to_distance_message
+    sta TEXT_TO_PRINT
+    lda #>debug_to_distance_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda TO_DISTANCE
+    sta WORD_TO_PRINT
+    lda TO_DISTANCE+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_fixed_point_word_as_decimal_fraction
+    
+    inc CURSOR_Y
+    
     
     rts
