@@ -28,31 +28,31 @@ CURSOR_X                  = $09
 CURSOR_Y                  = $0A
 INDENTATION               = $0B
 BYTE_TO_PRINT             = $0C
-WORD_TO_PRINT             = $0C ; 0D
-DECIMAL_STRING            = $0E ; 0F ; 10 ; 11; 12
+WORD_TO_PRINT             = $0D ; 0E
+DECIMAL_STRING            = $0F ; 10 ; 11 ; 12; 13
 
-TIMING_COUNTER            = $13 ; 14
-TIME_ELAPSED_MS           = $15
-TIME_ELAPSED_SUB_MS       = $16 ; one nibble of sub-milliseconds
+TIMING_COUNTER            = $14 ; 15
+TIME_ELAPSED_MS           = $16
+TIME_ELAPSED_SUB_MS       = $17 ; one nibble of sub-milliseconds
 
-NR_OF_KBD_SCANCODE_BYTES  = $17
+NR_OF_KBD_SCANCODE_BYTES  = $18
 
-LOAD_ADDRESS              = $18 ; 19
-VRAM_ADDRESS              = $1A ; 1B ; only two bytes, because bit 16 is assumed to be 1
-CODE_ADDRESS              = $1C ; 1D ; TODO: this can probably share the address of LOAD_ADDRESS
-NR_OF_PALETTE_BYTES       = $1E
-NR_OF_WALLS               = $1F ;     TODO: only used during wall loading?
+LOAD_ADDRESS              = $19 ; 1A
+VRAM_ADDRESS              = $1B ; 1C ; only two bytes, because bit 16 is assumed to be 1
+CODE_ADDRESS              = $1D ; 1E ; TODO: this can probably share the address of LOAD_ADDRESS
+NR_OF_PALETTE_BYTES       = $1F
+NR_OF_WALLS               = $20 ;     TODO: only used during wall loading?
 
 ; Used for draw column code generation (can be re-used after code has been generated)
-TEXTURE_INCREMENT         = $20 ; 21 ; 22
-TEXTURE_CURSOR            = $23 ; 24 ; 25
-PREVIOUS_TEXTURE_CURSOR   = $26
-CURRENT_WALL_HEIGHT       = $27 ; 28
-VIRTUAL_SCREEN_CURSOR     = $29
-TOP_HALF_WALL_HEIGHT      = $2A
-BOTTOM_HALF_WALL_HEIGHT   = $2B
+TEXTURE_INCREMENT         = $21 ; 22 ; 23
+TEXTURE_CURSOR            = $24 ; 25 ; 26
+PREVIOUS_TEXTURE_CURSOR   = $27
+CURRENT_WALL_HEIGHT       = $28 ; 29
+VIRTUAL_SCREEN_CURSOR     = $2A
+TOP_HALF_WALL_HEIGHT      = $2B
+BOTTOM_HALF_WALL_HEIGHT   = $2C
 
-; $2C-34 available
+; $2D-34 available
 
 HALF_WALL_HEIGHT_INCREMENT= $35 ; 36
 ; $37 is free
