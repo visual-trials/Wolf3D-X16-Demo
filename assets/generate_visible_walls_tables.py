@@ -59,13 +59,9 @@ def run():
     map_height = 14
     map_info = get_map_info()
     
-    # FIXME: right now doors still have the whole-number coordinates, which is NOT correct!
-    
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
 
-
     # FIXME: hardcoded, we should iterate through all grid elements
-    
     viewpoint_x = 7
     viewpoint_y = 2
     
@@ -576,7 +572,7 @@ def determine_walls_and_doors(map_info, map_width, map_height):
                 # We then look if the square to the left of it is empty
                 if (map_info[y][x-1] == GRID_EMPTY):
                     # We have a empty square on the left and a door sqaure on the right, so we have a west facing door
-                    new_door = create_new_wall_or_door(x, y+1, x, y, DOOR_FACING_WEST)
+                    new_door = create_new_wall_or_door(x+0.5, y+1, x+0.5, y, DOOR_FACING_WEST)
                     new_door['textures'].append(TEXTURE_DRF)
                     walls.append(new_door)
             else:  # Assuming its empty
@@ -628,7 +624,7 @@ def determine_walls_and_doors(map_info, map_width, map_height):
                 # We then look if the square to the right of it is empty
                 if (map_info[y][x+1] == GRID_EMPTY):
                     # We have a empty square on the right and a door sqaure on the left, so we have a east facing door
-                    new_door = create_new_wall_or_door(x+1, y, x+1, y+1, DOOR_FACING_EAST)
+                    new_door = create_new_wall_or_door(x+1-0.5, y, x+1-0.5, y+1, DOOR_FACING_EAST)
                     new_door['textures'].append(TEXTURE_DRF)
                     walls.append(new_door)
             else:  # Assuming its empty
@@ -680,7 +676,7 @@ def determine_walls_and_doors(map_info, map_width, map_height):
                 # We then look if the square to the bottom of it is empty
                 if (map_info[y-1][x] == GRID_EMPTY):
                     # We have a empty square on the bottom and a door sqaure on the top, so we have a south facing door
-                    new_door = create_new_wall_or_door(x, y, x+1, y, DOOR_FACING_SOUTH)
+                    new_door = create_new_wall_or_door(x, y+0.5, x+1, y+0.5, DOOR_FACING_SOUTH)
                     new_door['textures'].append(TEXTURE_DRF)
                     walls.append(new_door)
             else:  # Assuming its empty
@@ -733,7 +729,7 @@ def determine_walls_and_doors(map_info, map_width, map_height):
                 # We then look if the square to the top of it is empty
                 if (map_info[y+1][x] == GRID_EMPTY):
                     # We have a empty square on the top and a door sqaure on the top, so we have a north facing door
-                    new_door = create_new_wall_or_door(x+1, y+1, x, y+1, DOOR_FACING_NORTH)
+                    new_door = create_new_wall_or_door(x+1, y+1-0.5, x, y+1-0.5, DOOR_FACING_NORTH)
                     new_door['textures'].append(TEXTURE_DRF)
                     walls.append(new_door)
             else:  # Assuming its empty
@@ -888,9 +884,37 @@ def dump_wall_info_as_asm(walls, ordered_walls, viewpoint_x, viewpoint_y):
     
     for wall_index in range(len(walls)):
         wall = walls[wall_index]
+        
+        # We pack the door-coordinates into integers (in the engine this is reverted using the facing direction again)
+
+        x_start = wall['x_start']
+        x_end = wall['x_end']
+        y_start = wall['y_start']
+        y_end = wall['y_end']
+        facing_dir = wall['facing_dir']
+        
+        x_start_pack = x_start
+        x_end_pack = x_end
+        y_start_pack = y_start
+        y_end_pack = y_end
+
+        if (facing_dir == DOOR_FACING_SOUTH):
+            y_start_pack = y_start - 0.5
+            y_end_pack = y_end - 0.5
+        elif (facing_dir == DOOR_FACING_NORTH):
+            y_start_pack = y_start + 0.5
+            y_end_pack = y_end + 0.5
+        elif (facing_dir == DOOR_FACING_WEST):
+            x_start_pack = x_start - 0.5
+            x_end_pack = x_end - 0.5
+        elif (facing_dir == DOOR_FACING_EAST):
+            x_start_pack = x_start + 0.5
+            x_end_pack = x_end + 0.5
+        
+        
         print('wall_'+str(wall_index)+'_info:')
-        print('    .byte', wall['x_start'], ',' ,wall['y_start'], ' ; start x, y')
-        print('    .byte', wall['x_end'], ',' ,wall['y_end'], ' ; end x, y')
+        print('    .byte', int(x_start_pack), ',' ,int(y_start_pack), ' ; start x, y')
+        print('    .byte', int(x_end_pack), ',' ,int(y_end_pack), ' ; end x, y')
         print('    .byte', wall['facing_dir'], '     ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)')
         texture_indexes = ', '.join(texture_index_to_name[texture_index] for texture_index in wall['textures'])
         print('    .byte', texture_indexes) 
