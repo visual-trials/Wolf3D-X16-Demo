@@ -21,6 +21,10 @@ debug_from_angle_message:
     .asciiz "From angle: "
 debug_to_angle_message:
     .asciiz "To angle: "
+debug_from_screen_angle_message:
+    .asciiz "From screen angle: "
+debug_to_screen_angle_message:
+    .asciiz "To screen angle: "
 debug_from_distance_message:
     .asciiz "From distance: "
 debug_to_distance_message:
@@ -268,6 +272,48 @@ debug_print_wall_info_on_screen:
     lda TO_ANGLE
     sta WORD_TO_PRINT
     lda TO_ANGLE+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_word_as_decimal
+    
+    inc CURSOR_Y
+    
+    ; ---- From screen angle ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_from_screen_angle_message
+    sta TEXT_TO_PRINT
+    lda #>debug_from_screen_angle_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+
+    lda FROM_SCREEN_ANGLE
+    sta WORD_TO_PRINT
+    lda FROM_SCREEN_ANGLE+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_word_as_decimal
+    
+    inc CURSOR_Y
+    
+    ; ---- To screen angle ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_to_screen_angle_message
+    sta TEXT_TO_PRINT
+    lda #>debug_to_screen_angle_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+
+    lda TO_SCREEN_ANGLE
+    sta WORD_TO_PRINT
+    lda TO_SCREEN_ANGLE+1
     sta WORD_TO_PRINT+1
     
     jsr print_word_as_decimal
