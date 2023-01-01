@@ -968,6 +968,7 @@ wall_facing_east_calc_angle_for_end_of_wall:
     
 split_wall_into_wall_parts:
 
+    
 
     ; ==================================================================================================================================
     ;
@@ -975,9 +976,6 @@ split_wall_into_wall_parts:
     ;
     ; ==================================================================================================================================
 
-
-    ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
-    ; FIXME: we now do NOT cut off part of the wall! We still need to cut the wall into smaller pieces, what have not been drawn to the screen yet!
 
     ; For now we ONLY cut off walls if they do not fit into the screen
         
@@ -1001,6 +999,9 @@ split_wall_into_wall_parts:
     
     bpl from_screen_angle_is_positive
     
+    ; NOTE: we are ALLOWING *negative* SCREEN ANGLES!
+; ============= MAYBE REMOVING =============
+    .if 1
     ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
     clc
     lda FROM_SCREEN_ANGLE
@@ -1009,6 +1010,8 @@ split_wall_into_wall_parts:
     lda FROM_SCREEN_ANGLE+1
     adc #>(1824)
     sta FROM_SCREEN_ANGLE+1
+    .endif
+; ============= / MAYBE REMOVING =============
     
 from_screen_angle_is_positive:
 
@@ -1040,6 +1043,10 @@ from_screen_angle_is_positive:
     
     bpl to_screen_angle_is_positive
     
+    
+    ; NOTE: we are ALLOWING *negative* SCREEN ANGLES!
+; ============= MAYBE REMOVING =============
+    .if 1
     ; If this becomes below 0 (meaning highest bit is 1) we have to add 1824 again.
     clc
     lda TO_SCREEN_ANGLE
@@ -1048,8 +1055,27 @@ from_screen_angle_is_positive:
     lda TO_SCREEN_ANGLE+1
     adc #>(1824)
     sta TO_SCREEN_ANGLE+1
+    .endif
+; ============= / MAYBE REMOVING =============
+
     
 to_screen_angle_is_positive:
+
+; =============== DEBUG ===============
+    .if 0
+    ; FIXME: checking for a specific wall index
+    ; NOTE: this DESTROYS X and A!!
+    ldx CURRENT_WALL_NR
+    lda ordered_list_of_wall_indexes, x
+    cmp #30
+    bne debug_keep_on_going
+    
+    ; We stop here for debugging
+    stp
+debug_keep_on_going:
+    .endif
+; ============= / DEBUG ===============
+
 
 
 ; FIXME
@@ -1069,9 +1095,17 @@ to_screen_angle_is_positive:
     ; FIXME: shouldnt we do this as part of the OCCLUDER check? Occluder 0 has angle 0 as end, so that would basicly be the same check?
     lda FROM_SCREEN_ANGLE+1
     ; We check if its within 0 and 304 angles (first check left, then right)
+
+; === MAYBE REMOVING ===
+    .if 1
     ; FIXME: hack
     cmp #5
     bcc from_screen_angle_is_not_left_of_screen   
+    .else
+    ; MAYBE: checking for negative number here now
+    bpl from_screen_angle_is_not_left_of_screen
+    .endif
+; === / MAYBE REMOVING ===
     
 from_screen_angle_is_left_of_screen:
     ; SPEED: only do this IF the wall is not COMPLETELY left of the screen! -> so check if the end of the wall is ALSO to the left of the screen!D
@@ -1114,9 +1148,17 @@ from_screen_angle_is_within_the_screen:
     
     ; We first check if the to-angle is not to the left of the screen
     lda TO_SCREEN_ANGLE+1
+    
+; === MAYBE REMOVING ===
+    .if 1
     ; FIXME: hack
     cmp #5
     bcc to_screen_angle_is_not_left_of_screen
+    .else
+    ; MAYBE: checking for negative number here now
+    bpl to_screen_angle_is_not_left_of_screen
+    .endif
+; === / MAYBE REMOVING ===
     
     ; If the to-angle is left of the screen, we should not draw the wall
     ; FIXME: we should in fact check if there is another wall part possible?
@@ -1149,6 +1191,7 @@ to_screen_angle_is_on_right_of_screen:
     
     
 to_screen_angle_is_not_right_of_screen:
+
 
     ; Start at first occluder in linked list
     ldy #0
