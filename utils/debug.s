@@ -3,6 +3,12 @@
 DEBUG_INDENT = 15
 DEBUG_TOP_MARGIN = 2
 
+debug_player_message:
+    .asciiz "   == Player =="
+debug_wall_message:
+    .asciiz "    == Wall =="
+debug_wall_part_message:
+    .asciiz "  == Wall part =="
 debug_viewpoint_message:
     .asciiz "Viewpoint: "
 debug_looking_dir_angle_message:
@@ -46,6 +52,18 @@ debug_print_wall_info_on_screen:
     sta CURSOR_Y
     
     ; ======== Player/viewpoint info ========
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_player_message
+    sta TEXT_TO_PRINT
+    lda #>debug_player_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    inc CURSOR_Y
     
     ; ---- Viewpoint ----
     
@@ -106,6 +124,18 @@ debug_print_wall_info_on_screen:
     inc CURSOR_Y
     
     ; ======== Wall info ========
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_wall_message
+    sta TEXT_TO_PRINT
+    lda #>debug_wall_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    inc CURSOR_Y
     
     ; ---- Wall index ----
     lda #DEBUG_INDENT
@@ -229,6 +259,46 @@ debug_print_wall_info_on_screen:
     
     jsr print_fixed_point_word_as_decimal_fraction
     
+    ; ---- From screen angle ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_from_screen_angle_message
+    sta TEXT_TO_PRINT
+    lda #>debug_from_screen_angle_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+
+    lda FROM_SCREEN_ANGLE
+    sta WORD_TO_PRINT
+    lda FROM_SCREEN_ANGLE+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_word_as_decimal
+    
+    inc CURSOR_Y
+    
+    ; ---- To screen angle ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_to_screen_angle_message
+    sta TEXT_TO_PRINT
+    lda #>debug_to_screen_angle_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+
+    lda TO_SCREEN_ANGLE
+    sta WORD_TO_PRINT
+    lda TO_SCREEN_ANGLE+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_word_as_decimal
+    
     inc CURSOR_Y
     inc CURSOR_Y
     
@@ -236,6 +306,18 @@ debug_print_wall_info_on_screen:
     
     ; ======== Wall part info ========
 
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_wall_part_message
+    sta TEXT_TO_PRINT
+    lda #>debug_wall_part_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    inc CURSOR_Y
+    
     ; ---- From angle ----
     
     lda #DEBUG_INDENT

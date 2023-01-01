@@ -1314,6 +1314,19 @@ wall_part_has_negaitive_or_zero_length:
     
 wall_part_has_positive_length:
 
+
+    ; SPEED: we are preserving y here using the stack. Is there a better way?
+    phy
+    ; We draw the wall part
+    jsr prep_and_draw_wall_part
+
+    .if DEBUG_WALL_INFO
+    jsr debug_print_wall_info_on_screen
+    jsr wait_until_key_press
+    .endif
+
+    ply
+
     ; FIXME: we should *COMBINE* with the already existing occluders if they "touch" each other!
 
     ; We add the new wall part to the lined list of occluders
@@ -1349,18 +1362,6 @@ wall_part_has_positive_length:
     ; We set the current occluder (y) as the next occluder of the just added occluder
     tya
     sta OCCLUDER_NEXT, x
-
-    ; SPEED: we are preserving y here using the stack. Is there a better way?
-    phy
-    ; We draw the wall part
-    jsr prep_and_draw_wall_part
-
-    .if DEBUG_WALL_INFO
-    jsr debug_print_wall_info_on_screen
-    jsr wait_until_key_press
-    .endif
-
-    ply
 
 
 ; FIXME: right now we are FORCING a wall to create only ONE wall part!!
