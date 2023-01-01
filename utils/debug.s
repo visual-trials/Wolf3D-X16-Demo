@@ -290,9 +290,9 @@ debug_print_wall_info_on_screen:
     
     jsr print_text_zero
 
-    lda FROM_SCREEN_ANGLE
+    lda FROM_SCREEN_ANGLE_PART
     sta WORD_TO_PRINT
-    lda FROM_SCREEN_ANGLE+1
+    lda FROM_SCREEN_ANGLE_PART+1
     sta WORD_TO_PRINT+1
     
     jsr print_word_as_decimal
@@ -311,9 +311,9 @@ debug_print_wall_info_on_screen:
     
     jsr print_text_zero
 
-    lda TO_SCREEN_ANGLE
+    lda TO_SCREEN_ANGLE_PART
     sta WORD_TO_PRINT
-    lda TO_SCREEN_ANGLE+1
+    lda TO_SCREEN_ANGLE_PART+1
     sta WORD_TO_PRINT+1
     
     jsr print_word_as_decimal
