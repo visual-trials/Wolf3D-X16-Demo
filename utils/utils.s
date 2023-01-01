@@ -92,7 +92,6 @@ print_fixed_point_word_as_decimal_fraction:
     jsr print_byte_as_decimal
     
     ; We then print the period
-    jsr setup_cursor
     lda #'.'
     sta VERA_DATA0
     lda TEXT_COLOR
@@ -206,6 +205,9 @@ skip_printing_digit_word:
     lda TEXT_COLOR
     sta VERA_DATA0
     
+    ; We are restting the cursor since VERA_DATA0 is now pointing too far ahead and has to be brought back
+    jsr setup_cursor
+    
     rts
     
 print_byte_as_decimal:
@@ -265,6 +267,9 @@ print_ones:
     sta VERA_DATA0
     lda TEXT_COLOR
     sta VERA_DATA0
+    
+    ; We are restting the cursor since VERA_DATA0 is now pointing too far ahead and has to be brought back
+    jsr setup_cursor
     
     rts
     

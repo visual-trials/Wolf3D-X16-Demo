@@ -84,8 +84,6 @@ debug_print_wall_info_on_screen:
     
     jsr print_fixed_point_word_as_decimal_fraction
 
-    jsr setup_cursor
-    
     lda #':'
     sta VERA_DATA0
     lda TEXT_COLOR
@@ -173,8 +171,6 @@ debug_print_wall_info_on_screen:
     
     jsr print_byte_as_decimal
     
-    jsr setup_cursor
-    
     lda #':'
     sta VERA_DATA0
     lda TEXT_COLOR
@@ -205,7 +201,6 @@ debug_print_wall_info_on_screen:
     
     jsr print_byte_as_decimal
     
-    jsr setup_cursor
     lda #':'
     sta VERA_DATA0
     lda TEXT_COLOR
