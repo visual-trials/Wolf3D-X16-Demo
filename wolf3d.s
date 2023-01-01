@@ -6,7 +6,7 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
-DEBUG_WALL_INFO = 0
+DEBUG_WALL_INFO = 1
 
 
 ; == Zero page addresses
