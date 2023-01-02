@@ -1086,6 +1086,40 @@ debug_keep_on_going:
     lda TO_SCREEN_ANGLE+1
 
 
+    ; MAYBE: dealing with negative wall length...
+
+    sec
+    lda TO_SCREEN_ANGLE+1
+    sbc FROM_SCREEN_ANGLE+1
+    bcc wall_has_negative_or_zero_length
+    bne wall_has_positive_length
+    lda TO_SCREEN_ANGLE
+    sbc FROM_SCREEN_ANGLE
+    bcc wall_has_negative_or_zero_length
+    ; FIXME: should we also stop if the size is 0? Or is that already done because there is no -1 on the TO_SCREEN_ANGLE_PART?
+    beq wall_has_negative_or_zero_length
+    bra wall_has_positive_length
+wall_has_negative_or_zero_length:
+
+    ; Since the FROM is *higher* than the TO, we subtract 1824 of the FROM (this would also mean it becomes *negative*)
+    sec
+    lda FROM_SCREEN_ANGLE
+    sbc #<(1824)
+    sta FROM_SCREEN_ANGLE
+    lda FROM_SCREEN_ANGLE+1
+    sbc #>(1824)
+    sta FROM_SCREEN_ANGLE+1
+
+wall_has_positive_length:
+
+; FIXME: MAYBE SKIP check on FROM_SCREEN_ANGLE and TO_SCREEN_ANGLE
+; FIXME: MAYBE SKIP check on FROM_SCREEN_ANGLE and TO_SCREEN_ANGLE
+; FIXME: MAYBE SKIP check on FROM_SCREEN_ANGLE and TO_SCREEN_ANGLE
+
+;    jmp check_occluders
+
+
+
     ; --------------------------------------------------------------------------------------------
     ;                                 Check FROM_SCREEN_ANGLE
     ; --------------------------------------------------------------------------------------------
@@ -1097,7 +1131,7 @@ debug_keep_on_going:
     ; We check if its within 0 and 304 angles (first check left, then right)
 
 ; === MAYBE REMOVING ===
-    .if 1
+    .if 0
     ; FIXME: hack
     cmp #5
     bcc from_screen_angle_is_not_left_of_screen   
@@ -1150,7 +1184,7 @@ from_screen_angle_is_within_the_screen:
     lda TO_SCREEN_ANGLE+1
     
 ; === MAYBE REMOVING ===
-    .if 1
+    .if 0
     ; FIXME: hack
     cmp #5
     bcc to_screen_angle_is_not_left_of_screen
@@ -1194,6 +1228,8 @@ to_screen_angle_is_not_right_of_screen:
 
 
     ; ============================== OCCLUDERS ==================================
+
+check_occluders:
 
     ; Start at first occluder in linked list
     ldy #0
@@ -1345,15 +1381,15 @@ end_of_wall_is_ok:
     sec
     lda TO_SCREEN_ANGLE_PART+1
     sbc FROM_SCREEN_ANGLE_PART+1
-    bcc wall_part_has_negaitive_or_zero_length
+    bcc wall_part_has_negative_or_zero_length
     bne wall_part_has_positive_length
     lda TO_SCREEN_ANGLE_PART
     sbc FROM_SCREEN_ANGLE_PART
-    bcc wall_part_has_negaitive_or_zero_length
+    bcc wall_part_has_negative_or_zero_length
     ; FIXME: should we also stop if the size is 0? Or is that already done because there is no -1 on the TO_SCREEN_ANGLE_PART?
-    beq wall_part_has_negaitive_or_zero_length
+    beq wall_part_has_negative_or_zero_length
     bra wall_part_has_positive_length
-wall_part_has_negaitive_or_zero_length:
+wall_part_has_negative_or_zero_length:
     rts
     
     
