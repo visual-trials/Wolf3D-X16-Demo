@@ -1193,6 +1193,8 @@ to_screen_angle_is_on_right_of_screen:
 to_screen_angle_is_not_right_of_screen:
 
 
+    ; ============================== OCCLUDERS ==================================
+
     ; Start at first occluder in linked list
     ldy #0
     sty CURRENT_OCCLUDER_INDEX
