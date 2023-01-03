@@ -266,14 +266,14 @@ wall_doorness_determined:
     lda WALL_INFO_TEXTURE_HIGH,y
     sta WALL_INFO_TEXTURE_INDEXES+1
     
+    jsr draw_wall
+    
     .if DEBUG_WALL_INFO
     jsr clear_and_setup_debug_screen
     jsr debug_print_player_info_on_screen
     jsr debug_print_wall_info_on_screen
     jsr wait_until_key_press
     .endif
-    
-    jsr draw_wall
     
     inc CURRENT_WALL_NR
     lda CURRENT_WALL_NR
