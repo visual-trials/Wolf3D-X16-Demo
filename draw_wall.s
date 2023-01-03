@@ -1061,22 +1061,6 @@ from_screen_angle_is_positive:
     
 to_screen_angle_is_positive:
 
-; =============== DEBUG ===============
-    .if 0
-    ; FIXME: checking for a specific wall index
-    ; NOTE: this DESTROYS X and A!!
-    ldx CURRENT_WALL_NR
-    lda ordered_list_of_wall_indexes, x
-    cmp #30
-    bne debug_keep_on_going
-    
-    ; We stop here for debugging
-    stp
-debug_keep_on_going:
-    .endif
-; ============= / DEBUG ===============
-
-
 
 ; FIXME
 ;    stp
@@ -1130,16 +1114,16 @@ wall_has_positive_length:
     lda FROM_SCREEN_ANGLE+1
     ; We check if its within 0 and 304 angles (first check left, then right)
 
-; === MAYBE REMOVING ===
     .if 0
+; === MAYBE REMOVING ===
     ; FIXME: hack
     cmp #5
     bcc from_screen_angle_is_not_left_of_screen   
+; === / MAYBE REMOVING ===
     .else
     ; MAYBE: checking for negative number here now
     bpl from_screen_angle_is_not_left_of_screen
     .endif
-; === / MAYBE REMOVING ===
     
 from_screen_angle_is_left_of_screen:
     ; SPEED: only do this IF the wall is not COMPLETELY left of the screen! -> so check if the end of the wall is ALSO to the left of the screen!D
@@ -1183,16 +1167,16 @@ from_screen_angle_is_within_the_screen:
     ; We first check if the to-angle is not to the left of the screen
     lda TO_SCREEN_ANGLE+1
     
-; === MAYBE REMOVING ===
     .if 0
+; === MAYBE REMOVING ===
     ; FIXME: hack
     cmp #5
     bcc to_screen_angle_is_not_left_of_screen
+; === / MAYBE REMOVING ===
     .else
     ; MAYBE: checking for negative number here now
     bpl to_screen_angle_is_not_left_of_screen
     .endif
-; === / MAYBE REMOVING ===
     
     ; If the to-angle is left of the screen, we should not draw the wall
     ; FIXME: we should in fact check if there is another wall part possible?
@@ -1230,6 +1214,22 @@ to_screen_angle_is_not_right_of_screen:
     ; ============================== OCCLUDERS ==================================
 
 check_occluders:
+
+; =============== DEBUG ===============
+    .if 1
+    ; FIXME: checking for a specific wall index
+    ; NOTE: this DESTROYS X and A!!
+    ldx CURRENT_WALL_NR
+    lda ordered_list_of_wall_indexes, x
+    cmp #27
+    bne debug_keep_on_going
+    
+    ; We stop here for debugging
+    stp
+debug_keep_on_going:
+    .endif
+; ============= / DEBUG ===============
+
 
     ; Start at first occluder in linked list
     ldy #0
