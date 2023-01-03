@@ -40,10 +40,8 @@ debug_from_half_height_message:
 debug_to_half_height_message:
     .asciiz "To half height: "
 
-debug_print_wall_info_on_screen:
 
-; FIXME: we should propably clear the tilemap here
-
+clear_and_setup_debug_screen:
 
     lda #COLOR_NORMAL
     sta TEXT_COLOR
@@ -51,6 +49,12 @@ debug_print_wall_info_on_screen:
     lda #DEBUG_TOP_MARGIN
     sta CURSOR_Y
     
+    jsr clear_tilemap_screen
+
+    rts
+
+debug_print_player_info_on_screen:
+
     ; ======== Player/viewpoint info ========
     
     lda #DEBUG_INDENT
@@ -120,6 +124,10 @@ debug_print_wall_info_on_screen:
     
     inc CURSOR_Y
     inc CURSOR_Y
+    
+    rts
+    
+debug_print_wall_info_on_screen:
     
     ; ======== Wall info ========
     
@@ -299,6 +307,11 @@ debug_print_wall_info_on_screen:
     
     ; FIXME: do we also want to print the from/to angle for the *wall* (not just the wall part)?
     
+    rts
+    
+    
+debug_print_wall_part_info_on_screen:
+
     ; ======== Wall part info ========
 
     lda #DEBUG_INDENT

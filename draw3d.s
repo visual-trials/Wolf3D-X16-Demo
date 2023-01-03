@@ -268,6 +268,13 @@ wall_doorness_determined:
     
     jsr draw_wall
     
+    .if DEBUG_WALL_INFO
+    jsr clear_and_setup_debug_screen
+    jsr debug_print_player_info_on_screen
+    jsr debug_print_wall_info_on_screen
+    jsr wait_until_key_press
+    .endif
+    
     inc CURRENT_WALL_NR
     lda CURRENT_WALL_NR
     cmp NR_OF_WALLS
