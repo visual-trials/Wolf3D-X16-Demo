@@ -1401,10 +1401,7 @@ wall_part_has_positive_length:
     ; We draw the wall part
     jsr prep_and_draw_wall_part
 
-    .if DEBUG_WALL_PART_INFO
-    jsr clear_and_setup_debug_screen
-    jsr debug_print_player_info_on_screen
-    jsr debug_print_wall_info_on_screen
+    .if DEBUG_ALSO_SHOW_WALL_PART_INFO
     jsr debug_print_wall_part_info_on_screen
     jsr wait_until_key_press
     .endif

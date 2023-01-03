@@ -6,8 +6,8 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
-DEBUG_WALL_INFO = 1      ; this will pause drawing after each wall
-DEBUG_WALL_PART_INFO = 1 ; this will (also) pause drawing after each wall part
+DEBUG_WALL_INFO = 1      ; this will pause after each wall rendering
+DEBUG_ALSO_SHOW_WALL_PART_INFO = 1 ; this will also pause after each wall part rendering
 
 
 ; == Zero page addresses
