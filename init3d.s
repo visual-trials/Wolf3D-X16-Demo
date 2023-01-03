@@ -14,16 +14,10 @@ CLD = $20+$30 ; closed door
 
     .if 1
 
-STARTING_PLAYER_POS_X_HIGH = 7
-STARTING_PLAYER_POS_X_LOW = 0
-
-STARTING_PLAYER_POS_Y_HIGH = 2
-STARTING_PLAYER_POS_Y_LOW = 0 ; // 128
-
-; FIXME: BUG: It seems that if the wall 9 becomes visible, wall 30 becomes INVISIBLE!
-STARTING_LOOKING_DIR_ANGLE = 1200 ; NOTE: 1100 DOES WORK!  ; 0 - 1823
-
-
+    ; Note: STARTING_PLAYER_POS_... is set inside wall_map.s
+    
+    ; Showing A BUG with this setting!
+STARTING_LOOKING_DIR_ANGLE = 700
 
     .include wall_map.s
     .endif

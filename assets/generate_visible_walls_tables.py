@@ -63,7 +63,7 @@ def run():
 
     # FIXME: hardcoded, we should iterate through all grid elements
     viewpoint_x = 7
-    viewpoint_y = 2
+    viewpoint_y = 10
     
     # FIXME: we should use the *index* of all_walls (actually the *set of walls* of a sections).
     
@@ -871,8 +871,10 @@ def draw_map(map_info, map_width, map_height):
 def dump_wall_info_as_asm(walls, ordered_walls, viewpoint_x, viewpoint_y):
 
     print()
-    print('viewpoint_x = ', viewpoint_x) 
-    print('viewpoint_y = ', viewpoint_y)
+    print('STARTING_PLAYER_POS_X_HIGH = ', int(viewpoint_x)) 
+    print('STARTING_PLAYER_POS_X_LOW = ', int((viewpoint_x - int(viewpoint_x))) * 256)
+    print('STARTING_PLAYER_POS_Y_HIGH = ', int(viewpoint_y))
+    print('STARTING_PLAYER_POS_Y_LOW = ', int(viewpoint_y - int(viewpoint_y)) * 256)
     print()
     print('ordered_list_of_wall_indexes:')
     ordered_wall_indexes = ', '.join(str(wall['index']) for wall in ordered_walls)
