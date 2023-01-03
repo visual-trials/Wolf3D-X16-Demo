@@ -1216,7 +1216,7 @@ to_screen_angle_is_not_right_of_screen:
 check_occluders:
 
 ; =============== DEBUG ===============
-    .if 1
+    .if 0
     ; FIXME: checking for a specific wall index
     ; NOTE: this DESTROYS X and A!!
     ldx CURRENT_WALL_NR
@@ -1240,6 +1240,40 @@ next_occluder_to_check:
     ; SPEED: isnt this already set, always?
     ldy CURRENT_OCCLUDER_INDEX
 
+    .if 1
+; === MAYBE ADDING ===
+
+; FIXME: the feature below is only needed as long as we DO NOT MERGE occluders. Because if we merge, this is not a problem anymore.
+
+; FIXME: MAYBE: skip this occluder if its end *directly* attaches to the start of the next occluder?
+;               BUT: only do this if the next occluder is not index 0 (we stop with this wall if that is the case)
+
+    ; Load the index of the next occluder into x
+    lda OCCLUDER_NEXT, y
+    tax
+    
+    ; Compare the *to* of the *current* occluder and compare it to the *from* of the *next* occluder
+    lda OCCLUDER_TO_ANGLE_HIGH, y
+    cmp OCCLUDER_FROM_ANGLE_HIGH, x
+    bne next_occluder_is_not_directly_attached
+    lda OCCLUDER_TO_ANGLE_LOW, y
+    cmp OCCLUDER_FROM_ANGLE_LOW, x
+    bne next_occluder_is_not_directly_attached
+    
+    ; The next occluder is directly attached to the current occluder. This means we are going to skip the current occluder
+    txa
+    tay
+    sty CURRENT_OCCLUDER_INDEX
+    lda CURRENT_OCCLUDER_INDEX
+    bne next_occluder_to_check   ; only go to next occluder if it exists (= not zero). In fact we only ensure here we dont loop back to index 0.
+    jmp done_with_occluders
+    
+next_occluder_is_not_directly_attached:
+
+; === / MAYBE ADDING ===
+    .endif
+
+
     ; Check if the wall starts to the left of the occluders end (meaning we have to cut-off something off the wall)
     lda FROM_SCREEN_ANGLE+1
     cmp OCCLUDER_TO_ANGLE_HIGH, y
@@ -1254,7 +1288,7 @@ next_occluder_to_check:
 
 start_of_wall_is_to_the_right_of_or_at_the_end_of_occluder:
 
-    ;We get the NEXT occluder (its index is put in y)
+    ;We get the NEXT occluder
     sty PREVIOUS_OCCLUDER_INDEX
     lda OCCLUDER_NEXT, y
     tay
@@ -1275,9 +1309,8 @@ start_of_wall_is_to_the_right_of_or_at_the_start_of_next_occluder:
     ; Since the wall starts to the right of the start of the next occluder, we move on to the next occluder
     
     sty CURRENT_OCCLUDER_INDEX
-; FIXME: is this the correct logic?
     lda CURRENT_OCCLUDER_INDEX
-    bne next_occluder_to_check   ; only go to next occluder if it exists
+    bne next_occluder_to_check   ; only go to next occluder if it exists (= not zero). In fact we only ensure here we dont loop back to index 0.
     jmp done_with_occluders
 
     
@@ -1304,8 +1337,10 @@ start_of_wall_is_to_the_left_of_the_end_of_occluder:
     
     lda #1
     sta FROM_ANGLE_NEEDS_RECALC
+    
+; FIXME: MAYBE: If the left side of the wall is now *past* the right side of the wall, we are done with this wall!
 
-    ;We get the NEXT occluder (its index is put in y)
+    ;We get the NEXT occluder (and preserve the index of the current occluder)
     sty PREVIOUS_OCCLUDER_INDEX
     lda OCCLUDER_NEXT, y
     tay
@@ -1325,7 +1360,7 @@ start_of_wall_is_ok:
 
 end_of_wall_is_to_the_right_of_or_at_the_start_of_occluder:
 
-    ; FIXME: we need to split off the wall into a wall part, but FOR NOW, we just cut it off
+    ; Note: later on, we cut off the left part of the *wall* (and here we cut-off the right part of the *wall part*) so we effectively split off the wall into a wall parts
     
     ; FIXME: Do we need to do a -1 here?
     
@@ -1401,7 +1436,10 @@ wall_part_has_positive_length:
     ; We draw the wall part
     jsr prep_and_draw_wall_part
 
-    .if DEBUG_ALSO_SHOW_WALL_PART_INFO
+    .if DEBUG_WALL_PART_INFO
+    jsr clear_and_setup_debug_screen
+    jsr debug_print_player_info_on_screen
+    jsr debug_print_wall_info_on_screen
     jsr debug_print_wall_part_info_on_screen
     jsr wait_until_key_press
     .endif
