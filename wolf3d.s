@@ -6,8 +6,8 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
-DEBUG_WALL_INFO = 1      ; this will pause after each wall rendering
-DEBUG_WALL_PART_INFO = 1 ; this will (also) pause after each wall part rendering
+DEBUG_WALL_INFO = 0      ; this will pause after each wall rendering
+DEBUG_WALL_PART_INFO = 0 ; this will (also) pause after each wall part rendering
 
 
 ; == Zero page addresses
@@ -251,7 +251,7 @@ reset:
     ;                             Turn around
     ; -----------------------------------------------------------------
     
-    bra do_not_turn_around
+;    bra do_not_turn_around
     
 keep_turning_around:  
     lda #0
