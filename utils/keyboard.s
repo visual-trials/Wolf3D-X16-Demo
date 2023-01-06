@@ -6,7 +6,11 @@ SMC_I2C_ADDR  = $42
 KEYBOARD_SCANCODE_REGISTER = $07
 
 ; Scancodes for specific keys:
-SCANCODE_SPACE_BAR = $29
+SCANCODE_SPACE_BAR        = $29
+SCANCODE_UP_ARROW         = $75
+SCANCODE_DOWN_ARROW       = $72
+SCANCODE_LEFT_ARROW       = $6B
+SCANCODE_RIGHT_ARROW      = $74
 
 
 init_keyboard:

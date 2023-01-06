@@ -6,7 +6,7 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
-DEBUG_WALL_INFO = 1      ; this will pause after each wall rendering
+DEBUG_WALL_INFO = 0      ; this will pause after each wall rendering
 DEBUG_WALL_PART_INFO = 0 ; this will (also) pause after each wall part rendering
 
 
@@ -249,11 +249,35 @@ reset:
     
     jsr load_wall_info
     
+    
+;    bra do_not_control_by_player
+
+    ; -----------------------------------------------------------------
+    ;                           Player controlled
+    ; -----------------------------------------------------------------
+
+game_loop:
+    
+    jsr retrieve_keyboard_scan_codes
+    jsr update_keyboard_state
+    
+    jsr update_player_based_on_keyboard_input
+
+    jsr update_viewpoint
+    jsr draw_3d_view
+    
+    bra game_loop
+
+    
+    
+    
+do_not_control_by_player:
+
     ; -----------------------------------------------------------------
     ;                             Turn around
     ; -----------------------------------------------------------------
     
-;    bra do_not_turn_around
+    bra do_not_turn_around
     
 keep_turning_around:  
     lda #0
@@ -518,6 +542,7 @@ wait_for_vsync:
     .include draw_wall_part.s
     .include draw_wall.s
     .include draw3d.s
+    .include update_world.s
   
     ; ======== PETSCII CHARSET =======
 
