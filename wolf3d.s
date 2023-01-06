@@ -6,7 +6,7 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
-DEBUG_WALL_INFO = 0      ; this will pause after each wall rendering
+DEBUG_WALL_INFO = 1      ; this will pause after each wall rendering
 DEBUG_WALL_PART_INFO = 0 ; this will (also) pause after each wall part rendering
 
 
@@ -169,6 +169,8 @@ MULT_WITH_NORMAL_DISTANCE= $6A00    ; routine that must be run in RAM: multply_w
 MULT_WITH_LOOK_DIR_SINE  = $6B00    ; routine that must be run in RAM: multply_with_looking_dir_sine_16bits
 MULT_WITH_LOOK_DIR_COSINE= $6C00    ; routine that must be run in RAM: multply_with_looking_dir_cosine_16bits
 
+KEYBOARD_STATE           = $6D00    ; 256 bytes (state for each key of the keyboard)
+
 TANGENT_LOW              = $7200    ; 456 bytes (fraction)
 TANGENT_HIGH             = $7400    ; 456 bytes (whole number)
 SINE_LOW                 = $7600    ; 456 bytes (fraction)
@@ -215,7 +217,7 @@ reset:
     jsr copy_petscii_charset
     jsr clear_tilemap_screen
     jsr init_cursor
-    jsr init_scancode_buffer
+    jsr init_keyboard
     
     jsr clear_bitmap_screen
     jsr clear_sprite_data

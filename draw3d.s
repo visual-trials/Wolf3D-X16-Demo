@@ -272,7 +272,7 @@ wall_doorness_determined:
     jsr clear_and_setup_debug_screen
     jsr debug_print_player_info_on_screen
     jsr debug_print_wall_info_on_screen
-    jsr wait_until_key_press
+    jsr wait_until_spacebar_press
     .endif
     
     inc CURRENT_WALL_NR

@@ -1441,7 +1441,7 @@ wall_part_has_positive_length:
     jsr debug_print_player_info_on_screen
     jsr debug_print_wall_info_on_screen
     jsr debug_print_wall_part_info_on_screen
-    jsr wait_until_key_press
+    jsr wait_until_spacebar_press
     .endif
 
     ply
