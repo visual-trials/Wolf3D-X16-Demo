@@ -6,6 +6,7 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
+DEBUG = 1                ; if debug.s is needed, this has to be 1
 DEBUG_WALL_INFO = 0      ; this will pause after each wall rendering
 DEBUG_WALL_PART_INFO = 0 ; this will (also) pause after each wall part rendering
 
@@ -531,7 +532,7 @@ wait_for_vsync:
     .include utils/keyboard.s
     
     ; FIXME: also include debug.s when other debug settings are enabled
-    .if DEBUG_WALL_INFO
+    .if DEBUG
     .include utils/debug.s
     .endif
     
