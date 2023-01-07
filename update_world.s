@@ -1,6 +1,6 @@
 
 TURN_STEP = 5
-MOVE_STEP = 5
+MOVE_STEP = 8
 
 update_player_based_on_keyboard_input:
     
@@ -8,55 +8,31 @@ update_player_based_on_keyboard_input:
     
     ldx #SCANCODE_RIGHT_ARROW
     lda KEYBOARD_STATE, x
-    bne right_arrow_is_down
-    
+    beq right_arrow_is_handled
+    jsr turn_player_right
+right_arrow_is_handled:
+
     ldx #SCANCODE_LEFT_ARROW
     lda KEYBOARD_STATE, x
-    bne left_arrow_is_down
+    beq left_arrow_is_handled
+    jsr turn_player_left
+left_arrow_is_handled:
     
     ldx #SCANCODE_UP_ARROW
     lda KEYBOARD_STATE, x
-    bne up_arrow_is_down
+    beq up_arrow_is_handled
+    jsr move_player_forward
+up_arrow_is_handled:
     
     ldx #SCANCODE_DOWN_ARROW
     lda KEYBOARD_STATE, x
-    bne down_arrow_is_down
+    beq down_arrow_is_handled
+    jsr move_player_backward
+down_arrow_is_handled:
     
     ; FIXME: implement more!
     
-    bra done_updating_player
-    
-right_arrow_is_down:
-    jsr turn_player_right
-    ; FIXME: we probably want to check for more pressed keys at once!!
-    bra done_updating_player
-    
-left_arrow_is_down:
-    jsr turn_player_left
-    ; FIXME: we probably want to check for more pressed keys at once!!
-    bra done_updating_player
-
-up_arrow_is_down:
-    jsr move_player_forward
-    ; FIXME: we probably want to check for more pressed keys at once!!
-    bra done_updating_player
-    
-down_arrow_is_down:
-    jsr move_player_backward
-    ; FIXME: we probably want to check for more pressed keys at once!!
-    bra done_updating_player
-
-    
 done_updating_player:
-    
-    
-; FIXME: remove this!
-; FIXME: remove this!
-; FIXME: remove this!
-    
-    jsr clear_and_setup_debug_screen
-    jsr debug_print_player_info_on_screen
-    
     
     rts
 
