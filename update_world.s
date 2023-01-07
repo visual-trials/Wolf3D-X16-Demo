@@ -2,9 +2,6 @@
 TURN_STEP = 5
 MOVE_STEP = 5
 
-MOVE_DISTANCE_IN_X = TMP1
-MOVE_DISTANCE_IN_Y = TMP2
-
 update_player_based_on_keyboard_input:
     
     ; FIXME: should we process turning *before* moving? And move based on the new viewing direction or the old one?
@@ -193,11 +190,10 @@ movement_needs_negative_cosine:
     lda #0
     sbc MOVE_DISTANCE_IN_Y+1
     sta MOVE_DISTANCE_IN_Y+1
-
+    
 movement_needs_positive_cosine:
     ; Nothing to do with the MOVE_DISTANCE_IN_Y
 
-    
     ldx TMP3
     bne negate_movement_in_x
     
@@ -226,7 +222,7 @@ movement_needs_negative_sine:
 movement_needs_positive_sine:
     ; Nothing to do with the MOVE_DISTANCE_IN_X
 
-
+    
     clc
     lda PLAYER_POS_X
     adc MOVE_DISTANCE_IN_X

@@ -54,7 +54,11 @@ VIRTUAL_SCREEN_CURSOR     = $2A
 TOP_HALF_WALL_HEIGHT      = $2B
 BOTTOM_HALF_WALL_HEIGHT   = $2C
 
-; $2D-34 available
+MOVE_DISTANCE_IN_X        = $2D ; 2E
+MOVE_DISTANCE_IN_Y        = $2F ; 30
+
+; $31-34 available
+
 
 HALF_WALL_HEIGHT_INCREMENT= $35 ; 36
 ; $37 is free
