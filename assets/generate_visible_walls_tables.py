@@ -65,6 +65,7 @@ def run():
         wall['global_index'] = index
     
     # FIXME: hardcoded, we should iterate through all grid elements
+        # IMPORTANT: we need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint!!
     
     viewpoint_x = 7
     viewpoint_y = 2
@@ -86,10 +87,6 @@ def run():
     dump_wall_info_as_asm(all_walls, ordered_walls, viewpoint_x, viewpoint_y)
     
     current_ordered_wall_index = 0
-    
-# FIXME: we need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint!!
-# FIXME: we need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint!!
-# FIXME: we need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint!!
     
         
 # FIXME:
