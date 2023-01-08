@@ -786,12 +786,12 @@ wall_facing_east_screen_start_angle_calculated:
     ; ============ START OF EAST FACING WALL ===========
 
 ; =============== DEBUG ===============
-    .if 1
+    .if 0
     ; FIXME: checking for a specific wall index
     ; NOTE: this DESTROYS X and A!!
     ldx CURRENT_WALL_NR
     lda ordered_list_of_wall_indexes, x
-    cmp #12
+    cmp #12  ; OLD!
     bne debug_keep_on_going
     
     ; We stop here for debugging
@@ -1078,8 +1078,22 @@ from_screen_angle_is_positive:
 to_screen_angle_is_positive:
 
 
-; FIXME
-;    stp
+; =============== DEBUG ===============
+    .if 0
+    ; FIXME: checking for a specific wall index
+    ; NOTE: this DESTROYS X and A!!
+    ldx CURRENT_WALL_NR
+    lda ordered_list_of_wall_indexes, x
+    cmp #12 ; OLD!
+    bne debug_keep_on_going
+    
+    ; We stop here for debugging
+    stp
+debug_keep_on_going:
+    .endif
+; ============= / DEBUG ===============
+
+
     lda FROM_SCREEN_ANGLE
     lda FROM_SCREEN_ANGLE+1
     lda TO_SCREEN_ANGLE
@@ -1230,21 +1244,6 @@ to_screen_angle_is_not_right_of_screen:
     ; ============================== OCCLUDERS ==================================
 
 check_occluders:
-
-; =============== DEBUG ===============
-    .if 0
-    ; FIXME: checking for a specific wall index
-    ; NOTE: this DESTROYS X and A!!
-    ldx CURRENT_WALL_NR
-    lda ordered_list_of_wall_indexes, x
-    cmp #27
-    bne debug_keep_on_going
-    
-    ; We stop here for debugging
-    stp
-debug_keep_on_going:
-    .endif
-; ============= / DEBUG ===============
 
 
     ; Start at first occluder in linked list

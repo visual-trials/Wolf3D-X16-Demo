@@ -60,33 +60,39 @@ def run():
     map_info = get_map_info()
     
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
-
-    # FIXME: hardcoded, we should iterate through all grid elements
     
-    # FIXME: BUG? when choosing 3:6 vs 7:2 we get 32 vs 31 *number* of walls. Shouldnt that be the same?
-    # FIXME: BUG? when choosing 3:6 vs 7:2 we get 32 vs 31 *number* of walls. Shouldnt that be the same?
-    # FIXME: BUG? when choosing 3:6 vs 7:2 we get 32 vs 31 *number* of walls. Shouldnt that be the same?
+    for index, wall in enumerate(all_walls):
+        wall['global_index'] = index
+    
+    # FIXME: hardcoded, we should iterate through all grid elements
     
     viewpoint_x = 7
     viewpoint_y = 2
     
-    # FIXME: we should use the *index* of all_walls (actually the *set of walls* of a sections).
+    # FIXME: we should use the *index* of the *set of walls* of a sections.
     
     # Filtering out walls that are 'inverted' (never visible from this viewpoint)
     potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
     mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
-    ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls)
+    ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls, all_walls)
     
-    dump_wall_info_as_asm(potentially_visible_walls, ordered_walls, viewpoint_x, viewpoint_y)
+    dump_wall_info_as_asm(all_walls, ordered_walls, viewpoint_x, viewpoint_y)
     
-    current_wall_index = 0
-    TMP_second_wall_index = 18
+    current_ordered_wall_index = 0
+    
+# FIXME: we need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint!!
+# FIXME: we need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint!!
+# FIXME: we need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint!!
+    
         
 # FIXME:
     if False:
+        current_potentially_visible_wall_index = 0
+        TMP_second_wall_index = 18
+        
         screen.fill(background_color)
         draw_map(map_info, map_width, map_height)
-        current_wall = potentially_visible_walls[current_wall_index]
+        current_wall = potentially_visible_walls[current_potentially_visible_wall_index]
         draw_wall_cone(viewpoint_x, viewpoint_y, current_wall, back_wall_cone_color)
         second_wall = potentially_visible_walls[TMP_second_wall_index]
         draw_wall_cone(viewpoint_x, viewpoint_y, second_wall, front_wall_cone_color)
@@ -112,11 +118,11 @@ def run():
                     rotating = True
                     
                 if event.key == pygame.K_LEFT:
-                    current_wall_index -= 1
-                    print(ordered_walls[current_wall_index]['index'])
+                    current_ordered_wall_index -= 1
+                    print(ordered_walls[current_ordered_wall_index]['global_index'])
                 if event.key == pygame.K_RIGHT:
-                    current_wall_index += 1
-                    print(ordered_walls[current_wall_index]['index'])
+                    current_ordered_wall_index += 1
+                    print(ordered_walls[current_ordered_wall_index]['global_index'])
                     
             #if event.type == pygame.MOUSEMOTION: 
                 # newrect.center = event.pos
@@ -129,21 +135,21 @@ def run():
 #        draw_walls(potentially_visible_walls)
 #        draw_walls(potentially_visible_walls)
         
-#        current_wall = potentially_visible_walls[current_wall_index]
-        current_wall = ordered_walls[current_wall_index]
+#        current_wall = potentially_visible_walls[current_potentially_visible_wall_index]
+        current_wall = ordered_walls[current_ordered_wall_index]
         draw_wall_cone(viewpoint_x, viewpoint_y, current_wall, back_wall_cone_color)
         
-        for wall_in_front_index in current_wall['is_behind_these_walls']:
-            wall_in_front = potentially_visible_walls[wall_in_front_index]
+        for wall_in_front_global_index in current_wall['is_behind_these_walls']:
+            wall_in_front = all_walls[wall_in_front_global_index]
             draw_wall(wall_in_front)
         
         pygame.display.update()
         
         if rotating:
-            current_wall_index += 1
-        if current_wall_index >= len(ordered_walls):
+            current_ordered_wall_index += 1
+        if current_ordered_wall_index >= len(ordered_walls):
             running = False
-            # current_wall_index = 0
+            # current_ordered_wall_index = 0
             
         time.sleep(0.5)
    
@@ -208,11 +214,9 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
                 # We SKIP sets of walls where we can't (directly) determine whether they are in front or behind each other
                 continue
     
-            # TODO: we are using wall indexes of the array potentially_visible_walls, we should probably use a unique index for each wall, independent of the array they are in 
-            
             if first_behind_second:
                 # We mark the first wall as being behind the second wall
-                first_wall['is_behind_these_walls'][second_wall_index] = True
+                first_wall['is_behind_these_walls'][second_wall['global_index']] = True
                 
                 #screen.fill(background_color)
                 #draw_walls(walls)
@@ -223,7 +227,7 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
                 #time.sleep(1)
             else:
                 # We mark the second wall as being behind the first wall
-                second_wall['is_behind_these_walls'][first_wall_index] = True
+                second_wall['is_behind_these_walls'][first_wall['global_index']] = True
                 
                 #screen.fill(background_color)
                 #draw_walls(walls)
@@ -234,24 +238,24 @@ def mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, walls):
                 #time.sleep(1)
 
             
-def wall_is_behind_this_wall_index(walls, wall, wall_index_to_find, crumbpath, depth):
-    if wall_index_to_find in wall['is_behind_these_walls']:
+def wall_is_behind_this_global_wall_index(walls, all_walls, wall, global_wall_index_to_find, crumbpath, depth):
+    if global_wall_index_to_find in wall['is_behind_these_walls']:
         return True
         
     # print(depth*' ', crumbpath)
     #print(depth*' ', wall['is_behind_these_walls'])
 
-    for wall_index_to_check_deeper in wall['is_behind_these_walls']:
-        if wall_index_to_check_deeper in crumbpath:
+    for global_wall_index_to_check_deeper in wall['is_behind_these_walls']:
+        if global_wall_index_to_check_deeper in crumbpath:
             # We have looped. We should stop here.
             # FIXME: what to do here?
             print("Looped!")
             return False
             
-        check_wall = walls[wall_index_to_check_deeper]
+        check_wall = all_walls[global_wall_index_to_check_deeper]
         crumbpath_deeper = crumbpath.copy() 
-        crumbpath_deeper[wall_index_to_check_deeper] = True
-        if wall_is_behind_this_wall_index(walls, check_wall, wall_index_to_find, crumbpath_deeper, depth+1):
+        crumbpath_deeper[global_wall_index_to_check_deeper] = True
+        if wall_is_behind_this_global_wall_index(walls, all_walls, check_wall, global_wall_index_to_find, crumbpath_deeper, depth+1):
             return True
             
     # FIXME: what should be the default if we don't find it? None?
@@ -260,14 +264,10 @@ def wall_is_behind_this_wall_index(walls, wall, wall_index_to_find, crumbpath, d
 
     
     
-def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
+def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls, all_walls):
     ordered_walls = []
     
     # FIXME: we need the viewpoint to be able to contain x.5 values!
-
-    # Add 'index' key to each wall
-    for wall_index in range(len(walls)):
-        walls[wall_index]['index'] = wall_index
 
     
     # Insert sorting the walls for this viewpoint
@@ -280,11 +280,11 @@ def order_walls_for_viewpoint(viewpoint_x, viewpoint_y, walls):
 #            print(wall_to_insert_index, ordered_index_to_check)
             check_wall = ordered_walls[ordered_index_to_check]
             crumbpath = {}
-            crumbpath[check_wall['index']] = True
+            crumbpath[check_wall['global_index']] = True
             # We start with the check_wall (= wall that has already been sorted) and look if that wall is behind (recursively)
             # the wall we want to insert. If its not behind it, we keep looking further for a sorted wall that *is* behind the
             # wall we want to insert
-            check_wall_behind_to_be_inserted_wall = wall_is_behind_this_wall_index(walls, check_wall, wall_to_insert_index, crumbpath, 0)
+            check_wall_behind_to_be_inserted_wall = wall_is_behind_this_global_wall_index(walls, all_walls, check_wall, wall_to_insert['global_index'], crumbpath, 0)
             if check_wall_behind_to_be_inserted_wall:
                 ordered_index_to_insert = ordered_index_to_check  # the index of the to-be inserted wall is going to be the index of the checked wall (which has to be moved to make room)
                 break
@@ -873,7 +873,7 @@ def draw_map(map_info, map_width, map_height):
                 
             pygame.draw.rect(screen, square_color, pygame.Rect(x*grid_size+4, (screen_height-grid_size)-y*grid_size+4, grid_size-8, grid_size-8), width=border_width)
 
-def dump_wall_info_as_asm(walls, ordered_walls, viewpoint_x, viewpoint_y):
+def dump_wall_info_as_asm(all_walls, ordered_walls, viewpoint_x, viewpoint_y):
 
     print()
     print('STARTING_PLAYER_POS_X_HIGH = ', int(viewpoint_x)) 
@@ -882,15 +882,15 @@ def dump_wall_info_as_asm(walls, ordered_walls, viewpoint_x, viewpoint_y):
     print('STARTING_PLAYER_POS_Y_LOW = ', int(viewpoint_y - int(viewpoint_y)) * 256)
     print()
     print('ordered_list_of_wall_indexes:')
-    ordered_wall_indexes = ', '.join(str(wall['index']) for wall in ordered_walls)
-    print('    .byte', ordered_wall_indexes) 
+    ordered_list_of_global_wall_indexes = ', '.join(str(wall['global_index']) for wall in ordered_walls)
+    print('    .byte', ordered_list_of_global_wall_indexes) 
     print()
 
     print('wall_info:')
-    print('    .byte', len(walls), '; number of walls')
+    print('    .byte', len(all_walls), '; number of walls')
     
-    for wall_index in range(len(walls)):
-        wall = walls[wall_index]
+    for global_wall_index in range(len(all_walls)):
+        wall = all_walls[global_wall_index]
         
         # We pack the door-coordinates into integers (in the engine this is reverted using the facing direction again)
 
@@ -919,7 +919,7 @@ def dump_wall_info_as_asm(walls, ordered_walls, viewpoint_x, viewpoint_y):
             x_end_pack = x_end + 0.5
         
         
-        print('wall_'+str(wall_index)+'_info:')
+        print('wall_'+str(global_wall_index)+'_info:')
         print('    .byte', int(x_start_pack), ',' ,int(y_start_pack), ' ; start x, y')
         print('    .byte', int(x_end_pack), ',' ,int(y_end_pack), ' ; end x, y')
         print('    .byte', wall['facing_dir'], '     ; facing dir: 0 = north, 1 = east, 2 = south, 3 = west (+4 for door)')
