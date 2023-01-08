@@ -251,27 +251,69 @@ next_wall_to_load:
     bne next_wall_to_load
 
     rts
+    
+    
+    
+    
+; FIXME: we are now using ROM banks to contain textures. We need to copy those textures to vram, but have to run that copy-code in RAM. This is all deprecated once we use the SD card!
+    
+copy_ordered_wall_indexes_loader_to_ram:
 
-load_ordered_list_of_wall_indexes:
+    ; Copying load_ordered_wall_indexes -> LOAD_ORDERED_WALL_INDEXES
+    
+    ldy #0
+copy_ordered_wall_indexes_byte:
+    lda load_ordered_wall_indexes, y
+    sta LOAD_ORDERED_WALL_INDEXES, y
+    iny 
+    cpy #(end_of_load_ordered_wall_indexes-load_ordered_wall_indexes)
+    bne copy_ordered_wall_indexes_byte
+
+    rts
+
+
+load_ordered_wall_indexes:
 
     ; FIXME: this should be dependent on the x,y of the viewpoint!
     ; FIXME: this should be dependent on the x,y of the viewpoint!
     ; FIXME: this should be dependent on the x,y of the viewpoint!
 
-    ldx ordered_list_of_wall_indexes   ; the first byte contains the number of ordered walls
+    ; Switching ROM BANK
+    ; FIXME: HARDCODED!
+    lda #$02
+    sta ROM_BANK
+; FIXME: remove nop!
+    nop
+    
+    
+; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
+; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
+; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
+    ldx $C000-$4000+ordered_list_of_wall_indexes   ; the first byte contains the number of ordered walls
     stx NR_OF_ORDERED_WALLS
     
     ldy #0
 load_next_wall_index:
-    lda ordered_list_of_wall_indexes+1, y   ; +1 because the first byte contains the number of ordered walls
+; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
+; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
+; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
+    lda $C000-$4000+ordered_list_of_wall_indexes+1, y   ; +1 because the first byte contains the number of ordered walls
     sta ORDERED_WALL_INDEXES, y
     
     iny
     cpy NR_OF_ORDERED_WALLS
     bne load_next_wall_index
 
-    rts
     
+    ; Switching back to ROM bank 0
+    lda #$00
+    sta ROM_BANK
+; FIXME: remove nop!
+    nop
+    
+    rts
+end_of_load_ordered_wall_indexes:
+
     
 determine_length_of_wall_using_facing_dir:
 

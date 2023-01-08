@@ -212,7 +212,7 @@ done_updating_player:
     ; FIXME: only if viewpoint position has *changed* (x,y) load appropiate ordered wall list!
     ; FIXME: only if viewpoint position has *changed* (x,y) load appropiate ordered wall list!
     
-    jsr load_ordered_list_of_wall_indexes
+    jsr LOAD_ORDERED_WALL_INDEXES
     
     rts
 

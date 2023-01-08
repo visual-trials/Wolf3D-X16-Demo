@@ -59,32 +59,42 @@ def run():
     map_height = 14
     map_info = get_map_info()
     
+    starting_viewpoint_x = 7
+    starting_viewpoint_y = 2
+    
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
     
     for index, wall in enumerate(all_walls):
         wall['global_index'] = index
     
-    # FIXME: hardcoded, we should iterate through all grid elements
-        # IMPORTANT: we need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint!!
+#    for viewpoint_y in range(16):
+#        for viewpoint_x in range(16):
+# FIXME: now at 7,2!!
+
+    for viewpoint_y in range(2,4):
+        for viewpoint_x in range(7,9):
+        
+            # We need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint
+            for wall in all_walls:
+                wall['is_behind_these_walls'] = {}
+                
+            # FIXME: we should use the *index* of the *set of walls* of a sections.
+            #       IDEA: what if each viewpoint position (and thus a set of ordered walls) can 'access' two sets of (max 128) walls. 
+            #                 Section 1: A, C  (A = wall set A, C = wall set C)
+            #                 Section 2: A, B
+            #                 Section 3: C, B
+            #             When the ordered walls are looped through, we check the (global)index if its <> 128. 
+            #             We make sure that we get the walls from the correct set (by setting a base address) and offset it by 128 if needed
+            #        BIG QUESTION: how do you divide the sections the correct way?
+            
+            # Filtering out walls that are 'inverted' (never visible from this viewpoint)
+            potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
+            mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
+            ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls, all_walls)
+            
+            dump_ordered_walls_as_asm(ordered_walls, viewpoint_x, viewpoint_y)
     
-    viewpoint_x = 7
-    viewpoint_y = 2
-    
-    # FIXME: we should use the *index* of the *set of walls* of a sections.
-    #       IDEA: what if each viewpoint position (and thus a set of ordered walls) can 'access' two sets of (max 128) walls. 
-    #                 Section 1: A, C  (A = wall set A, C = wall set C)
-    #                 Section 2: A, B
-    #                 Section 3: C, B
-    #             When the ordered walls are looped through, we check the (global)index if its <> 128. 
-    #             We make sure that we get the walls from the correct set (by setting a base address) and offset it by 128 if needed
-    #        BIG QUESTION: how do you divide the sections the correct way?
-    
-    # Filtering out walls that are 'inverted' (never visible from this viewpoint)
-    potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
-    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
-    ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls, all_walls)
-    
-    dump_wall_info_as_asm(all_walls, ordered_walls, viewpoint_x, viewpoint_y)
+    dump_wall_info_as_asm(all_walls, starting_viewpoint_x, starting_viewpoint_y)
     
     current_ordered_wall_index = 0
     
@@ -877,18 +887,29 @@ def draw_map(map_info, map_width, map_height):
                 
             pygame.draw.rect(screen, square_color, pygame.Rect(x*grid_size+4, (screen_height-grid_size)-y*grid_size+4, grid_size-8, grid_size-8), width=border_width)
 
-def dump_wall_info_as_asm(all_walls, ordered_walls, viewpoint_x, viewpoint_y):
+def dump_ordered_walls_as_asm(ordered_walls, viewpoint_x, viewpoint_y):
 
-    print()
-    print('STARTING_PLAYER_POS_X_HIGH = ', int(viewpoint_x)) 
-    print('STARTING_PLAYER_POS_X_LOW = ', int((viewpoint_x - int(viewpoint_x))) * 256)
-    print('STARTING_PLAYER_POS_Y_HIGH = ', int(viewpoint_y))
-    print('STARTING_PLAYER_POS_Y_LOW = ', int(viewpoint_y - int(viewpoint_y)) * 256)
-    print()
-    print('ordered_list_of_wall_indexes:')
-    ordered_list_of_global_wall_indexes = ', '.join(str(wall['global_index']) for wall in ordered_walls)
+    # FIXME: add comment showing viewpoint_x:viewpoint_y!
+
+    print('ordered_list_of_wall_indexes_'+str(viewpoint_x)+'_'+str(viewpoint_y)+':')
+    
+    # FIXME: OLD   ordered_list_of_global_wall_indexes = ', '.join(str(wall['global_index']) for wall in ordered_walls)
+    
+    ordered_global_indexes = list(str(wall['global_index']) for wall in ordered_walls)
+    # NOTE: we padd until we have 63 indexes, since we also add the nr of indexes as a first byte (resulting in 64 bytes)
+    ordered_list_of_global_wall_indexes = ', '.join(ordered_global_indexes + ['0'] * (63 - len(ordered_walls)))
     print('    .byte', len(ordered_walls), '; number of ordered wall indexes')
     print('    .byte', ordered_list_of_global_wall_indexes) 
+    print()
+
+            
+def dump_wall_info_as_asm(all_walls, starting_viewpoint_x, starting_viewpoint_y):
+
+    print()
+    print('STARTING_PLAYER_POS_X_HIGH = ', int(starting_viewpoint_x)) 
+    print('STARTING_PLAYER_POS_X_LOW = ', int((starting_viewpoint_x - int(starting_viewpoint_x))) * 256)
+    print('STARTING_PLAYER_POS_Y_HIGH = ', int(starting_viewpoint_y))
+    print('STARTING_PLAYER_POS_Y_LOW = ', int(starting_viewpoint_y - int(starting_viewpoint_y)) * 256)
     print()
 
     print('wall_info:')

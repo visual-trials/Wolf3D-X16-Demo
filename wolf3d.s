@@ -176,7 +176,8 @@ MULT_WITH_LOOK_DIR_COSINE= $6C00    ; routine that must be run in RAM: multply_w
 
 KEYBOARD_STATE           = $6D00    ; 256 bytes (state for each key of the keyboard)
 
-ORDERED_WALL_INDEXES     = $6E00    ; 256 bytes (TODO: we might need less?)
+LOAD_ORDERED_WALL_INDEXES= $6E00    ; routine that must be run in RAM, because it switches the ROM bank
+ORDERED_WALL_INDEXES     = $6F00    ; 256 bytes (TODO: we might need less?)
 
 TANGENT_LOW              = $7200    ; 456 bytes (fraction)
 TANGENT_HIGH             = $7400    ; 456 bytes (whole number)
@@ -234,6 +235,7 @@ reset:
 
     ; FIXME: this loading from ROM banks wont work for more than 16kb since we would have to switch the ROM bank for that!
     jsr load_textures_into_vram
+    jsr copy_ordered_wall_indexes_loader_to_ram
     
     ; Drawing 3D View
     
@@ -586,3 +588,7 @@ blue_stone_2_texture:
 closed_door_texture:
     .binary "assets/CLOSEDDOOR_OLD.BIN"
     
+    ; ROM Bank 2
+    .align 14        ; This is to make sure the data wont covert two ROM banks
+ordered_list_of_wall_indexes:
+    .include "wall_indexes_ordered.s"
