@@ -70,6 +70,13 @@ def run():
     viewpoint_y = 2
     
     # FIXME: we should use the *index* of the *set of walls* of a sections.
+    #       IDEA: what if each viewpoint position (and thus a set of ordered walls) can 'access' two sets of (max 128) walls. 
+    #                 Section 1: A, C  (A = wall set A, C = wall set C)
+    #                 Section 2: A, B
+    #                 Section 3: C, B
+    #             When the ordered walls are looped through, we check the (global)index if its <> 128. 
+    #             We make sure that we get the walls from the correct set (by setting a base address) and offset it by 128 if needed
+    #        BIG QUESTION: how do you divide the sections the correct way?
     
     # Filtering out walls that are 'inverted' (never visible from this viewpoint)
     potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
