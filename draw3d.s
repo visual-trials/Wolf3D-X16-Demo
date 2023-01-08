@@ -275,6 +275,8 @@ wall_doorness_determined:
     jsr wait_until_spacebar_press
     .endif
     
+; FIXME: the NR_OF_WALLS has to be dependend on the viewpoint! So as well as the ordered list of walls, we also need to 'reload' the nr of ordered walls!
+    
     inc CURRENT_WALL_NR
     lda CURRENT_WALL_NR
     cmp NR_OF_WALLS
