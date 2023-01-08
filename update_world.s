@@ -201,16 +201,16 @@ up_arrow_is_handled:
     jsr move_player_backward
 down_arrow_is_handled:
     
-    ; FIXME: implement more!
+    ; TODO: implement more!
     
 done_updating_player:
 
-    ; FIXME: we should *ONLY* do this when something has changed!! (better: only call parts of this if parts of it has changed)
+    ; SPEED: we should *ONLY* do this when something has changed!! (better: only call parts of this if parts of it has changed)
     jsr update_viewpoint
     
-    ; FIXME: if viewpoint position has changed (x,y) load appropiate ordered wall list!
-    ; FIXME: if viewpoint position has changed (x,y) load appropiate ordered wall list!
-    ; FIXME: if viewpoint position has changed (x,y) load appropiate ordered wall list!
+    ; FIXME: only if viewpoint position has *changed* (x,y) load appropiate ordered wall list!
+    ; FIXME: only if viewpoint position has *changed* (x,y) load appropiate ordered wall list!
+    ; FIXME: only if viewpoint position has *changed* (x,y) load appropiate ordered wall list!
     
     rts
 
