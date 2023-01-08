@@ -266,9 +266,8 @@ game_loop:
     jsr retrieve_keyboard_scan_codes
     jsr update_keyboard_state
     
-    jsr update_player_based_on_keyboard_input
+    jsr update_player_based_on_keyboard_input ; this will also update the viewpoint, if needed
 
-    jsr update_viewpoint
     jsr draw_3d_view
     
     bra game_loop

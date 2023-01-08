@@ -179,6 +179,8 @@ setup_player:
     lda #>(STARTING_LOOKING_DIR_ANGLE)
     sta LOOKING_DIR_ANGLE+1
     
+    jsr update_viewpoint
+    
     rts
     
 load_wall_info:
