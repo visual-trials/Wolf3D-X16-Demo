@@ -62,8 +62,13 @@ def run():
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
 
     # FIXME: hardcoded, we should iterate through all grid elements
-    viewpoint_x = 3
-    viewpoint_y = 6
+    
+    # FIXME: BUG? when choosing 3:6 vs 7:2 we get 32 vs 31 *number* of walls. Shouldnt that be the same?
+    # FIXME: BUG? when choosing 3:6 vs 7:2 we get 32 vs 31 *number* of walls. Shouldnt that be the same?
+    # FIXME: BUG? when choosing 3:6 vs 7:2 we get 32 vs 31 *number* of walls. Shouldnt that be the same?
+    
+    viewpoint_x = 7
+    viewpoint_y = 2
     
     # FIXME: we should use the *index* of all_walls (actually the *set of walls* of a sections).
     

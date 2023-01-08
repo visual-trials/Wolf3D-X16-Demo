@@ -110,6 +110,10 @@ move_player_along_viewing_dir:
     ; FIXME: we should make sure the sine and cosine viewing angle pre-processing (now in routine 'update_viewpoint') is done *before* this usage
     ; FIXME: we should make sure the sine and cosine viewing angle pre-processing (now in routine 'update_viewpoint') is done *before* this usage
     
+    .if DEBUG
+    jsr clear_and_setup_debug_screen
+    jsr debug_print_player_info_on_screen
+    .endif
     
     ; -- MOVE_DISTANCE_IN_X --
 

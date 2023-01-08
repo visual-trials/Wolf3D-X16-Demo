@@ -16,8 +16,7 @@ CLD = $20+$30 ; closed door
 
     ; Note: STARTING_PLAYER_POS_... is set inside wall_map.s
     
-    ; Showing A BUG with this setting!
-STARTING_LOOKING_DIR_ANGLE = 700
+STARTING_LOOKING_DIR_ANGLE = 1368
 
     .include wall_map.s
     .endif
