@@ -785,6 +785,22 @@ wall_facing_east_screen_start_angle_calculated:
     
     ; ============ START OF EAST FACING WALL ===========
 
+; =============== DEBUG ===============
+    .if 1
+    ; FIXME: checking for a specific wall index
+    ; NOTE: this DESTROYS X and A!!
+    ldx CURRENT_WALL_NR
+    lda ordered_list_of_wall_indexes, x
+    cmp #12
+    bne debug_keep_on_going
+    
+    ; We stop here for debugging
+    stp
+debug_keep_on_going:
+    .endif
+; ============= / DEBUG ===============
+    
+    
     ; First determine the normal distance to the wall, in the x-direction (delta X)
     
     sec
