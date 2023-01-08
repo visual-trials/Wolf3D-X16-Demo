@@ -176,6 +176,8 @@ MULT_WITH_LOOK_DIR_COSINE= $6C00    ; routine that must be run in RAM: multply_w
 
 KEYBOARD_STATE           = $6D00    ; 256 bytes (state for each key of the keyboard)
 
+ORDERED_WALL_INDEXES     = $6E00    ; 256 bytes (TODO: we might need less?)
+
 TANGENT_LOW              = $7200    ; 456 bytes (fraction)
 TANGENT_HIGH             = $7400    ; 456 bytes (whole number)
 SINE_LOW                 = $7600    ; 456 bytes (fraction)

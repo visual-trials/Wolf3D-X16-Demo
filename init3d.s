@@ -252,6 +252,27 @@ next_wall_to_load:
 
     rts
 
+load_ordered_list_of_wall_indexes:
+
+    ; FIXME: this should be dependent on the x,y of the viewpoint!
+    ; FIXME: this should be dependent on the x,y of the viewpoint!
+    ; FIXME: this should be dependent on the x,y of the viewpoint!
+
+    ldx ordered_list_of_wall_indexes   ; the first byte contains the number of ordered walls
+    stx NR_OF_ORDERED_WALLS
+    
+    ldy #0
+load_next_wall_index:
+    lda ordered_list_of_wall_indexes+1, y   ; +1 because the first byte contains the number of ordered walls
+    sta ORDERED_WALL_INDEXES, y
+    
+    iny
+    cpy NR_OF_ORDERED_WALLS
+    bne load_next_wall_index
+
+    rts
+    
+    
 determine_length_of_wall_using_facing_dir:
 
     ; We remove the doorness of the wall (this doesnt matter for the wall length)
