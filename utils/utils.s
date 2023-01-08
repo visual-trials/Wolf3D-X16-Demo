@@ -85,8 +85,29 @@ done_print_text:
     rts
     
 ; Input: WORD_TO_PRINT (as 8.8 bit fixed point number)
+; NOTE: the complete 16 bit value is considered to be a *signed* number!
 print_fixed_point_word_as_decimal_fraction:
 
+    lda WORD_TO_PRINT+1
+    bpl print_positive_fixed_point_word_as_decimal_fraction
+    
+    ; Since we have a negative number, we negate it first and print a '-' in front of it
+    sec
+    lda #0
+    sbc WORD_TO_PRINT
+    sta WORD_TO_PRINT
+    lda #0
+    sbc WORD_TO_PRINT+1
+    sta WORD_TO_PRINT+1
+
+    ; We then print the dash ('-')
+    lda #'-'
+    sta VERA_DATA0
+    lda TEXT_COLOR
+    sta VERA_DATA0
+    inc CURSOR_X
+
+print_positive_fixed_point_word_as_decimal_fraction:
     ; First we print the whole number part of the 8.8 bit fixed point number
     lda WORD_TO_PRINT+1
     jsr print_byte_as_decimal

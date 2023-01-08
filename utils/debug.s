@@ -23,6 +23,10 @@ debug_screen_start_angle_message:
     .asciiz "Screen start angle: "
 debug_normal_distance_message:
     .asciiz "Normal distance: "
+debug_from_delta_x_message:
+    .asciiz "From delta x: "
+debug_from_delta_y_message:    
+    .asciiz "From delta y: "
 debug_from_angle_message:
     .asciiz "From angle: "
 debug_to_angle_message:
@@ -261,6 +265,50 @@ debug_print_wall_info_on_screen:
     sta WORD_TO_PRINT+1
     
     jsr print_fixed_point_word_as_decimal_fraction
+    
+    inc CURSOR_Y
+    
+    ; ---- From delta X ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_from_delta_x_message
+    sta TEXT_TO_PRINT
+    lda #>debug_from_delta_x_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda FROM_DELTA_X
+    sta WORD_TO_PRINT
+    lda FROM_DELTA_X+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_fixed_point_word_as_decimal_fraction
+    
+    inc CURSOR_Y
+    
+    ; ---- From delta Y ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_from_delta_y_message
+    sta TEXT_TO_PRINT
+    lda #>debug_from_delta_y_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda FROM_DELTA_Y
+    sta WORD_TO_PRINT
+    lda FROM_DELTA_Y+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_fixed_point_word_as_decimal_fraction
+    
+    inc CURSOR_Y
     
     ; ---- From screen angle ----
     
