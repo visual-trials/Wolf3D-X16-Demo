@@ -887,6 +887,7 @@ def dump_wall_info_as_asm(all_walls, ordered_walls, viewpoint_x, viewpoint_y):
     print()
     print('ordered_list_of_wall_indexes:')
     ordered_list_of_global_wall_indexes = ', '.join(str(wall['global_index']) for wall in ordered_walls)
+    print('    .byte', len(ordered_walls), '; number of ordered wall indexes')
     print('    .byte', ordered_list_of_global_wall_indexes) 
     print()
 

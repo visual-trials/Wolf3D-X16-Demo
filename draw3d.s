@@ -205,12 +205,15 @@ draw_walls:
 
     ; Iterating over a ordered list of all wall indexes
 
+    lda ordered_list_of_wall_indexes   ; the first byte contains the number of ordered walls
+    sta NR_OF_ORDERED_WALLS
+    
     lda #0
     sta CURRENT_WALL_NR
 
 draw_next_wall:
     ldx CURRENT_WALL_NR
-    lda ordered_list_of_wall_indexes, x
+    lda ordered_list_of_wall_indexes+1, x   ; +1 because the first byte contains the number of ordered walls
     tay
     
     ; FIXME: we should use 16 bits for WALL_START_X/Y and WALL_END_X/Y due to the fact that doors can be in the middle of a square! (determining the normal_distance/delta_x/y is quite inconvenient right now)
@@ -279,7 +282,7 @@ wall_doorness_determined:
     
     inc CURRENT_WALL_NR
     lda CURRENT_WALL_NR
-    cmp NR_OF_WALLS
+    cmp NR_OF_ORDERED_WALLS
     bne draw_next_wall
     
     rts

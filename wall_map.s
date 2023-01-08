@@ -1,10 +1,11 @@
-; FIXME: STARTING_PLAYER_POS_X_HIGH =  7
-STARTING_PLAYER_POS_X_HIGH =  6
+STARTING_PLAYER_POS_X_HIGH =  7
+; STARTING_PLAYER_POS_X_HIGH =  6
 STARTING_PLAYER_POS_X_LOW =  0
 STARTING_PLAYER_POS_Y_HIGH =  2
 STARTING_PLAYER_POS_Y_LOW =  0
 
 ordered_list_of_wall_indexes:
+    .byte 31 ; number of ordered wall indexes
     .byte 40, 6, 7, 9, 8, 11, 10, 31, 33, 35, 12, 13, 14, 15, 30, 16, 18, 19, 32, 34, 17, 20, 21, 22, 36, 37, 38, 39, 41, 42, 43
 
 wall_info:

@@ -9,6 +9,8 @@ BS2 = $10+$30 ; blue stone 2
 CLD = $20+$30 ; closed door
 
 
+NR_OF_WALLS = TMP2
+
 
 ; FIXME: this is temporary data to get some wall information into the engine
 

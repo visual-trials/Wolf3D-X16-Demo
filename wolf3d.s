@@ -43,7 +43,7 @@ LOAD_ADDRESS              = $19 ; 1A
 VRAM_ADDRESS              = $1B ; 1C ; only two bytes, because bit 16 is assumed to be 1
 CODE_ADDRESS              = $1D ; 1E ; TODO: this can probably share the address of LOAD_ADDRESS
 NR_OF_PALETTE_BYTES       = $1F
-NR_OF_WALLS               = $20 ;     TODO: only used during wall loading?
+NR_OF_ORDERED_WALLS       = $20
 
 ; Used for draw column code generation (can be re-used after code has been generated)
 TEXTURE_INCREMENT         = $21 ; 22 ; 23
