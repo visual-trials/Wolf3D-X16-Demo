@@ -159,7 +159,7 @@ debug_print_wall_info_on_screen:
     jsr print_text_zero
     
     ldx CURRENT_WALL_NR
-    lda ordered_list_of_wall_indexes, x
+    lda ORDERED_WALL_INDEXES, x
     sta BYTE_TO_PRINT
 
     jsr print_byte_as_decimal

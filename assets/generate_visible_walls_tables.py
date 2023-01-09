@@ -59,16 +59,18 @@ def run():
     map_height = 14
     map_info = get_map_info()
     
-    starting_viewpoint_x = 7.5
-    starting_viewpoint_y = 2.5
+    starting_viewpoint_x = 8
+    starting_viewpoint_y = 3
     
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
     
     for index, wall in enumerate(all_walls):
         wall['global_index'] = index
-    
-    for viewpoint_y_abs in range(16):
-        for viewpoint_x_abs in range(16):
+# FIXME    
+#    for viewpoint_y_abs in range(16):
+#        for viewpoint_x_abs in range(16):
+    for viewpoint_y_abs in range(3,4):
+        for viewpoint_x_abs in range(8,9):
             viewpoint_x = viewpoint_x_abs # + 0.5
             viewpoint_y = viewpoint_y_abs # + 0.5
         

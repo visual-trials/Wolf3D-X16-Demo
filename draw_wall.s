@@ -112,13 +112,13 @@ wall_facing_north_screen_start_angle_calculated:
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_Y+1
     
-; FIXME: VERY ugly solution: we are subtracting one more if WALL_POSITION_IN_TILE is 128!
+; FIXME: VERY ugly solution: we are adding 1.0 if WALL_POSITION_IN_TILE is 128!
     lda WALL_POSITION_IN_TILE
     cmp #128
     bne wall_facing_north_normal_distance_ok
-    sec
+    clc
     lda NORMAL_DISTANCE_TO_WALL+1
-    sbc #1
+    adc #1
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_Y+1
 wall_facing_north_normal_distance_ok:
@@ -790,7 +790,7 @@ wall_facing_east_screen_start_angle_calculated:
     ; FIXME: checking for a specific wall index
     ; NOTE: this DESTROYS X and A!!
     ldx CURRENT_WALL_NR
-    lda ordered_list_of_wall_indexes, x
+    lda ORDERED_WALL_INDEXES, x
     cmp #12  ; OLD!
     bne debug_keep_on_going
     
@@ -813,13 +813,13 @@ debug_keep_on_going:
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_X+1
 
-; FIXME: VERY ugly solution: we are subtracting one more if WALL_POSITION_IN_TILE is 128!
+; FIXME: VERY ugly solution: we are adding 1.0 if WALL_POSITION_IN_TILE is 128!
     lda WALL_POSITION_IN_TILE
     cmp #128
     bne wall_facing_east_normal_distance_ok
-    sec
+    clc
     lda NORMAL_DISTANCE_TO_WALL+1
-    sbc #1
+    adc #1
     sta NORMAL_DISTANCE_TO_WALL+1
     sta DELTA_X+1
 wall_facing_east_normal_distance_ok:
@@ -1083,7 +1083,7 @@ to_screen_angle_is_positive:
     ; FIXME: checking for a specific wall index
     ; NOTE: this DESTROYS X and A!!
     ldx CURRENT_WALL_NR
-    lda ordered_list_of_wall_indexes, x
+    lda ORDERED_WALL_INDEXES, x
     cmp #12 ; OLD!
     bne debug_keep_on_going
     
