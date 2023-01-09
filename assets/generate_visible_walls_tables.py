@@ -59,20 +59,18 @@ def run():
     map_height = 14
     map_info = get_map_info()
     
-    starting_viewpoint_x = 7
-    starting_viewpoint_y = 2
+    starting_viewpoint_x = 7.5
+    starting_viewpoint_y = 2.5
     
     all_walls = determine_walls_and_doors(map_info, map_width, map_height)
     
     for index, wall in enumerate(all_walls):
         wall['global_index'] = index
     
-#    for viewpoint_y in range(16):
-#        for viewpoint_x in range(16):
-# FIXME: now at 7,2!!
-
-    for viewpoint_y in range(2,4):
-        for viewpoint_x in range(7,9):
+    for viewpoint_y_abs in range(16):
+        for viewpoint_x_abs in range(16):
+            viewpoint_x = viewpoint_x_abs # + 0.5
+            viewpoint_y = viewpoint_y_abs # + 0.5
         
             # We need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint
             for wall in all_walls:
@@ -891,7 +889,7 @@ def dump_ordered_walls_as_asm(ordered_walls, viewpoint_x, viewpoint_y):
 
     # FIXME: add comment showing viewpoint_x:viewpoint_y!
 
-    print('ordered_list_of_wall_indexes_'+str(viewpoint_x)+'_'+str(viewpoint_y)+':')
+    print('ordered_list_of_wall_indexes_'+str(int(viewpoint_x))+'_'+str(int(viewpoint_y))+':')
     
     # FIXME: OLD   ordered_list_of_global_wall_indexes = ', '.join(str(wall['global_index']) for wall in ordered_walls)
     

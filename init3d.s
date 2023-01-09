@@ -285,22 +285,45 @@ load_ordered_wall_indexes:
 ; FIXME: remove nop!
     nop
     
+;    stp
     
-; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
-; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
-; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
-    ldx $C000-$4000+ordered_list_of_wall_indexes   ; the first byte contains the number of ordered walls
-    stx NR_OF_ORDERED_WALLS
+    lda #0
+    sta LOAD_ADDRESS
+    sta LOAD_ADDRESS+1  ; SPEED: not needed
+    
+    ; Take the lower 4 bits of the high part of VIEWPOINT_X
+    lda VIEWPOINT_X+1
+    and #%00001111
+    sta LOAD_ADDRESS+1
+    ; Every ordered wall list is 64 bytes (6 bits), so we shift the 2 lower bits into the lower byte of the address (as its two highest bits)
+    lsr LOAD_ADDRESS+1
+    ror LOAD_ADDRESS
+    lsr LOAD_ADDRESS+1
+    ror LOAD_ADDRESS
+    
+    ; Take the lower 4 bits of the high part of VIEWPOINT_Y
+    lda VIEWPOINT_Y+1
+    and #%00001111
+    ; We set the two higher bits : this will place the entire table at $C000!
+    ora #%00110000
+    ; We shift the y two bits to the left (adding 1s on the left)
+    asl
+    asl
+    
+    ; We OR it so we get: 11yyyyxx xx000000 as LOAD_ADDRESS
+    ora LOAD_ADDRESS+1
+    sta LOAD_ADDRESS+1
     
     ldy #0
-load_next_wall_index:
-; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
-; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
-; FIXME: HACK WITH THE STARTING ADDRESS HERE!!
-    lda $C000-$4000+ordered_list_of_wall_indexes+1, y   ; +1 because the first byte contains the number of ordered walls
-    sta ORDERED_WALL_INDEXES, y
+    lda (LOAD_ADDRESS),y   ; the first byte contains the number of ordered walls
+    sta NR_OF_ORDERED_WALLS
     
+load_next_wall_index:
+    ; NOTE: we increment BEFOREHAND here because the first wall index begins at LOAD_ADDRESS + 1 (the first byte contains the number of wall indexes
     iny
+    lda (LOAD_ADDRESS), y   ; +1 because the first byte contains the number of ordered walls
+    sta ORDERED_WALL_INDEXES-1, y   ; FIXME: UGLY we subtract 1, since we have to begin at 0!
+    
     cpy NR_OF_ORDERED_WALLS
     bne load_next_wall_index
 
