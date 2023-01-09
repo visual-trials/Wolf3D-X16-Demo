@@ -18,7 +18,7 @@ NR_OF_WALLS = TMP2
 
     ; Note: STARTING_PLAYER_POS_... is set inside wall_map.s
     
-STARTING_LOOKING_DIR_ANGLE = 1368
+STARTING_LOOKING_DIR_ANGLE = 0
 
     .include wall_map.s
     .endif
@@ -285,8 +285,6 @@ load_ordered_wall_indexes:
 ; FIXME: remove nop!
     nop
     
-;    stp
-    
     lda #0
     sta LOAD_ADDRESS
     sta LOAD_ADDRESS+1  ; SPEED: not needed
@@ -320,8 +318,8 @@ load_ordered_wall_indexes:
     
 load_next_wall_index:
     ; NOTE: we increment BEFOREHAND here because the first wall index begins at LOAD_ADDRESS + 1 (the first byte contains the number of wall indexes
-    iny
-    lda (LOAD_ADDRESS), y   ; +1 because the first byte contains the number of ordered walls
+    iny                              ; +1 because the first byte contains the number of ordered walls
+    lda (LOAD_ADDRESS), y   
     sta ORDERED_WALL_INDEXES-1, y   ; FIXME: UGLY we subtract 1, since we have to begin at 0!
     
     cpy NR_OF_ORDERED_WALLS
