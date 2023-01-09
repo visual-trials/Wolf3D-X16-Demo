@@ -18,7 +18,7 @@ NR_OF_WALLS = TMP2
 
     ; Note: STARTING_PLAYER_POS_... is set inside wall_map.s
     
-STARTING_LOOKING_DIR_ANGLE = 0
+STARTING_LOOKING_DIR_ANGLE = 1050
 
     .include wall_map.s
     .endif
