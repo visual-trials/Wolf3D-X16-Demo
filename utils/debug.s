@@ -27,6 +27,10 @@ debug_from_delta_x_message:
     .asciiz "From delta x: "
 debug_from_delta_y_message:    
     .asciiz "From delta y: "
+debug_to_delta_x_message:
+    .asciiz "To delta x: "
+debug_to_delta_y_message:    
+    .asciiz "To delta y: "
 debug_from_angle_message:
     .asciiz "From angle: "
 debug_to_angle_message:
@@ -304,6 +308,48 @@ debug_print_wall_info_on_screen:
     lda FROM_DELTA_Y
     sta WORD_TO_PRINT
     lda FROM_DELTA_Y+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_fixed_point_word_as_decimal_fraction
+    
+    inc CURSOR_Y
+    
+    ; ---- To delta X ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_to_delta_x_message
+    sta TEXT_TO_PRINT
+    lda #>debug_to_delta_x_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda TO_DELTA_X
+    sta WORD_TO_PRINT
+    lda TO_DELTA_X+1
+    sta WORD_TO_PRINT+1
+    
+    jsr print_fixed_point_word_as_decimal_fraction
+    
+    inc CURSOR_Y
+    
+    ; ---- To delta Y ----
+    
+    lda #DEBUG_INDENT
+    sta CURSOR_X
+    
+    lda #<debug_to_delta_y_message
+    sta TEXT_TO_PRINT
+    lda #>debug_to_delta_y_message
+    sta TEXT_TO_PRINT + 1
+    
+    jsr print_text_zero
+    
+    lda TO_DELTA_Y
+    sta WORD_TO_PRINT
+    lda TO_DELTA_Y+1
     sta WORD_TO_PRINT+1
     
     jsr print_fixed_point_word_as_decimal_fraction

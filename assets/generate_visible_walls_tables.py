@@ -69,10 +69,10 @@ def run():
 # FIXME    
 #    for viewpoint_y_abs in range(16):
 #        for viewpoint_x_abs in range(16):
-    for viewpoint_y_abs in range(3,4):
-        for viewpoint_x_abs in range(8,9):
-            viewpoint_x = viewpoint_x_abs # + 0.5
-            viewpoint_y = viewpoint_y_abs # + 0.5
+    for viewpoint_y_abs in range(7,8):
+        for viewpoint_x_abs in range(7,8):
+            viewpoint_x = viewpoint_x_abs + 0.5
+            viewpoint_y = viewpoint_y_abs + 0.5
         
             # We need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint
             for wall in all_walls:

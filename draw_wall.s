@@ -984,6 +984,40 @@ wall_facing_east_calc_angle_for_end_of_wall:
     
 split_wall_into_wall_parts:
 
+; =============== DEBUG ===============
+    .if 0
+    ; FIXME: checking for a specific wall index
+    ; NOTE: this DESTROYS X and A!!
+    ldx CURRENT_WALL_NR
+    lda ORDERED_WALL_INDEXES, x
+    cmp #23
+    bne debug_keep_on_going
+    
+    ; We stop here for debugging
+    stp
+debug_keep_on_going:
+    .endif
+; ============= / DEBUG ===============
+
+    ; FIXME: we want to determine if the wall is behind is (or we are exactly in line with it)
+    ;        if so, we do not want to process this wall, since it will lead to weird results
+    ;        We do that here by checking whether NORMAL_DISTANCE_TO_WALL is 0 or below 0
+    ;    -> We may want to do this check earlier!
+    
+    lda NORMAL_DISTANCE_TO_WALL+1
+    bmi wall_is_behind_us_or_inline_with_us  ; negative number, so behind us
+    bne wall_is_not_behind_us                ; some positive number (non zero) so in front of us
+    
+    ; High byte is zero, we now check the low byte
+    lda NORMAL_DISTANCE_TO_WALL
+    bne wall_is_not_behind_us                ; some positive number (non zero) so in front of us
+
+wall_is_behind_us_or_inline_with_us:
+
+    rts
+    
+wall_is_not_behind_us:
+    
     
 
     ; ==================================================================================================================================
