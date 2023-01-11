@@ -14,7 +14,7 @@ NR_OF_WALLS = TMP2
 
 ; FIXME: this is temporary data to get some wall information into the engine
 
-    .if 1
+    .if USE_DYNAMIC_WALL_MAP
 
     ; Note: STARTING_PLAYER_POS_... is set inside wall_map.s
     
@@ -23,7 +23,7 @@ NR_OF_WALLS = TMP2
     .include wall_map.s
     .endif
     
-    .if 0
+    .if USE_BASIC_STARTING_ROOM
 ; Starting room of Wolf3D (sort of)
 
 ;     2           ; Note: this door is rendered *before* the walls beside it! (it is also position at y = 4, not y = 5)
@@ -40,7 +40,7 @@ STARTING_PLAYER_POS_X_LOW = 128
 STARTING_PLAYER_POS_Y_HIGH = 1
 STARTING_PLAYER_POS_Y_LOW = 0
 
-STARTING_LOOKING_DIR_ANGLE = 100   ; 0 - 1823
+STARTING_LOOKING_DIR_ANGLE = 0   ; 0 - 1823
 
 ; FIXME: we want this to be loaded on-the-fly!!
 ordered_list_of_wall_indexes:
@@ -114,7 +114,7 @@ wall_7_info:
     .endif
 
 ; Square room
-    .if 0
+    .if USE_SQUARE_STARTING_ROOM
     
 STARTING_PLAYER_POS_X_HIGH = 1
 STARTING_PLAYER_POS_X_LOW = 128
@@ -252,6 +252,27 @@ next_wall_to_load:
 
     rts
     
+; NOTE: this is only used when *not* using USE_DYNAMIC_WALL_MAP. It loads a fixed set of wall indexes
+load_single_list_of_ordered_walls:
+
+    lda wall_info
+    sta NR_OF_ORDERED_WALLS
+
+    lda #<ordered_list_of_wall_indexes
+    sta LOAD_ADDRESS
+    lda #>ordered_list_of_wall_indexes
+    sta LOAD_ADDRESS+1
+
+    ldy #0
+load_single_list_next_wall_index:
+    lda (LOAD_ADDRESS), y   
+    sta ORDERED_WALL_INDEXES, y
+    iny                              
+    cpy NR_OF_ORDERED_WALLS
+    bne load_single_list_next_wall_index
+    
+    rts
+
     
     
     

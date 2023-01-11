@@ -322,8 +322,12 @@ wall_facing_west:
     ; First we determine the length of the wall
     
     sec
-    lda WALL_END_Y
-    sbc WALL_START_Y
+; FIXME!?
+; FIXME!?
+;    lda WALL_END_Y
+;    sbc WALL_START_Y
+    lda WALL_START_Y
+    sbc WALL_END_Y
     sta WALL_LENGTH
     
     ; Then we calculate the screen start angle
@@ -757,8 +761,12 @@ wall_facing_east:
     ; First we determine the length of the wall
     
     sec
-    lda WALL_START_Y
-    sbc WALL_END_Y
+; FIXME!?
+; FIXME!?
+;    lda WALL_START_Y
+;    sbc WALL_END_Y
+    lda WALL_END_Y
+    sbc WALL_START_Y
     sta WALL_LENGTH
     
     ; Then we calculate the screen start angle
@@ -791,7 +799,7 @@ wall_facing_east_screen_start_angle_calculated:
     ; NOTE: this DESTROYS X and A!!
     ldx CURRENT_WALL_NR
     lda ORDERED_WALL_INDEXES, x
-    cmp #12  ; OLD!
+    cmp #23
     bne debug_keep_on_going
     
     ; We stop here for debugging
@@ -983,21 +991,6 @@ wall_facing_east_calc_angle_for_end_of_wall:
 
     
 split_wall_into_wall_parts:
-
-; =============== DEBUG ===============
-    .if 0
-    ; FIXME: checking for a specific wall index
-    ; NOTE: this DESTROYS X and A!!
-    ldx CURRENT_WALL_NR
-    lda ORDERED_WALL_INDEXES, x
-    cmp #23
-    bne debug_keep_on_going
-    
-    ; We stop here for debugging
-    stp
-debug_keep_on_going:
-    .endif
-; ============= / DEBUG ===============
 
     ; FIXME: we want to determine if the wall is behind is (or we are exactly in line with it)
     ;        if so, we do not want to process this wall, since it will lead to weird results

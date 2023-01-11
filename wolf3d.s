@@ -6,10 +6,13 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
-DEBUG = 1                ; if debug.s is needed, this has to be 1
-DEBUG_WALL_INFO = 1      ; this will pause after each wall rendering
-DEBUG_WALL_PART_INFO = 1 ; this will (also) pause after each wall part rendering
+DEBUG = 0                ; if debug.s is needed, this has to be 1
+DEBUG_WALL_INFO = 0      ; this will pause after each wall rendering
+DEBUG_WALL_PART_INFO = 0 ; this will (also) pause after each wall part rendering
 
+USE_DYNAMIC_WALL_MAP = 0
+USE_BASIC_STARTING_ROOM = 1
+USE_SQUARE_STARTING_ROOM = 0
 
 ; == Zero page addresses
 
@@ -257,6 +260,9 @@ reset:
     ;       this way the number of walls can stay below 256
     
     jsr load_wall_info
+    .if !USE_DYNAMIC_WALL_MAP
+    jsr load_single_list_of_ordered_walls
+    .endif
     
     
 ;    bra do_not_control_by_player
@@ -265,6 +271,10 @@ reset:
     ;                           Player controlled
     ; -----------------------------------------------------------------
 
+    ; NOTE: this only works if USE_DYNAMIC_WALL_MAP is 1
+    
+    .if USE_DYNAMIC_WALL_MAP
+    
 game_loop:
     
     jsr retrieve_keyboard_scan_codes
@@ -275,8 +285,8 @@ game_loop:
     jsr draw_3d_view
     
     bra game_loop
-
     
+    .endif
     
     
 do_not_control_by_player:
@@ -588,7 +598,11 @@ blue_stone_2_texture:
 closed_door_texture:
     .binary "assets/CLOSEDDOOR_OLD.BIN"
     
+    .if USE_DYNAMIC_WALL_MAP
+    
     ; ROM Bank 2
     .align 14        ; This is to make sure the data wont covert two ROM banks
 ordered_list_of_wall_indexes:
     .include "wall_indexes_ordered.s"
+    
+    .endif
