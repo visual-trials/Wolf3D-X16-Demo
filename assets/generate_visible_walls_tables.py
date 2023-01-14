@@ -67,12 +67,10 @@ def run():
     for index, wall in enumerate(all_walls):
         wall['global_index'] = index
 # FIXME    
-#    for viewpoint_y_abs in range(16):
-#        for viewpoint_x_abs in range(16):
-    for viewpoint_y_abs in range(7,8):
-        for viewpoint_x_abs in range(7,8):
-            viewpoint_x = viewpoint_x_abs + 0.5
-            viewpoint_y = viewpoint_y_abs + 0.5
+    for viewpoint_y_abs in range(16):
+        for viewpoint_x_abs in range(16):
+#    for viewpoint_y_abs in range(7,8):
+#        for viewpoint_x_abs in range(7,8):
         
             # We need to empty 'is_behind_these_walls' from each wall, after a change in viewpoint
             for wall in all_walls:
@@ -87,9 +85,24 @@ def run():
             #             We make sure that we get the walls from the correct set (by setting a base address) and offset it by 128 if needed
             #        BIG QUESTION: how do you divide the sections the correct way?
             
-            # Filtering out walls that are 'inverted' (never visible from this viewpoint)
-            potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
-            mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
+            potentially_visible_walls = []
+            
+            # FIXME: shouldn't we start at 0.0? Is there a better way of doing this?
+            offsets = [0.01, 0.5, 0.99 ]
+#            offsets = [0.5]
+            for x_offset in offsets:
+                for y_offset in offsets:
+            
+                    viewpoint_x = viewpoint_x_abs + x_offset
+                    viewpoint_y = viewpoint_y_abs + y_offset
+
+                    # FIXME: we should BUILD UP all potentially_visible_walls for all offsets. In the current way,
+                    #        we effectively use only the potentially_visible_walls for offset 0.99,0.99, which is probably not (entirely) correct!
+                    
+                    # Filtering out walls that are 'inverted' (never visible from this viewpoint)
+                    potentially_visible_walls = filter_out_inverted_walls(viewpoint_x, viewpoint_y, all_walls)
+                    mark_which_walls_are_behind_which_walls(viewpoint_x, viewpoint_y, potentially_visible_walls)
+            
             ordered_walls = order_walls_for_viewpoint(viewpoint_x, viewpoint_y, potentially_visible_walls, all_walls)
             
             dump_ordered_walls_as_asm(ordered_walls, viewpoint_x, viewpoint_y)
