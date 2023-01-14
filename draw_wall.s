@@ -1137,8 +1137,7 @@ debug_keep_on_going:
     lda TO_SCREEN_ANGLE
     sbc FROM_SCREEN_ANGLE
     bcc wall_has_negative_or_zero_length
-    ; FIXME: should we also stop if the size is 0? Or is that already done because there is no -1 on the TO_SCREEN_ANGLE_PART?
-    beq wall_has_negative_or_zero_length
+    beq wall_has_zero_length
     bra wall_has_positive_length
 wall_has_negative_or_zero_length:
 
@@ -1150,6 +1149,9 @@ wall_has_negative_or_zero_length:
     lda FROM_SCREEN_ANGLE+1
     sbc #>(1824)
     sta FROM_SCREEN_ANGLE+1
+
+wall_has_zero_length:
+    ; FIXME: should we also stop if the size is 0? We probably do this later on, when checking the wall part, but it would be more prudent to do it here!
 
 wall_has_positive_length:
 

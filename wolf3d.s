@@ -6,12 +6,12 @@
 
 ; IMPORTANT NOTE: right now this demo runs as a ROM and not as an PRG.
 
-DEBUG = 0                ; if debug.s is needed, this has to be 1
+DEBUG = 1                ; if debug.s is needed, this has to be 1
 DEBUG_WALL_INFO = 0      ; this will pause after each wall rendering
 DEBUG_WALL_PART_INFO = 0 ; this will (also) pause after each wall part rendering
 
-USE_DYNAMIC_WALL_MAP = 0
-USE_BASIC_STARTING_ROOM = 1
+USE_DYNAMIC_WALL_MAP = 1
+USE_BASIC_STARTING_ROOM = 0
 USE_SQUARE_STARTING_ROOM = 0
 
 ; == Zero page addresses
