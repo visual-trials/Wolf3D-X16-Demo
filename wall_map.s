@@ -1,18 +1,9 @@
-;STARTING_PLAYER_POS_X_HIGH =  6  ; BROKEN (when viewpoints are .0)
-;STARTING_PLAYER_POS_X_LOW =  250  ; BROKEN (when viewpoints are .0)
+STARTING_PLAYER_POS_X_HIGH =  7
+STARTING_PLAYER_POS_X_LOW =  220
+STARTING_PLAYER_POS_Y_HIGH =  7
+STARTING_PLAYER_POS_Y_LOW =  110
 
-;STARTING_PLAYER_POS_X_HIGH =  7  ; WORKS (but broken when viewpoints are 0.5)
-;STARTING_PLAYER_POS_X_LOW =  0 ; WORKS (but broken when viewpoints are 0.5)
-;STARTING_PLAYER_POS_Y_HIGH =  7
-;STARTING_PLAYER_POS_Y_LOW =  64
-
-
-STARTING_PLAYER_POS_X_HIGH =  7  ; BROKEN (when viewpoints are .5)
-STARTING_PLAYER_POS_X_LOW =  10  ; BROKEN (when viewpoints are .5)
-STARTING_PLAYER_POS_Y_HIGH =  7  ; BROKEN (when viewpoints are .5)
-STARTING_PLAYER_POS_Y_LOW =  48  ; BROKEN (when viewpoints are .5)
-
-STARTING_LOOKING_DIR_ANGLE = 1065
+STARTING_LOOKING_DIR_ANGLE = 1190
 
 wall_info:
     .byte 52 ; number of walls
