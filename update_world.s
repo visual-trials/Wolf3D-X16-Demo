@@ -1,6 +1,6 @@
 
-TURN_STEP = 5
-MOVE_STEP = 15
+TURN_STEP = 20
+MOVE_STEP = 80
 
 update_viewpoint:
 
