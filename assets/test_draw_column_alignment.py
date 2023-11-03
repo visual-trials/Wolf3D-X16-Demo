@@ -53,8 +53,15 @@ for i in range(64):
 
 def run():
 
-    screen_y_correction = 0.000
-    increment_correction = 0.000
+    nr_of_wall_heights = 10
+
+    screen_y_corrections = []
+    increment_corrections = []
+    for wall_height_index in range(nr_of_wall_heights):
+        screen_y_corrections.append(0.000)
+        increment_corrections.append(0.000)
+        
+    current_wall_height_index = 0
 
     running = True
     while running:
@@ -69,35 +76,54 @@ def run():
             if event.type == pygame.KEYDOWN:
                     
                 if event.key == pygame.K_LEFT:
-                    increment_correction -= 0.001
+                    current_wall_height_index -= 1
+                    if current_wall_height_index < 0:
+                        current_wall_height_index = 0
                 if event.key == pygame.K_RIGHT:
-                    increment_correction += 0.001
+                    current_wall_height_index += 1
+                    if current_wall_height_index >= nr_of_wall_heights:
+                        current_wall_height_index = nr_of_wall_heights-1
+                if event.key == pygame.K_COMMA:
+                    increment_corrections[current_wall_height_index] -= 0.001
+                if event.key == pygame.K_PERIOD:
+                    increment_corrections[current_wall_height_index] += 0.001
                 if event.key == pygame.K_UP:
-                    screen_y_correction -= 0.005
+                    screen_y_corrections[current_wall_height_index] -= 0.005
                 if event.key == pygame.K_DOWN:
-                    screen_y_correction += 0.005
+                    screen_y_corrections[current_wall_height_index] += 0.005
                     
             #if event.type == pygame.MOUSEMOTION: 
                 # newrect.center = event.pos
                 
         screen.fill(background_color)
+
+        for wall_height_index in range(nr_of_wall_heights):
         
-        x = 0
-        wall_height = 80
-        screen_height = 152
-        draw_single_wall_column(screen, x, wall_height, screen_height, column_texture)
-        
-        draw_single_wall_column_new(screen, x+1, wall_height, screen_height, column_texture, screen_y_correction, increment_correction)
-        
-        text_position_x = 100
+            screen_y_correction = screen_y_corrections[wall_height_index]
+            increment_correction = increment_corrections[wall_height_index]
+            
+            x = wall_height_index * 4
+            # FIXME: we should create a mapping between wall_height_index and wall_height INSTEAD!
+            wall_height = 76 + 4*wall_height_index
+            y_screen_offset = -wall_height_index*2
+            screen_height = 152
+            if current_wall_height_index == wall_height_index:
+                pygame.draw.rect(screen, red_color, pygame.Rect((x + left_border + 0.5)*6, 2, 4, 4))
+                
+            draw_single_wall_column(screen, x, y_screen_offset, wall_height, screen_height, column_texture)
+            draw_single_wall_column_new(screen, x+1, y_screen_offset, wall_height, screen_height, column_texture, screen_y_correction, increment_correction)
+            
+        text_position_x = 20
         text_position_y = 200
         
-    
-        text_surface = my_font.render("y_corr: " + str(screen_y_correction), True, white_color)
+        text_surface = my_font.render("wall_index: " + str(current_wall_height_index), True, white_color)
         screen.blit(text_surface, (text_position_x*3,text_position_y*3))
         
-        text_surface = my_font.render("incr_corr: " + str(increment_correction), True, white_color)
+        text_surface = my_font.render("y_corr: " + str(screen_y_corrections[current_wall_height_index]), True, white_color)
         screen.blit(text_surface, (text_position_x*3,(text_position_y+10)*3))
+        
+        text_surface = my_font.render("incr_corr: " + str(increment_corrections[current_wall_height_index]), True, white_color)
+        screen.blit(text_surface, (text_position_x*3,(text_position_y+20)*3))
         
         pygame.display.update()
         
@@ -107,7 +133,7 @@ def run():
     pygame.quit()
 
 
-def draw_single_wall_column(screen, x, wall_height, screen_height, column_texture):
+def draw_single_wall_column(screen, x, y_screen_offset, wall_height, screen_height, column_texture):
 
     texture_height = 64
     
@@ -116,7 +142,7 @@ def draw_single_wall_column(screen, x, wall_height, screen_height, column_textur
 
     for y in range(wall_height):
         # FIXME: y should be a VIRTUAL y-position and we should *SKIP* certain y-coordinates
-        y_screen = y + top_border
+        y_screen = y + top_border + y_screen_offset
         x_screen = x + left_border
         
         pixel_color = column_texture[int(texture_row_index)]
@@ -128,7 +154,7 @@ def draw_single_wall_column(screen, x, wall_height, screen_height, column_textur
         
 
 
-def draw_single_wall_column_new(screen, x, wall_height, screen_height, column_texture, screen_y_correction, increment_correction):
+def draw_single_wall_column_new(screen, x, y_screen_offset, wall_height, screen_height, column_texture, screen_y_correction, increment_correction):
 
     texture_height = 64
     
@@ -144,7 +170,7 @@ def draw_single_wall_column_new(screen, x, wall_height, screen_height, column_te
         pixel_color = column_texture[y_texture]
         
         # FIXME: y should be a VIRTUAL y-position and we should skip certain y-coordinates
-        y_screen = int(screen_row_index) + top_border
+        y_screen = int(screen_row_index) + top_border + y_screen_offset
         # FIXME: we are doing *6 here, which is overkill
         pygame.draw.rect(screen, pixel_color, pygame.Rect(x_screen*6, y_screen*6, 6, 6))
         screen_row_index += increment 
@@ -152,7 +178,7 @@ def draw_single_wall_column_new(screen, x, wall_height, screen_height, column_te
         if (screen_row_index > wall_height):
             break
             
-        y_screen = int(screen_row_index) + top_border
+        y_screen = int(screen_row_index) + top_border + y_screen_offset
         # FIXME: we are doing *6 here, which is overkill
         pygame.draw.rect(screen, pixel_color, pygame.Rect(x_screen*6, y_screen*6, 6, 6))
         screen_row_index += increment 
