@@ -38,13 +38,13 @@ Also investigating an alternative way to draw columns for Wolf3D:
 - You draw from the vertical center of the screen (starting at the left most pixel-column)
 - You first draw down (the bottom half of the texture) in a scaled form. 
 - You then draw up (the top half of the texture) in a scaled form. 
-- You use generated code for drawing the scaled columns: 139? possible wall heights
+- You use generated code for drawing the scaled columns: 136 possible wall heights
 - You use a specific memory setup for this
   - In Fixed RAM you place this:
     - ZP-vars
     - Stack
     - JUMP-table
-    - All 139? generated column-draw codes
+    - All 136 generated column-draw codes
     - Some start/end glue code (that switches code Banked RAM on/off)
   - In Banked RAM you put
     - Your game code (banks 1-3?)
@@ -69,6 +69,8 @@ Here is code that would be in each draw-column-routine:
 ; RAM_BANK = texture index
 ; COLUMN_COUNT/INDEX = column in the 3D-part of the screen (here: nr of columns to draw, decrementing)
 
+
+; == This is generated code (for every wall length) ==
 start:
     ldx $Axxx, y
     sta DATA
@@ -80,17 +82,21 @@ start:
     ldx $Axxx, y
     sta DATA
     
-    lda #DECR_BIT
-    tsb ADDR1_BANK                  ; DECR is set to 1 (if not already)
-    bne go_to_next_column           ; if DECR was already 1, we have done the second half and have to move to the next column
+    lda #DECR_BIT          2 bytes
+    tsb ADDR1_BANK         3 bytes  ; DECR is set to 1 (if not already)
+    bne column_is_done     2 bytes  ; if DECR was already 1, we have done the second half and have to move to the next column
     
-    bit DATA1                       ; read from DATA1 sets ADDR1 to ADDR0
-    iny                             ; switch to top half of the texture
-    stz DATA1                       ; transparant write to DATA1 which moves ADDR1 one pixel upwards
-    jmp start                       ; We use the same code to draw the top part of the column
+    bit DATA1              3 bytes  ; read from DATA1 sets ADDR1 to ADDR0
+    iny                    1 byte   ; switch to top half of the texture
+    stz DATA1              3 bytes  ; transparant write to DATA1 which moves ADDR1 one pixel upwards
+    jmp start              3 bytes  ; We use the same code to draw the top part of the column
 
+column_is_done:
+    jmp go_to_next_column  3 bytes
+
+    
+; == This is generic code ==
 go_to_next_column:
-
     tsb ADDR1_BANK                  ; DECR-bit is set to 0 (note: accumulator still contains #DECR_BIT!)
 
     dec COLUMN_COUNT
@@ -108,13 +114,20 @@ go_to_next_column:
     tay                             ; switch to new texture column (2/2)
     bit DATA0                       ; incements ADDR0 one pixel to the right
     bit DATA1                       ; sets ADDR1 to ADDR0
+    
+; FIXME: we have a RANGE of 136 possible wall heights, but in a SINGLE jump table there are only 128 entries!
+;         -> so we need a DOUBLE jump table!
+    
     jmp (JUMP_TABLE,x)
 
     
 ALTERNATIVES/IDEAS:
-    - instead of 'go_to_next_column'-routine containing the code to go to the next column, we could do an rts (or BETTER: jump to a fixed location!)
-      -> this will reduce the amount of bytes needed for this generated code!    
-    - the hmp start can (sometimes) be replaced by a 'bra' (which is shorter and faster)
+    - DONE instead of 'go_to_next_column'-routine containing the code to go to the next column, we could do an rts (or BETTER: jump to a fixed location!)
+           -> this will reduce the amount of bytes needed for this generated code!    
+    - the jmp start can (sometimes) be replaced by a 'bra' (which is shorter and faster)
+    - we could put the 'bit DATA1', 'iny' and 'stz DATA1' BEFORE the start of the code and jump into the start (so the bne/beq can branch to this 'prestart' instead)
+       -> this is ONLY beneficial if the distance between the bne/beq and this prestart is small enough (<128) meaning less than ~21 HALF-wall length
+         -> in that case one of the 'jmp'-opcodes can be removed (saving time and space)
 
 '''
 
@@ -164,15 +177,21 @@ ALTERNATIVES/IDEAS:
 # 158 - 512  :  32-16? reads and 76 writes
 #                   -> 24? reads + 76 writes for 60 wall lenghts (24?+76)*60 = 6000 * 3 bytes = 18000 code bytes
 #
-# Total of ~32688 read and writes code bytes
+# Read and writes code bytes in total is ~32688 bytes
+# Constant code bytes: 19-20 bytes -> 136 * 20 = ~2720 bytes
+# Jump table: 256 bytes * 2 = 512 bytes
+# Total code bytes: ~35920 bytes
+# Available bytes in Fixed RAM: 40*1024 - 256 (ZP) - 256 (Stack) - 256 (IO) = 40192  bytes
 #
-#   FIXME: Constant code byes: 15-20 bytes? -> 136 * 20 = ~~2720 bytes ...
-#
-
+# ISSUES/CHALLENGES: 
+# - how to DOUBLE jump tables? asl?
+# - how to convert real wall lengths (up to 512 or 256) to these jump tables?
+# - How to run the game from Banked RAM?
+# - How to run the game with so little Fixed RAM??
 
 '''
 
-Below is an investigation of whether we can use the FX line drawer to use standard generated code (not specific to each 139? wall heights)
+Below is an investigation of whether we can use the FX line drawer to use standard generated code (not specific to each 136 wall heights)
 and use "scaling-by-overwriting" pixels. The basic idea is that you setup you line drawer without ADDR1-increment (which would have been horizontal, +1), 
 but with an ADDR0 increment (vertically, down +320) and set the X1-increment to something lower than 1.0 to create the desired effect (or very close to it)
 
