@@ -31,6 +31,139 @@ clock = pygame.time.Clock()
 pygame.font.init()
 my_font = pygame.font.SysFont('Arial', 20)
 
+'''
+
+Also investigating an alternative way to draw columns for Wolf3D:
+
+- You draw from the vertical center of the screen (starting at the left most pixel-column)
+- You first draw down (the bottom half of the texture) in a scaled form. 
+- You then draw up (the top half of the texture) in a scaled form. 
+- You use generated code for drawing the scaled columns: 139? possible wall heights
+- You use a specific memory setup for this
+  - In Fixed RAM you place this:
+    - ZP-vars
+    - Stack
+    - JUMP-table
+    - All 139? generated column-draw codes
+    - Some start/end glue code (that switches code Banked RAM on/off)
+  - In Banked RAM you put
+    - Your game code (banks 1-3?)
+    - All textures and sprites
+
+Because we divided the screen in HALF we just *MIGHT* have enough room to generate wallheight-specific column-draw-code
+into Fixed RAM. This will however be VERY tight! We therefore want to calculate more precisely how much room this would take.
+
+The most compact (and fastest) code would use the FX polygon helper:
+  - Set X1-position to 0
+  - Set X1-increment to 0
+  - This effectively turns ADDR0 into a backup address for ADDR1, so it can 
+    - Return to do the other half
+    - Increment to the next column  
+  - Draw transparently (FX feature) to move ADDR1 one pixel upwards
+
+Here is code that would be in each draw-column-routine:
+
+; y = texture column (odd: top half, even: bottom half)
+; a = free to use (will contain DECR-bit along the way)
+; x = free to use (is used for the JUMP-table offset itself)
+; RAM_BANK = texture index
+; COLUMN_COUNT/INDEX = column in the 3D-part of the screen (here: nr of columns to draw, decrementing)
+
+start:
+    ldx $Axxx, y
+    sta DATA
+    ldx $Axxx, y
+    sta DATA
+    
+    ...
+    
+    ldx $Axxx, y
+    sta DATA
+    
+    lda #DECR_BIT
+    tsb ADDR1_BANK                  ; DECR is set to 1 (if not already)
+    bne go_to_next_column           ; if DECR was already 1, we have done the second half and have to move to the next column
+    
+    bit DATA1                       ; read from DATA1 sets ADDR1 to ADDR0
+    iny                             ; switch to top half of the texture
+    stz DATA1                       ; transparant write to DATA1 which moves ADDR1 one pixel upwards
+    jmp start                       ; We use the same code to draw the top part of the column
+
+go_to_next_column:
+
+    tsb ADDR1_BANK                  ; DECR-bit is set to 0 (note: accumulator still contains #DECR_BIT!)
+
+    dec COLUMN_COUNT
+    ldy COLUMN_COUNT
+    
+    ldx TEXTURE_IDX_PER_COL, y      ; switch to new texture (index) by switching the RAM_BANK
+    stx RAM_BANK
+    
+    lda TEXTURE_COL_PER_COL, y      ; switch to new texture column (1/2)
+    
+    ; Note: the last entry of the WALL_LEN_PER_COL will contain a 0, which has a JUMP-table entry containing a single 'rts'
+    ;   -> For 304 columns we probably need TWO of these WALL_LEN_PER_COL-tables containing 152+1 entries each?
+    ldx WALL_LEN_PER_COL, y
+    
+    tay                             ; switch to new texture column (2/2)
+    bit DATA0                       ; incements ADDR0 one pixel to the right
+    bit DATA1                       ; sets ADDR1 to ADDR0
+    jmp (JUMP_TABLE,x)
+
+    
+ALTERNATIVES/IDEAS:
+    - instead of 'go_to_next_column'-routine containing the code to go to the next column, we could do an rts (or BETTER: jump to a fixed location!)
+      -> this will reduce the amount of bytes needed for this generated code!    
+    - the hmp start can (sometimes) be replaced by a 'bra' (which is shorter and faster)
+
+'''
+
+
+# Calculating the amount bytes need for the generared code
+
+# Wallheights:
+#
+# From Black book: 
+#   "To save RAM, past size 76 only every other even size is generated (2,4,6,..,72,74,76) and (78,82,86,...,504,508,512). 
+#     This trick generates only 136 scalers"
+#
+# HOWEVER: the math does NOT add up here!
+#
+# SO: From code (WL_SCALE.C)
+#
+#   //
+#   // build the compiled scalers
+#   //
+#
+#   stepbytwo = viewheight/2;	// save space by double stepping
+# 
+#   for (i=1;i<=maxscaleheight;i++)
+#   {
+#       BuildCompScale (i*2,&(memptr)scaledirectory[i]);
+#       if (i>=stepbytwo)
+#           i+= 2;
+#   }
+#
+#  The above implies that (when maxscaleheight = 256 and viewheight = 152):
+#   - Wall heights go from 2 (when i = 1) to 152 with steps of 2
+#   - Wall heights go from 152 with steps of 6! (note: i++ AND i+=2 AND i is multiplied by 2)
+#
+#    2 - 152  : every 2 wall heights (2,4,6 .. 150,152)         -> 76 different wall heights
+#  158 - 512  : every 4 wall heights (158, 164, 170 .. 506, 512) -> 60 different wall heights
+#
+#   => This indeed adds up to 76 + 60 = 136 scalers!
+
+
+'''
+
+Below is an investigation of whether we can use the FX line drawer to use standard generated code (not specific to each 139? wall heights)
+and use "scaling-by-overwriting" pixels. The basic idea is that you setup you line drawer without ADDR1-increment (which would have been horizontal, +1), 
+but with an ADDR0 increment (vertically, down +320) and set the X1-increment to something lower than 1.0 to create the desired effect (or very close to it)
+
+This allows the generated code to fit easely into Fixed RAM while putting all textures into Banked RAM. (since VRAM is basicly full)
+
+'''
+
 column_texture = []
 for i in range(64):
     if (i == 0):
