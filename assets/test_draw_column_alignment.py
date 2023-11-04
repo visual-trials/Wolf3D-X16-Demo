@@ -152,6 +152,22 @@ ALTERNATIVES/IDEAS:
 #  158 - 512  : every 4 wall heights (158, 164, 170 .. 506, 512) -> 60 different wall heights
 #
 #   => This indeed adds up to 76 + 60 = 136 scalers!
+#
+# ---
+#
+# For wall lengths we need the following code:
+#
+#   2 - 64   :  1 read and 1 write per HALF of the wall length (1-32 reads and writes) 
+#                  -> ~16 reads and writes on average for 32 wall heights (~16+~16)*32 = 1024 * 3 bytes = 3072 code bytes
+#  66 - 152  :  32 reads and HALF of the wall length of writes (33-76 writes)
+#                  -> 32 reads + avg ~55 writes for 44 wall lenghts (33+~55)*44 = 3872 * 3 bytes = 11616 code bytes
+# 158 - 512  :  32-16? reads and 76 writes
+#                   -> 24? reads + 76 writes for 60 wall lenghts (24?+76)*60 = 6000 * 3 bytes = 18000 code bytes
+#
+# Total of ~32688 read and writes code bytes
+#
+#   FIXME: Constant code byes: 15-20 bytes? -> 136 * 20 = ~~2720 bytes ...
+#
 
 
 '''
