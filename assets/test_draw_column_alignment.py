@@ -43,7 +43,10 @@ Also investigating an alternative way to draw columns for Wolf3D:
   - In Fixed RAM you place this:
     - ZP-vars
     - Stack
-    - JUMP-table
+    - TEXTURE_IDX_PER_COL (320 bytes?)
+    - TEXTURE_COL_PER_COL (320 bytes?)
+    - WALL_LEN_PER_COL (320 bytes?)
+    - JUMP_TABLE (136 (or easier: 256) entries of wall lengths -> 512 bytes?)
     - All 136 generated column-draw codes
     - Some start/end glue code (that switches code Banked RAM on/off)
   - In Banked RAM you put
@@ -73,14 +76,14 @@ Here is code that would be in each draw-column-routine:
 ; == This is generated code (for every wall length) ==
 start:
     ldx $Axxx, y
-    sta DATA
+    stx DATA
     ldx $Axxx, y
-    sta DATA
+    stx DATA
     
     ...
     
     ldx $Axxx, y
-    sta DATA
+    stx DATA
     
     lda #DECR_BIT          2 bytes
     tsb ADDR1_BANK         3 bytes  ; DECR is set to 1 (if not already)
@@ -105,7 +108,7 @@ go_to_next_column:
     ldx TEXTURE_IDX_PER_COL, y      ; switch to new texture (index) by switching the RAM_BANK
     stx RAM_BANK
     
-    lda TEXTURE_COL_PER_COL, y      ; switch to new texture column (1/2)
+    lda TEXTURE_COL_PER_COL, y      ; switch to new texture column (1/2)  --> with THIS method, this should be an EVEN value, since we first draw the bottom part)
     
     ; Note: the last entry of the WALL_LEN_PER_COL will contain a 0, which has a JUMP-table entry containing a single 'rts'
     ;   -> For 304 columns we probably need TWO of these WALL_LEN_PER_COL-tables containing 152+1 entries each?
@@ -196,6 +199,137 @@ and use "scaling-by-overwriting" pixels. The basic idea is that you setup you li
 but with an ADDR0 increment (vertically, down +320) and set the X1-increment to something lower than 1.0 to create the desired effect (or very close to it)
 
 This allows the generated code to fit easely into Fixed RAM while putting all textures into Banked RAM. (since VRAM is basicly full)
+
+
+Here is code that would be in the draw-column-routine:
+
+Note: this example one uses THREE writes per read, but 4-8 are also needed! (a virtual wall length of 512 has to draw a 64 pixel texture at 8 pixels per texel!)
+
+; y = texture column (odd: top half, even: bottom half -> SHOULD we iny in the MIDDLE of each column-draw?)
+; a = free to use
+; x = is used for the JUMP-table offset itself (maybe NOT TOUCH?)
+; RAM_BANK = texture index
+; COLUMN_COUNT/INDEX = column in the 3D-part of the screen (here: nr of columns to draw, decrementing)
+
+
+; == This is generated code (for 3 writes per read) ==
+draw_full_column:
+    lda $Axxx, y
+    sta DATA
+    sta DATA
+    sta DATA
+    
+    lda $Axxx, y
+    sta DATA
+    sta DATA
+    sta DATA
+    
+-> possible JUMP-in point:
+    lda $Axxx, y
+    sta DATA
+    sta DATA
+    sta DATA
+    
+    ...
+    
+    dey                       ; this is to switch to the lower part of the texture (needed if COMBINED with the other method above)
+    
+    ...
+    
+    lda $Axxx, y
+    sta DATA
+    sta DATA
+    sta DATA
+    
+-> possible PATCH point:
+    lda $Axxx, y
+    sta DATA
+    sta DATA
+    sta DATA
+    
+    rts
+    
+    
+jump_with_table:
+    jmp (JUMP_TABLE, x)
+
+
+
+draw_column:
+
+    ldy COLUMN_COUNT
+
+    ; -- Setup VERA --
+    
+    ldx #DCSEL_3
+    stx VERA_CTRL
+    
+    ldx X1_INCREMENT_H, y
+    stx FX_X_INCR_H
+    
+    ldx X1_INCREMENT_L, y
+    stx FX_X_INCR_L
+    
+    ldx #DCSEL_5
+    stx VERA_CTRL
+    
+    ldx X1_SUB_POS, y
+    stx FX_X_POS_S
+    
+    ldx VRAM_START_COLUMN_L, y
+; FIXME: we should SUBTRACT HALF of the wall length from this! (assming this is the vertical-center of the screen-column)
+    stx VERA_ADDR_LOW
+    
+    ldx VRAM_START_COLUMN_H, y
+; FIXME: we should SUBTRACT HALF of the wall length from this! (assming this is the vertical-center of the screen-column)
+    stx VERA_ADDR_HIGH
+    
+    
+    ; -- Setup draw code / table jump --
+
+    ldx TEXTURE_IDX_PER_COL, y      ; switch to new texture (index) by switching the RAM_BANK
+    stx RAM_BANK
+    
+    lda TEXTURE_COL_PER_COL, y      ; switch to new texture column (1/2)  --> with THIS method, this should be an ODD value, since we first draw the top part)
+    
+    ; Note: the last entry of the WALL_LEN_PER_COL will contain a 0, which has a JUMP-table entry containing a single 'rts'
+    ;   -> For 304 columns we probably need TWO of these WALL_LEN_PER_COL-tables containing 152+1 entries each?
+    ldx WALL_LEN_PER_COL, y
+    
+    ldy JUMP_ADDRESS_PER_WALL_LEN_L, x
+    sty JUMP_ADDRESS
+
+    ldy JUMP_ADDRESS_PER_WALL_LEN_H, x
+    sty JUMP_ADDRESS+1
+
+    ldy PATCH_ADDRESS_PER_WALL_LEN_L, x
+    sty PATCH_ADDRESS
+
+    ldy PATCH_ADDRESS_PER_WALL_LEN_H, x
+    sty PATCH_ADDRESS+1
+    
+    ; -- Patch --
+    ldx #0
+    ldy #60                         ; 'rts'
+    sty (PATCH_ADDRESS),x
+
+    tay                             ; switch to new texture column (2/2)
+
+; FIXME: is there are cleaner/faster way to do this?
+    jsr jump_with_table
+
+    ; -- Unpatch --
+    ldx #0
+    ldy #??                         ; 'sta ....'
+    sty (PATCH_ADDRESS),x
+    
+    dec COLUMN_COUNT
+; This is already done at the beginning of draw_column, so not needed?
+    ldy COLUMN_COUNT
+    
+; HOW DO WE PROCEED? Or better: how do we STOP? And how do we SWITCH between METHODS?
+    jmp draw_column
+
 
 '''
 
